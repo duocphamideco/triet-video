@@ -628,7 +628,7 @@ body.clip-mode .clip-head{top:0;padding:8px 10px;box-shadow:0 1px 0 #252832}
 .v23-cut-flash{animation:v23CutFlash .22s ease-out}@keyframes v23CutFlash{0%{box-shadow:inset 0 0 0 3px #56c6ff}100%{box-shadow:inset 0 0 0 0 transparent}}
 @media(max-width:720px){.v23-framehint{display:none}.v23-direct-card{min-width:78px}}
 
-/* ================= V29 FILE-SAFE SINGLE PLAYER / MOTION ================= */
+/* ================= V30 GITHUB VIDEO LAYER FIX / MOTION ================= */
 .v24-kf-panel{
   margin-top:10px;padding:10px;border:1px solid #343844;border-radius:10px;
   background:#15171d;display:none
@@ -721,7 +721,7 @@ body.clip-mode .clip-head{top:0;padding:8px 10px;box-shadow:0 1px 0 #252832}
 .v25-video-audio .row{display:flex;gap:6px;margin-top:7px}
 .v25-video-audio button{flex:1;border:1px solid #353944;background:#20232a;color:#dfe3ea;border-radius:7px;padding:7px;font-size:9px;font-weight:800}
 
-/* ================= V29 FILE-SAFE SINGLE PLAYER + DESKTOP WORKSPACE ================= */
+/* ================= V30 GITHUB VIDEO LAYER FIX + DESKTOP WORKSPACE ================= */
 body.clip-mode{overflow:hidden}
 body.clip-mode #tabClip{height:100vh;min-height:0;overflow:hidden;padding:0 8px 8px}
 body.clip-mode .clip-head{height:48px;min-height:48px;position:relative;top:auto;padding:6px 8px}
@@ -839,6 +839,34 @@ body.v29-seeking #v26PreviewState{border-color:#347b99!important;background:#102
   position:absolute;inset:0;width:100%;height:100%;display:none;background:#000;object-fit:contain;
   transform-origin:center center;z-index:1
 }
+
+/* ================= V30 GITHUB VIDEO LAYER FIX ================= */
+#v29MasterVideo{
+  z-index:2!important;
+  background:#000!important;
+  visibility:visible!important;
+}
+#clipCanvas{
+  z-index:3!important;
+  background:transparent!important;
+  opacity:1!important;
+}
+#clipFxScreen{z-index:4!important}
+#clipTransformBox{z-index:8!important}
+.v30-media-status{
+  position:absolute;left:7px;bottom:7px;z-index:26;pointer-events:none;
+  border-radius:999px;padding:4px 7px;background:rgba(8,10,14,.82);border:1px solid #3c414b;
+  color:#aeb5c1;font:800 8px/1.2 ui-monospace,monospace;letter-spacing:.02em
+}
+.v30-media-status.ok{border-color:#2d8052;color:#74e8a6;background:rgba(8,35,20,.86)}
+.v30-media-status.bad{border-color:#a34545;color:#ff9a9a;background:rgba(48,16,16,.9)}
+.v30-codec-warning{
+  position:absolute;inset:0;z-index:7;display:none;align-items:center;justify-content:center;padding:20px;
+  background:rgba(5,6,8,.88);pointer-events:none;text-align:center
+}
+.v30-codec-warning.show{display:flex}
+.v30-codec-warning .box{max-width:330px;border:1px solid #8f3b3b;background:#2b1517;color:#ffd0d0;border-radius:12px;padding:14px;font-size:11px;line-height:1.55}
+.v30-codec-warning b{color:#fff}
 
 </style>
 </head>
@@ -1216,7 +1244,7 @@ body.v29-seeking #v26PreviewState{border-color:#347b99!important;background:#102
   <div id="tabClip" style="display:none">
     <div class="clip-head">
       <button class="clip-exit" id="clipExit">← Thoát CLIP</button>
-      <div><b>✂ CLIP · Timeline Editor V29 FILE-SAFE SINGLE PLAYER</b><small>SINGLE PLAYER · FILE-SAFE · Timeline sát Preview · HD/FHD/2K</small></div>
+      <div><b>✂ CLIP · Timeline Editor V30 GITHUB VIDEO LAYER FIX</b><small>GITHUB HTTPS · VIDEO LAYER RIÊNG · Canvas trong suốt · HD/FHD/2K</small></div>
       <span class="clip-badge">CAPCUT STYLE</span>
     </div>
 
@@ -5120,7 +5148,7 @@ if(clipNv){
   var oldClear=$('clipClear')&&$('clipClear').onclick;
   if($('clipClear'))$('clipClear').onclick=function(e){proHideVisualVideos(null);if(oldClear)return oldClear.call(this,e)};
 
-  toast('V29 FILE-SAFE SINGLE PLAYER: canh cắt theo frame + HD/FHD/2K + FX/SFX kéo-thả');
+  toast('V30 GITHUB VIDEO LAYER FIX: canh cắt theo frame + HD/FHD/2K + FX/SFX kéo-thả');
 })();
 
 
@@ -6107,6 +6135,12 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
   player.id='v29MasterVideo';player.preload='auto';player.playsInline=true;
   player.setAttribute('playsinline','');player.setAttribute('webkit-playsinline','');
   if(surf)surf.insertBefore(player,$('clipCanvas'));
+  var mediaStatus=document.createElement('div');mediaStatus.id='v30MediaStatus';mediaStatus.className='v30-media-status';mediaStatus.textContent='VIDEO: chờ nạp';if(surf)surf.appendChild(mediaStatus);
+  var codecWarn=document.createElement('div');codecWarn.id='v30CodecWarning';codecWarn.className='v30-codec-warning';
+  codecWarn.innerHTML='<div class="box"><b>⚠ Chrome chỉ đọc được âm thanh của file này</b><br>Không giải mã được hình video. Hãy dùng MP4 H.264/AVC + AAC hoặc chuyển mã video trước khi dựng.</div>';
+  if(surf)surf.appendChild(codecWarn);
+  function mediaDiag(ok,msg){mediaStatus.className='v30-media-status '+(ok===true?'ok':ok===false?'bad':'');mediaStatus.textContent=msg||'';codecWarn.classList.toggle('show',ok===false)}
+  player.addEventListener('error',function(){mediaDiag(false,'VIDEO ERROR · '+((player.error&&player.error.code)||'?'))});
 
   var playing=false,raf=0,activeId=null,activeUrl=null;
   var seekBusy=false,pendingSeek=null,seekTimer=0,seekSeq=0;
@@ -6123,7 +6157,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     return Math.max(0,x)
   }
   function evalState(it,t){
-    var base={x:Number(it.x)||0,y:Number(it.y)||0,scale:Number(it.scale)||100,rotation:Number(it.rotation)||0,opacity:it.opacity==null?100:Number(it.opacity)};
+    var base={x:Number(it.x)||0,y:Number(it.y)||0,scale:Number(it.scale)||100,rotation:Number(it.rotation)||0,opacity:it.opacity==null?100:Number(it.opacity),size:Number(it.size)||54};
     var ks=Array.isArray(it.keyframes)?it.keyframes.slice().sort(function(a,b){return a.at-b.at}):[];
     if(!ks.length)return base;
     var at=Math.max(0,Math.min(Number(it.duration)||0,t-Number(it.start||0)));
@@ -6135,7 +6169,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     var p=(at-a.at)/Math.max(.0001,b.at-a.at),mode=it.keyframeEase||'easeinout';
     if(mode==='easein')p=p*p*p;else if(mode==='easeout')p=1-Math.pow(1-p,3);else if(mode==='easeinout')p=p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
     var A=merged(a),B=merged(b),o={};
-    ['x','y','scale','rotation','opacity'].forEach(function(k){o[k]=Number(A[k])+(Number(B[k])-Number(A[k]))*p});
+    ['x','y','scale','rotation','opacity','size'].forEach(function(k){o[k]=Number(A[k])+(Number(B[k])-Number(A[k]))*p});
     return o
   }
   function nonOverlayFx(it,t){
@@ -6185,10 +6219,35 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     timer=setTimeout(finish,ms||180)
   })}
 
-  /* canvas should only render overlays/text/FX while the master video is visible */
+  /* V30: canvas is a TRUE transparent overlay. It never paints black over video. */
+  function drawMediaV30(ctx,it,src,sw,sh,cw,ch,t){
+    if(!src||!sw||!sh)return;
+    var st=evalState(it,t),fit=it.fit==='cover'?'cover':'contain';
+    var k=fit==='cover'?Math.max(cw/sw,ch/sh):Math.min(cw/sw,ch/sh);
+    k*=Math.max(.05,(Number(st.scale)||100)/100);
+    var dw=sw*k,dh=sh*k,cx=cw/2+(Number(st.x)||0)/100*cw/2,cy=ch/2+(Number(st.y)||0)/100*ch/2;
+    ctx.save();ctx.globalAlpha=Math.max(0,Math.min(1,(st.opacity==null?100:Number(st.opacity))/100));
+    ctx.translate(cx,cy);ctx.rotate((Number(st.rotation)||0)*Math.PI/180);
+    try{ctx.drawImage(src,-dw/2,-dh/2,dw,dh)}catch(_){}ctx.restore()
+  }
+  function drawTextV30(ctx,it,cw,ch,t){
+    var st=evalState(it,t),fs=Math.max(16,(Number(st.size)||Number(it.size)||54)*(cw/1080)),sc=Math.max(.05,(Number(st.scale)||100)/100);
+    var cx=cw/2+(Number(st.x)||0)/100*cw/2,cy=ch/2+(Number(st.y)||0)/100*ch/2;
+    ctx.save();ctx.globalAlpha=Math.max(0,Math.min(1,(st.opacity==null?100:Number(st.opacity))/100));
+    ctx.translate(cx,cy);ctx.rotate((Number(st.rotation)||0)*Math.PI/180);ctx.scale(sc,sc);
+    ctx.font='800 '+fs+'px "Be Vietnam Pro",Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=it.color||'#fff';
+    ctx.shadowColor='rgba(0,0,0,.85)';ctx.shadowBlur=fs*.13;ctx.fillText(it.text||it.name,0,0,cw*.9/sc);ctx.restore()
+  }
   function drawOverlayOnly(t,live){
-    var old=clipNativePreviewAt;
-    try{clipNativePreviewAt=function(){};baseDraw(t,!!live)}catch(e){console.warn('[V29 overlay]',e)}finally{clipNativePreviewAt=old}
+    var c=$('clipCanvas'),ctx=c&&c.getContext('2d');if(!ctx)return;
+    ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=1;ctx.filter='none';ctx.clearRect(0,0,c.width,c.height);
+    /* If the main visual is an image, canvas owns that image. If it is video, canvas stays transparent. */
+    var main=visualAt(t);
+    if(main&&main.type==='image'&&main.img){ctx.filter=clipEffectFilter(nonOverlayFx(main,t));drawMediaV30(ctx,main,main.img,main.img.naturalWidth,main.img.naturalHeight,c.width,c.height,t);ctx.filter='none'}
+    clipActive('overlay',t).forEach(function(o){if(o.img){ctx.filter=clipEffectFilter(o.effect||'none');drawMediaV30(ctx,o,o.img,o.img.naturalWidth,o.img.naturalHeight,c.width,c.height,t);ctx.filter='none'}});
+    clipActive('text',t).forEach(function(x){drawTextV30(ctx,x,c.width,c.height,t)});
+    clipActive('effect',t).forEach(function(x){if(clipFxOverlayName(x.effect))clipDrawFxOverlay(ctx,x.effect,t,c.width,c.height,x)});
+    ctx.restore()
   }
 
   function pauseExtraAudio(){
@@ -6212,7 +6271,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
 
   async function loadItem(it,t,autoplay){
     if(!it||it.type!=='video'||!it.url){
-      try{player.pause()}catch(_){};player.style.display='none';activeId=it&&it.id||null;activeUrl=null;
+      try{player.pause()}catch(_){};player.style.display='none';activeId=it&&it.id||null;activeUrl=null;mediaDiag(null,'VIDEO: không có clip');
       return
     }
     var changed=activeUrl!==it.url;
@@ -6225,8 +6284,11 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     if(Math.abs((player.currentTime||0)-target)>.012){
       var sp=waitEvent(player,'seeked',600);try{player.currentTime=target}catch(_){};await sp
     }
-    await waitDecoded(player,180);
+    await waitDecoded(player,240);
     stylePlayer(it,t);applyPlayerAudio(it);
+    if(player.videoWidth>0&&player.videoHeight>0)mediaDiag(true,'VIDEO '+player.videoWidth+'×'+player.videoHeight+' ✓');
+    else if(player.readyState>=1)mediaDiag(false,'AUDIO-ONLY · videoWidth=0');
+    else mediaDiag(null,'VIDEO: đang nạp…');
     if(autoplay){try{var p=player.play();if(p&&p.catch)p.catch(function(){})}catch(_){}}
   }
 
@@ -6287,7 +6349,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     clipCurrentTime=t;syncExtraAudio(t,false);
     if(now-lastOverlay>=32){
       lastOverlay=now;
-      if(it&&it.type==='video'){stylePlayer(it,t);applyPlayerAudio(it);drawOverlayOnly(t,true)}
+      if(it&&it.type==='video'){stylePlayer(it,t);applyPlayerAudio(it);if(player.videoWidth>0&&player.videoHeight>0)mediaDiag(true,'VIDEO '+player.videoWidth+'×'+player.videoHeight+' ✓');drawOverlayOnly(t,true)}
       else if(it)baseDraw(t,true);else drawOverlayOnly(t,true)
     }
     if(now-lastUi>=28){lastUi=now;ui(t)}
@@ -6357,7 +6419,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
   if($('v25FrameSend'))$('v25FrameSend').onclick=function(){if(lastFrameBlob)sendFrame(lastFrameBlob);if($('v25FrameModal'))$('v25FrameModal').classList.remove('show')};
 
   setTimeout(function(){seekTo(clipCurrentTime);state('ready')},80);
-  toast('V29: Preview dùng 1 video player duy nhất · nên chạy bằng START_V29_LOCAL.bat');
+  toast('V30: GitHub HTTPS · Video layer riêng · Canvas Preview trong suốt');
 })();
 
 
