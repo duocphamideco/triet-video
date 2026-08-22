@@ -900,6 +900,86 @@ body.v32-playing .clip-preview-surface:after{
   padding:3px 7px;border-radius:999px;font-size:8px;font-weight:900;pointer-events:none
 }
 
+/* ================= V35 WORKSPACE ONLY — NO PREVIEW CORE CHANGES ================= */
+body.clip-mode .clip-head{gap:8px}
+.v35-head-actions{
+  margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto
+}
+.v35-menu-toggle{
+  border:1px solid #4a4f5a;background:#23262d;color:#e9ebef;
+  border-radius:8px;padding:7px 10px;font-size:9px;font-weight:900;cursor:pointer;
+  white-space:nowrap
+}
+.v35-menu-toggle:hover{border-color:#ff745d;color:#fff}
+.v35-menu-toggle.on{background:#293325;border-color:#4a9a66;color:#91efb3}
+body.clip-mode.v35-side-hidden .clip-layout{
+  grid-template-columns:minmax(0,1fr) 0!important;
+  gap:0!important
+}
+body.clip-mode.v35-side-hidden #clipInspector{
+  display:none!important
+}
+body.clip-mode.v35-side-hidden .clip-preview-surface{
+  max-height:42vh;
+  width:min(100%,calc(42vh * var(--preview-ratio)))
+}
+body.clip-mode.v35-side-hidden .clip-preview-card{
+  width:100%!important
+}
+
+/* Track reordering — make the existing V18 capability obvious and easier to grab */
+body.clip-mode #clipScroll .clip-track{
+  transition:box-shadow .12s ease,opacity .12s ease,border-color .12s ease
+}
+body.clip-mode .clip-track-label{
+  grid-template-columns:34px 1fr 38px!important;
+  min-height:58px;
+  padding:5px 5px!important
+}
+body.clip-mode .clip-track-drag{
+  width:32px!important;height:42px!important;
+  border-color:#454b58!important;background:#272b34!important;color:#d7dbe3!important;
+  font-size:0!important;position:relative
+}
+body.clip-mode .clip-track-drag:before{
+  content:"↕";font-size:17px;font-weight:900;line-height:1
+}
+body.clip-mode .clip-track-drag:after{
+  content:"KÉO";position:absolute;bottom:2px;left:0;right:0;
+  font-size:6px;font-weight:900;color:#7f8794;letter-spacing:.05em
+}
+body.clip-mode .clip-track-drag:hover{
+  border-color:#ff765f!important;color:#ff9b89!important;background:#35231f!important
+}
+body.clip-mode .clip-track.drag-track{
+  opacity:.62!important;box-shadow:0 0 0 2px #ff765f inset!important
+}
+body.clip-mode .clip-track.track-drop-before{border-top:3px solid #ff765f!important}
+body.clip-mode .clip-track.track-drop-after{border-bottom:3px solid #ff765f!important}
+.v35-track-tip{
+  display:inline-flex;align-items:center;gap:5px;color:#9ba1ad;font-size:8px;
+  white-space:nowrap;padding:4px 7px;border:1px solid #343842;border-radius:7px;background:#1d2026
+}
+.v35-audio-near{
+  border:1px solid #346080!important;background:#172633!important;color:#82d5ff!important;
+  border-radius:7px!important;padding:6px 8px!important;font-size:8.5px!important;font-weight:900!important
+}
+.v35-audio-near:hover{border-color:#55b8f4!important}
+.v35-track-flash{
+  animation:v35TrackFlash .7s ease
+}
+@keyframes v35TrackFlash{
+  0%,100%{box-shadow:none}
+  35%{box-shadow:0 0 0 2px #5ac8ff inset,0 0 18px rgba(90,200,255,.25)}
+}
+
+/* When menu is hidden give timeline a little more vertical room too */
+body.clip-mode.v35-side-hidden .clip-timeline-wrap{min-height:270px}
+@media(max-width:900px){
+  .v35-head-actions{margin-left:0}
+  .v35-menu-toggle{padding:6px 8px}
+}
+
 </style>
 </head>
 <body>
@@ -1276,7 +1356,7 @@ body.v32-playing .clip-preview-surface:after{
   <div id="tabClip" style="display:none">
     <div class="clip-head">
       <button class="clip-exit" id="clipExit">← Thoát CLIP</button>
-      <div><b>✂ CLIP · Timeline Editor V32 PREVIEW RESET</b><small>PLAY TRỰC TIẾP · KHÔNG SEEK QUEUE · PLAYER DUY NHẤT · HD/FHD/2K</small></div>
+      <div><b>✂ CLIP · Timeline Editor V35 WORKSPACE</b><small>V32 PREVIEW CORE · TRACK KÉO THẢ · ẨN MENU · HD/FHD/2K</small></div>
       <span class="clip-badge">CAPCUT STYLE</span>
     </div>
 
@@ -6886,6 +6966,180 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
   scrub(clipCurrentTime);
   setState(false);
   toast('V32: Preview Reset · Play gọi trực tiếp trong click · loại toàn bộ handler cũ');
+})();
+
+
+
+/* ================= V35 WORKSPACE PATCH — UI/TRACKS ONLY ================= */
+(function(){
+  var ORDER_KEY='ideco_clip_track_order_v35';
+  var SIDE_KEY='ideco_clip_side_hidden_v35';
+  var DEFAULT_ORDER=['visual','audio','sfx','overlay','text','effect'];
+  var applyingOrder=false;
+
+  function rowTrack(row){
+    var lane=row&&row.querySelector&&row.querySelector('.clip-lane');
+    return lane&&lane.dataset?lane.dataset.track:null;
+  }
+  function rows(){
+    return Array.prototype.slice.call(document.querySelectorAll('#clipScroll > .clip-track'));
+  }
+  function savedOrder(){
+    try{
+      var a=JSON.parse(localStorage.getItem(ORDER_KEY)||'null');
+      if(Array.isArray(a)&&a.length)return a;
+    }catch(_){}
+    return DEFAULT_ORDER.slice();
+  }
+  function currentOrder(){
+    return rows().map(rowTrack).filter(Boolean);
+  }
+  function saveOrder(){
+    if(applyingOrder)return;
+    try{localStorage.setItem(ORDER_KEY,JSON.stringify(currentOrder()))}catch(_){}
+  }
+  function applyOrder(order){
+    var sc=$('clipScroll');if(!sc)return;
+    applyingOrder=true;
+    try{
+      var map={};
+      rows().forEach(function(r){var k=rowTrack(r);if(k)map[k]=r});
+      (order||DEFAULT_ORDER).forEach(function(k){if(map[k])sc.appendChild(map[k])});
+      /* Append any future/new track types not in the stored list. */
+      rows().forEach(function(r){if(r.parentNode===sc&&!(order||[]).includes(rowTrack(r)))sc.appendChild(r)});
+    }finally{
+      applyingOrder=false;
+    }
+    saveOrder();
+  }
+
+  function audioNextToVideo(){
+    var sc=$('clipScroll'),video=document.querySelector('#clipScroll .clip-lane[data-track="visual"]'),
+        audio=document.querySelector('#clipScroll .clip-lane[data-track="audio"]');
+    if(!sc||!video||!audio)return;
+    var vr=video.closest('.clip-track'),ar=audio.closest('.clip-track');
+    if(!vr||!ar)return;
+    sc.insertBefore(ar,vr.nextSibling);
+    saveOrder();
+    ar.classList.remove('v35-track-flash');
+    requestAnimationFrame(function(){ar.classList.add('v35-track-flash')});
+    setTimeout(function(){ar.classList.remove('v35-track-flash')},850);
+    try{ar.scrollIntoView({block:'nearest',behavior:'smooth'})}catch(_){}
+    toast('🎵 AUDIO đã được đưa sát ngay dưới VIDEO');
+  }
+
+  function enhanceTracks(){
+    rows().forEach(function(row){
+      var k=rowTrack(row),lab=row.querySelector('.clip-track-label'),drag=row.querySelector('.clip-track-drag');
+      if(k)row.dataset.v35Track=k;
+      if(drag){
+        drag.title='Giữ và kéo cả track lên / xuống';
+        drag.setAttribute('aria-label','Kéo track '+(k||''));
+      }
+      if(lab&&!lab.dataset.v35Hint){
+        lab.dataset.v35Hint='1';
+        var main=lab.querySelector('.clip-track-label-main');
+        if(main){
+          var sm=main.querySelector('small');
+          if(sm){
+            if(k==='visual')sm.textContent='Hình chính · có thể kéo track';
+            else if(k==='audio')sm.textContent='Nhạc nền · kéo sát VIDEO để canh';
+            else if(k==='sfx')sm.textContent='Âm thanh FX · có thể đổi vị trí track';
+          }
+        }
+      }
+    });
+  }
+
+  function installToolbar(){
+    var bar=document.querySelector('.clip-tl-toolbar');if(!bar)return;
+    if(!$('v35AudioNearVideo')){
+      var btn=document.createElement('button');
+      btn.id='v35AudioNearVideo';btn.type='button';btn.className='v35-audio-near';
+      btn.textContent='🎵 AUDIO SÁT VIDEO';
+      btn.title='Đưa track AUDIO ngay dưới VIDEO để canh hình và tiếng';
+      btn.onclick=audioNextToVideo;
+      var spacer=bar.querySelector('.spacer');
+      if(spacer)bar.insertBefore(btn,spacer);else bar.appendChild(btn);
+    }
+    if(!$('v35TrackTip')){
+      var tip=document.createElement('span');tip.id='v35TrackTip';tip.className='v35-track-tip';
+      tip.innerHTML='↕ Kéo tay nắm bên trái để đổi thứ tự track';
+      var btn=$('v35AudioNearVideo');
+      if(btn)btn.insertAdjacentElement('afterend',tip);else bar.appendChild(tip);
+    }
+  }
+
+  function setSideHidden(hidden){
+    document.body.classList.toggle('v35-side-hidden',!!hidden);
+    var b=$('v35MenuToggle');
+    if(b){
+      b.classList.toggle('on',!!hidden);
+      b.textContent=hidden?'☰ HIỆN MENU':'▸ ẨN MENU';
+      b.title=hidden?'Mở lại bảng Công cụ / Thuộc tính / Hiệu ứng':'Ẩn bảng bên phải để mở rộng vùng dựng';
+    }
+    try{localStorage.setItem(SIDE_KEY,hidden?'1':'0')}catch(_){}
+    /* Let browser recalculate preview/timeline dimensions without touching preview state. */
+    setTimeout(function(){
+      try{clipRenderRuler();clipUpdatePlayhead()}catch(_){}
+    },50);
+  }
+
+  function installMenuToggle(){
+    var head=document.querySelector('.clip-head');if(!head||$('v35MenuToggle'))return;
+    var badge=head.querySelector('.clip-badge');
+    var wrap=document.createElement('div');wrap.className='v35-head-actions';
+    var b=document.createElement('button');b.type='button';b.id='v35MenuToggle';b.className='v35-menu-toggle';
+    b.onclick=function(){setSideHidden(!document.body.classList.contains('v35-side-hidden'))};
+    wrap.appendChild(b);
+    if(badge){
+      wrap.appendChild(badge);
+      head.appendChild(wrap);
+    }else head.appendChild(wrap);
+    var hidden=false;
+    try{hidden=localStorage.getItem(SIDE_KEY)==='1'}catch(_){}
+    setSideHidden(hidden);
+  }
+
+  /* Observe actual DOM track moves, including the existing ▲ / ▼ and drag handle. */
+  var observer=null;
+  function watchOrder(){
+    var sc=$('clipScroll');if(!sc||observer)return;
+    observer=new MutationObserver(function(muts){
+      var moved=muts.some(function(m){return m.type==='childList'});
+      if(moved){
+        clearTimeout(watchOrder._t);
+        watchOrder._t=setTimeout(function(){enhanceTracks();saveOrder()},40);
+      }
+    });
+    observer.observe(sc,{childList:true});
+  }
+
+  /* Preserve the order after timeline rerenders. This wrapper does not touch preview. */
+  var renderBase=clipRenderTimeline;
+  clipRenderTimeline=function(){
+    var r=renderBase();
+    enhanceTracks();
+    applyOrder(savedOrder());
+    installToolbar();
+    return r;
+  };
+
+  installMenuToggle();
+  installToolbar();
+  enhanceTracks();
+  applyOrder(savedOrder());
+  watchOrder();
+
+  /* First-time V35 layout: AUDIO directly under VIDEO. */
+  try{
+    if(!localStorage.getItem(ORDER_KEY)){
+      applyOrder(DEFAULT_ORDER);
+      localStorage.setItem(ORDER_KEY,JSON.stringify(DEFAULT_ORDER));
+    }
+  }catch(_){applyOrder(DEFAULT_ORDER)}
+
+  toast('V35: kéo track lên/xuống · AUDIO sát VIDEO · có nút ẨN MENU');
 })();
 
 
