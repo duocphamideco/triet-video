@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2212%22%20fill%3D%22%23ee3a23%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2243%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%20font-size%3D%2231%22%20font-weight%3D%22800%22%20fill%3D%22white%22%3EI%3C%2Ftext%3E%3C%2Fsvg%3E">
 <title>IDECO · Studio Tạo Ảnh & Dựng Video AI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
@@ -628,7 +629,7 @@ body.clip-mode .clip-head{top:0;padding:8px 10px;box-shadow:0 1px 0 #252832}
 .v23-cut-flash{animation:v23CutFlash .22s ease-out}@keyframes v23CutFlash{0%{box-shadow:inset 0 0 0 3px #56c6ff}100%{box-shadow:inset 0 0 0 0 transparent}}
 @media(max-width:720px){.v23-framehint{display:none}.v23-direct-card{min-width:78px}}
 
-/* ================= V31 DIRECT PREVIEW / MOTION ================= */
+/* ================= V32 PREVIEW RESET / MOTION ================= */
 .v24-kf-panel{
   margin-top:10px;padding:10px;border:1px solid #343844;border-radius:10px;
   background:#15171d;display:none
@@ -721,7 +722,7 @@ body.clip-mode .clip-head{top:0;padding:8px 10px;box-shadow:0 1px 0 #252832}
 .v25-video-audio .row{display:flex;gap:6px;margin-top:7px}
 .v25-video-audio button{flex:1;border:1px solid #353944;background:#20232a;color:#dfe3ea;border-radius:7px;padding:7px;font-size:9px;font-weight:800}
 
-/* ================= V31 DIRECT PREVIEW + DESKTOP WORKSPACE ================= */
+/* ================= V32 PREVIEW RESET + DESKTOP WORKSPACE ================= */
 body.clip-mode{overflow:hidden}
 body.clip-mode #tabClip{height:100vh;min-height:0;overflow:hidden;padding:0 8px 8px}
 body.clip-mode .clip-head{height:48px;min-height:48px;position:relative;top:auto;padding:6px 8px}
@@ -840,7 +841,7 @@ body.v29-seeking #v26PreviewState{border-color:#347b99!important;background:#102
   transform-origin:center center;z-index:1
 }
 
-/* ================= V31 DIRECT PREVIEW ================= */
+/* ================= V32 PREVIEW RESET ================= */
 #v29MasterVideo{
   z-index:2!important;
   background:#000!important;
@@ -868,7 +869,7 @@ body.v29-seeking #v26PreviewState{border-color:#347b99!important;background:#102
 .v30-codec-warning .box{max-width:330px;border:1px solid #8f3b3b;background:#2b1517;color:#ffd0d0;border-radius:12px;padding:14px;font-size:11px;line-height:1.55}
 .v30-codec-warning b{color:#fff}
 
-/* ================= V31 DIRECT PREVIEW ================= */
+/* ================= V32 PREVIEW RESET ================= */
 body.v31-playing #clipTransformBox{display:none!important}
 body.v31-playing #v26PreviewState{border-color:#2b8054!important;background:#11301f!important;color:#7defaa!important}
 body.v31-paused #v26PreviewState{border-color:#39404a!important;background:#16191f!important;color:#9da4ae!important}
@@ -876,6 +877,27 @@ body.v31-paused #v26PreviewState{border-color:#39404a!important;background:#1619
   position:absolute;right:7px;bottom:7px;z-index:27;pointer-events:none;
   background:rgba(8,10,14,.82);border:1px solid #3b414b;color:#aab1bc;
   padding:3px 7px;border-radius:999px;font:800 8px ui-monospace,monospace
+}
+
+/* ================= V32 PREVIEW RESET ================= */
+#v32MasterVideo{
+  position:absolute;inset:0;width:100%;height:100%;z-index:2;
+  background:#000;object-fit:contain;display:none;transform-origin:center center;
+}
+#clipCanvas{z-index:3!important;background:transparent!important}
+#clipFxScreen{z-index:4!important}
+#clipNativeVideo,#v29MasterVideo{display:none!important;opacity:0!important;pointer-events:none!important}
+.v32-status{
+  position:absolute;left:7px;bottom:7px;z-index:30;padding:4px 8px;border-radius:999px;
+  font:800 8px/1.2 ui-monospace,monospace;background:rgba(9,11,15,.86);
+  border:1px solid #3a404a;color:#b4bbc6;pointer-events:none
+}
+.v32-status.ok{border-color:#2b8152;color:#79e8a9;background:rgba(8,34,20,.9)}
+.v32-status.bad{border-color:#a74444;color:#ff9d9d;background:rgba(47,15,15,.92)}
+body.v32-playing .clip-preview-surface:after{
+  content:"PLAY";position:absolute;right:7px;top:7px;z-index:30;
+  background:rgba(8,34,20,.9);border:1px solid #348b5d;color:#7feaac;
+  padding:3px 7px;border-radius:999px;font-size:8px;font-weight:900;pointer-events:none
 }
 
 </style>
@@ -1254,7 +1276,7 @@ body.v31-paused #v26PreviewState{border-color:#39404a!important;background:#1619
   <div id="tabClip" style="display:none">
     <div class="clip-head">
       <button class="clip-exit" id="clipExit">← Thoát CLIP</button>
-      <div><b>✂ CLIP · Timeline Editor V31 DIRECT PREVIEW</b><small>DIRECT PLAYER · KHÔNG SEEK QUEUE · KEYFRAME KHÔNG KHÓA PLAY · HD/FHD/2K</small></div>
+      <div><b>✂ CLIP · Timeline Editor V32 PREVIEW RESET</b><small>PLAY TRỰC TIẾP · KHÔNG SEEK QUEUE · PLAYER DUY NHẤT · HD/FHD/2K</small></div>
       <span class="clip-badge">CAPCUT STYLE</span>
     </div>
 
@@ -6452,6 +6474,418 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
 
   setTimeout(function(){renderPausedAt(clipCurrentTime);setReadyState('PAUSE')},80);
   toast('V31: Direct Preview · bỏ seek queue · keyframe không khóa Play');
+})();
+
+
+
+/* ================= V32 PREVIEW RESET / ONE PLAYER ONLY ================= */
+(function(){
+  var FPS=30;
+
+  /* preserve export and recording renderer before replacing preview hooks */
+  var exportRunV32=clipRunProject;
+  var originalDrawV32=clipDrawAt;
+
+  var surf=$('clipPreviewSurface');
+  var oldMaster=$('v29MasterVideo');if(oldMaster){try{oldMaster.pause()}catch(_){}oldMaster.style.display='none'}
+  var oldNative=$('clipNativeVideo');if(oldNative){try{oldNative.pause()}catch(_){}oldNative.style.display='none'}
+
+  var player=document.createElement('video');
+  player.id='v32MasterVideo';
+  player.preload='auto';
+  player.playsInline=true;
+  player.setAttribute('playsinline','');
+  player.setAttribute('webkit-playsinline','');
+  if(surf)surf.insertBefore(player,$('clipCanvas'));
+
+  var status=document.createElement('div');
+  status.id='v32Status';status.className='v32-status';status.textContent='VIDEO: sẵn sàng';
+  if(surf)surf.appendChild(status);
+
+  var playing=false,raf=0,activeId=null,activeUrl=null;
+  var startProject=0,startPerf=0,lastUi=0,lastOverlay=0;
+  var extraAudioActive=new Map();
+  var loadToken=0;
+  var lastFrameBlob=null,lastFrameTime=0;
+
+  function stat(kind,msg){
+    status.className='v32-status '+(kind==='ok'?'ok':kind==='bad'?'bad':'');
+    status.textContent=msg||'';
+  }
+  function snap(t){return Math.max(0,Math.round((Number(t)||0)*FPS)/FPS)}
+  function visualAt(t){var a=clipActive('visual',t);return a.length?a[a.length-1]:null}
+  function endOf(it){return Number(it.start||0)+Number(it.duration||0)}
+  function localTime(it,t){
+    var x=(Number(it.trimStart)||0)+(Number(t)||0)-(Number(it.start)||0);
+    var sd=Number(it.sourceDuration)||Number(player.duration)||0;
+    if(sd>0)x=Math.min(Math.max(0,sd-.025),Math.max(0,x));
+    return Math.max(0,x)
+  }
+  function evalState(it,t){
+    var base={x:Number(it.x)||0,y:Number(it.y)||0,scale:Number(it.scale)||100,rotation:Number(it.rotation)||0,
+      opacity:it.opacity==null?100:Number(it.opacity),size:Number(it.size)||54};
+    var ks=Array.isArray(it.keyframes)?it.keyframes.slice().sort(function(a,b){return a.at-b.at}):[];
+    if(!ks.length)return base;
+    var at=Math.max(0,Math.min(Number(it.duration)||0,(Number(t)||0)-(Number(it.start)||0)));
+    function M(k){return Object.assign({},base,k&&k.props||{})}
+    if(at<=ks[0].at)return M(ks[0]);
+    if(at>=ks[ks.length-1].at)return M(ks[ks.length-1]);
+    var a=ks[0],b=ks[1];
+    for(var i=0;i<ks.length-1;i++)if(at>=ks[i].at&&at<=ks[i+1].at){a=ks[i];b=ks[i+1];break}
+    var p=(at-a.at)/Math.max(.0001,b.at-a.at),mode=it.keyframeEase||'easeinout';
+    if(mode==='easein')p=p*p*p;
+    else if(mode==='easeout')p=1-Math.pow(1-p,3);
+    else if(mode==='easeinout')p=p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
+    var A=M(a),B=M(b),o={};
+    ['x','y','scale','rotation','opacity','size'].forEach(function(k){o[k]=Number(A[k])+(Number(B[k])-Number(A[k]))*p});
+    return o
+  }
+  function mainFx(it,t){
+    var a=clipActive('effect',t).filter(function(x){return !clipFxOverlayName(x.effect)&&x.effect!=='flash'});
+    return a.length?a[a.length-1].effect:(it&&it.effect||'none')
+  }
+  function stylePlayer(it,t){
+    if(!it||it.type!=='video'){player.style.display='none';return}
+    var st=evalState(it,t),sc=Math.max(.05,(Number(st.scale)||100)/100);
+    player.style.display='block';
+    player.style.objectFit=it.fit==='cover'?'cover':'contain';
+    player.style.transform='translate('+((Number(st.x)||0)/2)+'%,'+((Number(st.y)||0)/2)+'%) scale('+sc+') rotate('+(Number(st.rotation)||0)+'deg)';
+    player.style.opacity=String(Math.max(0,Math.min(1,(st.opacity==null?100:Number(st.opacity))/100)));
+    player.style.filter=clipEffectFilter(mainFx(it,t));
+    player.style.webkitFilter=player.style.filter
+  }
+  function gain(it){
+    return clipPreviewMuted?0:clipPreviewVolume*Math.max(0,Math.min(200,Number(it&&it.volume==null?100:it.volume)||0))/100
+  }
+  function applyAudio(it){
+    var g=gain(it);
+    try{player.muted=!!clipPreviewMuted;player.volume=Math.max(0,Math.min(1,g))}catch(_){}
+  }
+  function ui(t){
+    var total=Math.max(.1,clipTotalDuration());
+    clipCurrentTime=Math.max(0,Math.min(total,snap(t)));
+    if($('clipSeek'))$('clipSeek').value=Math.round(clipCurrentTime/total*1000);
+    if($('clipTime'))$('clipTime').textContent=clipFmt(clipCurrentTime)+' / '+clipFmt(total);
+    if($('clipTlTime'))$('clipTlTime').textContent=clipFmt(clipCurrentTime);
+    clipUpdatePlayhead();
+    var tc=$('v23Timecode');
+    if(tc){
+      var n=Math.round(clipCurrentTime*FPS),ff=n%FPS,ss=Math.floor(n/FPS)%60,mm=Math.floor(n/(FPS*60))%60,hh=Math.floor(n/(FPS*3600));
+      function z(x){return x<10?'0'+x:String(x)}
+      tc.textContent=z(hh)+':'+z(mm)+':'+z(ss)+':'+z(ff)+' · F'+n
+    }
+  }
+  function setState(on){
+    document.body.classList.toggle('v32-playing',!!on);
+    var st=$('v26PreviewState');
+    if(st){
+      st.classList.toggle('playing',!!on);
+      st.innerHTML='<i class="d"></i>'+(on?'PREVIEW ĐANG PHÁT':'PREVIEW SẴN SÀNG')
+    }
+  }
+
+  /* All legacy video elements are permanently silenced/paused for preview. */
+  function killLegacyPlayers(){
+    try{if(oldMaster)oldMaster.pause()}catch(_){}
+    try{if(oldNative)oldNative.pause()}catch(_){}
+    (clipTracks.visual||[]).forEach(function(it){if(it.video)try{it.video.pause()}catch(_){}});
+  }
+
+  function drawOverlayOnly(t,live){
+    /*
+      Call the original renderer with clipNativePreviewAt temporarily disabled.
+      This preserves V24 keyframe text/overlay drawing, but prevents every old
+      preview layer from seeking or playing another <video>.
+    */
+    var oldNativeFn=clipNativePreviewAt;
+    try{
+      clipNativePreviewAt=function(){};
+      originalDrawV32(t,!!live);
+    }catch(e){console.warn('[V32 overlay]',e)}
+    finally{clipNativePreviewAt=oldNativeFn}
+  }
+
+  /* Any old code calling clipDrawAt now becomes safe during preview. Export remains original. */
+  clipDrawAt=function(t,live){
+    if(clipIsRecording)return originalDrawV32(t,live);
+    var it=visualAt(t);
+    if(it&&it.type==='video'){stylePlayer(it,t);drawOverlayOnly(t,live);return}
+    return originalDrawV32(t,live)
+  };
+  /* prevent legacy preview functions from ever moving/playing old video elements */
+  clipNativePreviewAt=function(){};
+  clipNativePause=function(){};
+
+  function pauseExtraAudio(){
+    ['audio','sfx'].forEach(function(tr){(clipTracks[tr]||[]).forEach(function(it){if(it.audio)try{it.audio.pause()}catch(_){}})});
+    extraAudioActive.clear()
+  }
+  function syncExtraAudio(t,force){
+    ['audio','sfx'].forEach(function(tr){(clipTracks[tr]||[]).forEach(function(it){
+      var el=it.audio;if(!el)return;
+      var on=t>=it.start&&t<clipEnd(it),was=extraAudioActive.get(it.id)===true;
+      if(on){
+        var g=gain(it);try{el.muted=!!clipPreviewMuted;el.volume=Math.max(0,Math.min(1,g));el.loop=!!it.loop}catch(_){}
+        if(!was||force||el.paused){
+          var lt=(Number(it.trimStart)||0)+(t-it.start),sd=Number(it.sourceDuration)||Number(el.duration)||0;
+          if(it.loop&&sd>0)lt=((lt%sd)+sd)%sd;else if(sd>0)lt=Math.min(Math.max(0,sd-.025),Math.max(0,lt));
+          try{if(!was||force)el.currentTime=lt;var p=el.play();if(p&&p.catch)p.catch(function(){})}catch(_){}
+        }
+        extraAudioActive.set(it.id,true)
+      }else if(was){extraAudioActive.delete(it.id);try{el.pause()}catch(_){}}
+    })})
+  }
+
+  function sourceFor(it,t){
+    if(!it||it.type!=='video'||!it.url){try{player.pause()}catch(_){}player.style.display='none';activeUrl=null;activeId=it&&it.id||null;return}
+    activeId=it.id;stylePlayer(it,t);applyAudio(it);
+    if(activeUrl!==it.url){
+      activeUrl=it.url;
+      ++loadToken;
+      try{player.pause()}catch(_){}
+      player.src=it.url;
+      player.load();
+    }
+  }
+
+  function scrub(t){
+    if(playing)pause(false);
+    t=snap(Math.max(0,Math.min(clipTotalDuration(),t)));
+    ui(t);
+    var it=visualAt(t);
+    if(!it){player.style.display='none';drawOverlayOnly(t,false);stat('', 'VIDEO: không có clip');return t}
+    if(it.type!=='video'){player.style.display='none';activeUrl=null;activeId=it.id;originalDrawV32(t,false);return t}
+    sourceFor(it,t);
+    var target=localTime(it,t);
+    /*
+      Direct seek only. No queue, no wait, no "canh frame" state.
+      seeked event only redraws overlay; it never controls Play.
+    */
+    if(player.readyState>=1){
+      try{if(Math.abs((player.currentTime||0)-target)>.025)player.currentTime=target}catch(_){}
+    }else{
+      var token=loadToken;
+      player.addEventListener('loadedmetadata',function once(){
+        if(token!==loadToken||playing)return;
+        try{player.currentTime=localTime(it,clipCurrentTime)}catch(_){}
+      },{once:true})
+    }
+    drawOverlayOnly(t,false);
+    if(player.videoWidth>0)stat('ok','VIDEO '+player.videoWidth+'×'+player.videoHeight+' ✓');
+    return t
+  }
+
+  function startPlay(){
+    if(playing){pause(true);return Promise.resolve()}
+    if(!clipTracks.visual.length){toast('VIDEO track chưa có video/ảnh',true);return Promise.reject(new Error('empty'))}
+    if(clipCurrentTime>=clipTotalDuration()-.03)ui(0);
+
+    killLegacyPlayers();
+    var t=clipCurrentTime,it=visualAt(t);
+    if(!it){toast('Không có clip tại playhead',true);return Promise.reject(new Error('no clip'))}
+
+    playing=true;clipPlaying=true;clipStopFlag=false;setState(true);
+    if($('clipPreviewBtn'))$('clipPreviewBtn').textContent='■';
+    startProject=t;startPerf=performance.now();lastUi=0;lastOverlay=0;
+
+    if(it.type==='video'){
+      sourceFor(it,t);
+      var target=localTime(it,t);
+      if(player.readyState>=1){
+        try{if(Math.abs((player.currentTime||0)-target)>.08)player.currentTime=target}catch(_){}
+      }else{
+        var token=loadToken;
+        player.addEventListener('loadedmetadata',function(){
+          if(token!==loadToken||!playing)return;
+          try{player.currentTime=localTime(it,clipCurrentTime)}catch(_){}
+        },{once:true})
+      }
+
+      /*
+        CRITICAL V32 FIX:
+        play() is called synchronously inside the user's click handler.
+        It is NOT delayed behind loadedmetadata/seeked callbacks.
+      */
+      var promise;
+      try{promise=player.play()}catch(e){
+        playing=false;clipPlaying=false;setState(false);stat('bad','PLAY ERROR · '+(e.name||'Error'));
+        toast('Preview không chạy: '+(e.message||e),true);
+        return Promise.reject(e)
+      }
+      if(promise&&promise.then){
+        promise.then(function(){
+          if(!playing)return;
+          stat(player.videoWidth>0?'ok':'','PLAY · '+(player.videoWidth||'?')+'×'+(player.videoHeight||'?'));
+        }).catch(function(e){
+          console.error('[V32 play()]',e);
+          playing=false;clipPlaying=false;clipStopFlag=true;setState(false);
+          if($('clipPreviewBtn'))$('clipPreviewBtn').textContent='▶';
+          stat('bad','PLAY BLOCKED · '+(e.name||'Error'));
+          toast('Chrome chặn Preview: '+(e.name||'')+' '+(e.message||''),true);
+        })
+      }
+    }else{
+      player.style.display='none';originalDrawV32(t,true)
+    }
+
+    syncExtraAudio(t,true);
+    raf=requestAnimationFrame(frame);
+    return Promise.resolve()
+  }
+
+  function switchClip(it,t){
+    if(!it||it.type!=='video'){
+      try{player.pause()}catch(_){}player.style.display='none';activeUrl=null;activeId=it&&it.id||null;
+      if(it)originalDrawV32(t,true);
+      return
+    }
+    sourceFor(it,t);
+    try{
+      var target=localTime(it,t);
+      if(player.readyState>=1&&Math.abs((player.currentTime||0)-target)>.08)player.currentTime=target;
+      var p=player.play();if(p&&p.catch)p.catch(function(e){console.warn('[V32 switch play]',e)})
+    }catch(_){}
+  }
+
+  function frame(now){
+    if(!playing||clipStopFlag){pause(true);return}
+    var total=clipTotalDuration();
+    var t=startProject+(now-startPerf)/1000;
+    var current=visualAt(t);
+
+    if(current&&current.type==='video'&&current.id===activeId&&!player.paused&&player.readyState>=2){
+      var mt=current.start+Math.max(0,(player.currentTime||0)-(Number(current.trimStart)||0));
+      if(isFinite(mt)&&mt>=current.start-.08&&mt<=endOf(current)+.08){
+        t=mt;startProject=t;startPerf=now
+      }
+    }
+
+    if(t>=total-.001){ui(total);pause(true);return}
+    var it=visualAt(t),id=it&&it.id||null;
+    if(id!==activeId){
+      activeId=id;switchClip(it,t);startProject=t;startPerf=now
+    }
+
+    clipCurrentTime=t;
+    syncExtraAudio(t,false);
+
+    if(now-lastOverlay>=32){
+      lastOverlay=now;
+      if(it&&it.type==='video'){stylePlayer(it,t);applyAudio(it);drawOverlayOnly(t,true)}
+      else if(it)originalDrawV32(t,true);else drawOverlayOnly(t,true)
+    }
+    if(now-lastUi>=28){lastUi=now;ui(t)}
+    raf=requestAnimationFrame(frame)
+  }
+
+  function pause(settle){
+    if(!playing){
+      if(settle)scrub(clipCurrentTime);
+      return
+    }
+    playing=false;clipPlaying=false;clipStopFlag=true;
+    cancelAnimationFrame(raf);raf=0;
+    try{player.pause()}catch(_){}
+    pauseExtraAudio();
+    if($('clipPreviewBtn'))$('clipPreviewBtn').textContent='▶';
+    setState(false);ui(clipCurrentTime);
+    if(settle!==false)requestAnimationFrame(function(){scrub(clipCurrentTime)})
+  }
+
+  /* Replace controls themselves to remove every old onclick/addEventListener. */
+  function replaceControl(id){
+    var old=$(id);if(!old)return null;
+    var neo=old.cloneNode(true);old.parentNode.replaceChild(neo,old);return neo
+  }
+
+  var playBtn=replaceControl('clipPreviewBtn');
+  var muteBtn=replaceControl('clipMuteBtn');
+  var seekBar=replaceControl('clipSeek');
+
+  if(playBtn)playBtn.addEventListener('click',function(e){
+    e.preventDefault();e.stopPropagation();
+    if(playing)pause(true);else startPlay().catch(function(){})
+  });
+
+  if(muteBtn)muteBtn.addEventListener('click',function(){
+    clipPreviewMuted=!clipPreviewMuted;this.textContent=clipPreviewMuted?'🔇':'🔊';
+    var it=visualAt(clipCurrentTime);if(it&&it.type==='video')applyAudio(it)
+  });
+
+  if(seekBar)seekBar.addEventListener('input',function(){
+    scrub(clipTotalDuration()*Number(this.value)/1000)
+  });
+
+  /* Timeline drag handlers call these globals dynamically. */
+  clipSetCurrentTime=function(t){return scrub(t)};
+  clipScrubToClientX=function(clientX){return scrub(clipTimeFromClientX(clientX))};
+  clipPrimePreviewAudioAt=function(){};
+
+  if($('v23PrevFrame'))$('v23PrevFrame').onclick=function(){scrub(clipCurrentTime-1/FPS)};
+  if($('v23NextFrame'))$('v23NextFrame').onclick=function(){scrub(clipCurrentTime+1/FPS)};
+
+  /* Keep export engine unchanged. */
+  clipRunProject=function(recording){return recording?exportRunV32(true):startPlay()};
+
+  /* volume slider is safe to retain but now controls the V32 player */
+  if($('clipPreviewVol'))$('clipPreviewVol').oninput=function(){
+    clipPreviewVolume=Math.max(0,Math.min(1,Number(this.value)/100));
+    if($('clipPreviewVolVal'))$('clipPreviewVolVal').textContent=Math.round(clipPreviewVolume*100)+'%';
+    var it=visualAt(clipCurrentTime);if(it&&it.type==='video')applyAudio(it)
+  };
+
+  /* Media diagnostics */
+  player.addEventListener('loadedmetadata',function(){
+    stat(player.videoWidth>0?'ok':'bad',
+      player.videoWidth>0?('VIDEO '+player.videoWidth+'×'+player.videoHeight+' ✓'):'AUDIO-ONLY · videoWidth=0')
+  });
+  player.addEventListener('playing',function(){
+    if(playing)stat('ok','PLAY · '+player.videoWidth+'×'+player.videoHeight)
+  });
+  player.addEventListener('error',function(){
+    var e=player.error;stat('bad','VIDEO ERROR · '+(e?e.code:'?'))
+  });
+
+  /* Frame capture remains independent, but after capture return through V32 scrub. */
+  var oldCaptureBtn=$('v25CaptureFrame');
+  if(oldCaptureBtn){
+    var cap=oldCaptureBtn.cloneNode(true);oldCaptureBtn.parentNode.replaceChild(cap,oldCaptureBtn);
+    cap.onclick=async function(){
+      var b=this,t=snap(clipCurrentTime),it=visualAt(t),temp=null,oldVideo=null,oldRec=clipIsRecording;
+      try{
+        b.disabled=true;if(playing)pause(false);
+        if(it&&it.type==='video'){
+          temp=document.createElement('video');temp.preload='auto';temp.playsInline=true;temp.muted=true;temp.src=it.url;
+          temp.style.cssText='position:fixed;left:-99999px;top:-99999px;width:2px;height:2px;opacity:0';document.body.appendChild(temp);
+          await new Promise(function(resolve){if(temp.readyState>=2)return resolve();var done=function(){resolve()};temp.addEventListener('loadeddata',done,{once:true});temp.load();setTimeout(resolve,1400)});
+          try{temp.currentTime=localTime(it,t)}catch(_){}
+          await new Promise(function(resolve){if(typeof temp.requestVideoFrameCallback==='function')temp.requestVideoFrameCallback(function(){resolve()});else setTimeout(resolve,180)});
+          oldVideo=it.video;it.video=temp
+        }
+        clipIsRecording=true;originalDrawV32(t,true);
+        await new Promise(function(r){requestAnimationFrame(function(){requestAnimationFrame(r)})});
+        var blob=await new Promise(function(resolve,reject){$('clipCanvas').toBlob(function(x){x?resolve(x):reject(new Error('Không tạo được PNG'))},'image/png',1)});
+        lastFrameBlob=blob;lastFrameTime=t;
+        var modal=$('v25FrameModal'),img=$('v25FrameImg');
+        if(modal&&img){
+          var u=URL.createObjectURL(blob);if(img.dataset.old)try{URL.revokeObjectURL(img.dataset.old)}catch(_){}
+          img.src=u;img.dataset.old=u;
+          if($('v25FrameMeta'))$('v25FrameMeta').textContent='Frame '+Math.round(t*FPS)+' · '+clipFmt(t)+' · '+$('clipCanvas').width+'×'+$('clipCanvas').height+' PNG';
+          modal.classList.add('show')
+        }
+      }catch(e){console.error(e);toast('Lỗi cắt frame: '+(e.message||e),true)}
+      finally{
+        clipIsRecording=oldRec;if(it&&oldVideo)it.video=oldVideo;
+        if(temp){try{temp.pause();temp.removeAttribute('src');temp.load();temp.remove()}catch(_){}}
+        b.disabled=false;scrub(t)
+      }
+    }
+  }
+
+  killLegacyPlayers();
+  scrub(clipCurrentTime);
+  setState(false);
+  toast('V32: Preview Reset · Play gọi trực tiếp trong click · loại toàn bộ handler cũ');
 })();
 
 
