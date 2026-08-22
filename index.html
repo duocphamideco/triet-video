@@ -628,7 +628,7 @@ body.clip-mode .clip-head{top:0;padding:8px 10px;box-shadow:0 1px 0 #252832}
 .v23-cut-flash{animation:v23CutFlash .22s ease-out}@keyframes v23CutFlash{0%{box-shadow:inset 0 0 0 3px #56c6ff}100%{box-shadow:inset 0 0 0 0 transparent}}
 @media(max-width:720px){.v23-framehint{display:none}.v23-direct-card{min-width:78px}}
 
-/* ================= V30 GITHUB VIDEO LAYER FIX / MOTION ================= */
+/* ================= V31 DIRECT PREVIEW / MOTION ================= */
 .v24-kf-panel{
   margin-top:10px;padding:10px;border:1px solid #343844;border-radius:10px;
   background:#15171d;display:none
@@ -721,7 +721,7 @@ body.clip-mode .clip-head{top:0;padding:8px 10px;box-shadow:0 1px 0 #252832}
 .v25-video-audio .row{display:flex;gap:6px;margin-top:7px}
 .v25-video-audio button{flex:1;border:1px solid #353944;background:#20232a;color:#dfe3ea;border-radius:7px;padding:7px;font-size:9px;font-weight:800}
 
-/* ================= V30 GITHUB VIDEO LAYER FIX + DESKTOP WORKSPACE ================= */
+/* ================= V31 DIRECT PREVIEW + DESKTOP WORKSPACE ================= */
 body.clip-mode{overflow:hidden}
 body.clip-mode #tabClip{height:100vh;min-height:0;overflow:hidden;padding:0 8px 8px}
 body.clip-mode .clip-head{height:48px;min-height:48px;position:relative;top:auto;padding:6px 8px}
@@ -840,7 +840,7 @@ body.v29-seeking #v26PreviewState{border-color:#347b99!important;background:#102
   transform-origin:center center;z-index:1
 }
 
-/* ================= V30 GITHUB VIDEO LAYER FIX ================= */
+/* ================= V31 DIRECT PREVIEW ================= */
 #v29MasterVideo{
   z-index:2!important;
   background:#000!important;
@@ -867,6 +867,16 @@ body.v29-seeking #v26PreviewState{border-color:#347b99!important;background:#102
 .v30-codec-warning.show{display:flex}
 .v30-codec-warning .box{max-width:330px;border:1px solid #8f3b3b;background:#2b1517;color:#ffd0d0;border-radius:12px;padding:14px;font-size:11px;line-height:1.55}
 .v30-codec-warning b{color:#fff}
+
+/* ================= V31 DIRECT PREVIEW ================= */
+body.v31-playing #clipTransformBox{display:none!important}
+body.v31-playing #v26PreviewState{border-color:#2b8054!important;background:#11301f!important;color:#7defaa!important}
+body.v31-paused #v26PreviewState{border-color:#39404a!important;background:#16191f!important;color:#9da4ae!important}
+.v31-status{
+  position:absolute;right:7px;bottom:7px;z-index:27;pointer-events:none;
+  background:rgba(8,10,14,.82);border:1px solid #3b414b;color:#aab1bc;
+  padding:3px 7px;border-radius:999px;font:800 8px ui-monospace,monospace
+}
 
 </style>
 </head>
@@ -1244,7 +1254,7 @@ body.v29-seeking #v26PreviewState{border-color:#347b99!important;background:#102
   <div id="tabClip" style="display:none">
     <div class="clip-head">
       <button class="clip-exit" id="clipExit">← Thoát CLIP</button>
-      <div><b>✂ CLIP · Timeline Editor V30 GITHUB VIDEO LAYER FIX</b><small>GITHUB HTTPS · VIDEO LAYER RIÊNG · Canvas trong suốt · HD/FHD/2K</small></div>
+      <div><b>✂ CLIP · Timeline Editor V31 DIRECT PREVIEW</b><small>DIRECT PLAYER · KHÔNG SEEK QUEUE · KEYFRAME KHÔNG KHÓA PLAY · HD/FHD/2K</small></div>
       <span class="clip-badge">CAPCUT STYLE</span>
     </div>
 
@@ -6203,10 +6213,10 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     }
   }
   function state(kind){
-    document.body.classList.toggle('v29-playing',kind==='play');document.body.classList.toggle('v29-seeking',kind==='seek');
+    document.body.classList.toggle('v29-playing',kind==='play');document.body.classList.remove('v29-seeking');
     var st=$('v26PreviewState');if(st){
       st.classList.toggle('playing',kind==='play');
-      st.innerHTML='<i class="d"></i>'+(kind==='play'?'PREVIEW ĐANG PHÁT':kind==='seek'?'ĐANG CANH FRAME…':'PREVIEW SẴN SÀNG')
+      st.innerHTML='<i class="d"></i>'+(kind==='play'?'PREVIEW ĐANG PHÁT':'PREVIEW SẴN SÀNG')
     }
   }
   function waitEvent(el,name,ms){return new Promise(function(resolve){
@@ -6292,25 +6302,45 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     if(autoplay){try{var p=player.play();if(p&&p.catch)p.catch(function(){})}catch(_){}}
   }
 
-  async function doSeek(t,mySeq){
-    state('seek');t=snap(t);ui(t);var it=visualAt(t);
-    try{
-      if(!it){player.style.display='none';drawOverlayOnly(t,false)}
-      else if(it.type==='video'){await loadItem(it,t,false);if(mySeq!==seekSeq)return;drawOverlayOnly(t,false)}
-      else{try{player.pause()}catch(_){};player.style.display='none';activeUrl=null;activeId=it.id;baseDraw(t,false)}
-    }catch(e){console.warn('[V29 seek]',e)}
+  /* V31: no seek queue. Timeline movement directly updates the single player. */
+  var directSeekRAF=0,directPendingTime=0,directLoadToken=0;
+  var v31Status=document.createElement('div');v31Status.className='v31-status';v31Status.textContent='PAUSE';if(surf)surf.appendChild(v31Status);
+
+  function setReadyState(label){
+    document.body.classList.toggle('v31-playing',!!playing);
+    document.body.classList.toggle('v31-paused',!playing);
+    var st=$('v26PreviewState');if(st){st.classList.toggle('playing',!!playing);st.innerHTML='<i class="d"></i>'+(playing?'PREVIEW ĐANG PHÁT':'PREVIEW SẴN SÀNG')}
+    if(v31Status)v31Status.textContent=label||(playing?'PLAY':'PAUSE')
   }
-  async function seekPump(){
-    if(seekBusy)return;seekBusy=true;
-    try{
-      while(pendingSeek!=null&&!playing){
-        var t=pendingSeek;pendingSeek=null;var seq=seekSeq;await doSeek(t,seq)
-      }
-    }finally{seekBusy=false;if(!playing&&pendingSeek==null)state('ready');else if(!playing&&pendingSeek!=null)seekPump()}
+
+  function ensureSource(it,t,cb){
+    if(!it||it.type!=='video'||!it.url){try{player.pause()}catch(_){};player.style.display='none';activeId=it&&it.id||null;activeUrl=null;mediaDiag(null,'VIDEO: không có clip');if(cb)cb();return}
+    activeId=it.id;stylePlayer(it,t);applyPlayerAudio(it);player.style.display='block';
+    var token=++directLoadToken;
+    if(activeUrl!==it.url){
+      try{player.pause()}catch(_){};activeUrl=it.url;player.src=it.url;player.load();
+      var onMeta=function(){if(token!==directLoadToken)return;try{var tar=localTime(it,t);if(Math.abs((player.currentTime||0)-tar)>.04)player.currentTime=tar}catch(_){};if(cb)cb()};
+      if(player.readyState>=1)onMeta();else player.addEventListener('loadedmetadata',onMeta,{once:true});
+    }else if(cb)cb();
   }
+
+  function renderPausedAt(t){
+    t=snap(Math.max(0,Math.min(clipTotalDuration(),t)));ui(t);var it=visualAt(t);setReadyState('FRAME '+clipFmt(t));
+    if(!it){player.style.display='none';drawOverlayOnly(t,false);return}
+    if(it.type==='video'){
+      ensureSource(it,t,function(){
+        try{player.pause();var target=localTime(it,t);if(Math.abs((player.currentTime||0)-target)>.035)player.currentTime=target}catch(_){}
+        stylePlayer(it,t);applyPlayerAudio(it);drawOverlayOnly(t,false);
+        if(player.videoWidth>0&&player.videoHeight>0)mediaDiag(true,'VIDEO '+player.videoWidth+'×'+player.videoHeight+' ✓')
+      })
+    }else{try{player.pause()}catch(_){};player.style.display='none';activeUrl=null;activeId=it.id;baseDraw(t,false)}
+  }
+
   function seekTo(t){
     if(playing)stop(false);
-    t=snap(Math.max(0,Math.min(clipTotalDuration(),t)));ui(t);pendingSeek=t;seekSeq++;seekPump();return t
+    t=snap(Math.max(0,Math.min(clipTotalDuration(),t)));ui(t);directPendingTime=t;
+    if(!directSeekRAF){directSeekRAF=requestAnimationFrame(function(){directSeekRAF=0;renderPausedAt(directPendingTime)})}
+    return t
   }
 
   async function switchDuringPlay(it,t){
@@ -6321,16 +6351,18 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
   function play(){
     if(playing){stop(true);return Promise.resolve()}
     if(!clipTracks.visual.length){toast('VIDEO track chưa có video/ảnh',true);return Promise.reject(new Error('empty'))}
-    seekSeq++;pendingSeek=null;
     if(clipCurrentTime>=clipTotalDuration()-.03)ui(0);
     var t=clipCurrentTime,it=visualAt(t);
-    playing=true;clipPlaying=true;clipStopFlag=false;state('play');if($('clipPreviewBtn'))$('clipPreviewBtn').textContent='■';
+    playing=true;clipPlaying=true;clipStopFlag=false;setReadyState('PLAY');if($('clipPreviewBtn'))$('clipPreviewBtn').textContent='■';
     playStartProject=t;playStartPerf=performance.now();lastUi=0;lastOverlay=0;
     if(it&&it.type==='video'){
-      /* player is already primed by paused preview; play immediately in the click gesture */
-      if(activeUrl!==it.url){player.src=it.url;activeUrl=it.url;player.load()}
-      activeId=it.id;stylePlayer(it,t);applyPlayerAudio(it);
-      try{var p=player.play();if(p&&p.catch)p.catch(function(){})}catch(_){}
+      ensureSource(it,t,function(){
+        if(!playing)return;
+        activeId=it.id;stylePlayer(it,t);applyPlayerAudio(it);
+        var target=localTime(it,t);
+        try{if(Math.abs((player.currentTime||0)-target)>.08)player.currentTime=target}catch(_){}
+        try{var p=player.play();if(p&&p.catch)p.catch(function(e){console.warn('[V31 play]',e);setReadyState('PLAY BLOCKED')})}catch(e){console.warn('[V31 play]',e)}
+      })
     }else if(it){player.style.display='none';baseDraw(t,true)}
     syncExtraAudio(t,true);raf=requestAnimationFrame(frame);return Promise.resolve()
   }
@@ -6356,10 +6388,10 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     raf=requestAnimationFrame(frame)
   }
   function stop(settle){
-    if(!playing){if(settle)seekTo(clipCurrentTime);return}
+    if(!playing){if(settle)renderPausedAt(clipCurrentTime);return}
     playing=false;clipPlaying=false;clipStopFlag=true;cancelAnimationFrame(raf);raf=0;
-    try{player.pause()}catch(_){};pauseExtraAudio();if($('clipPreviewBtn'))$('clipPreviewBtn').textContent='▶';state('ready');ui(clipCurrentTime);
-    if(settle!==false)setTimeout(function(){seekTo(clipCurrentTime)},20)
+    try{player.pause()}catch(_){};pauseExtraAudio();if($('clipPreviewBtn'))$('clipPreviewBtn').textContent='▶';ui(clipCurrentTime);setReadyState('PAUSE');
+    if(settle!==false)requestAnimationFrame(function(){renderPausedAt(clipCurrentTime)})
   }
 
   /* override public preview controls only; export stays untouched */
@@ -6418,8 +6450,8 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
   if($('v25FrameDownload'))$('v25FrameDownload').onclick=function(){if(lastFrameBlob)downloadFrame(lastFrameBlob)};
   if($('v25FrameSend'))$('v25FrameSend').onclick=function(){if(lastFrameBlob)sendFrame(lastFrameBlob);if($('v25FrameModal'))$('v25FrameModal').classList.remove('show')};
 
-  setTimeout(function(){seekTo(clipCurrentTime);state('ready')},80);
-  toast('V30: GitHub HTTPS · Video layer riêng · Canvas Preview trong suốt');
+  setTimeout(function(){renderPausedAt(clipCurrentTime);setReadyState('PAUSE')},80);
+  toast('V31: Direct Preview · bỏ seek queue · keyframe không khóa Play');
 })();
 
 
