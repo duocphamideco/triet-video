@@ -900,23 +900,23 @@ body.v32-playing .clip-preview-surface:after{
   padding:3px 7px;border-radius:999px;font-size:8px;font-weight:900;pointer-events:none
 }
 
-/* ================= V36 DIRECT CUT + UNDO + WORKSPACE ================= */
-.v36-head-actions{
+/* ================= V37 DIRECT UI — NO LOCALSTORAGE / NO MUTATION OBSERVER ================= */
+.v37-head-actions{
   margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto
 }
-.v36-menu-toggle{
+.v37-menu-toggle{
   border:1px solid #4a4f5a;background:#23262d;color:#e9ebef;border-radius:8px;
   padding:7px 10px;font-size:9px;font-weight:900;cursor:pointer;white-space:nowrap
 }
-.v36-menu-toggle:hover{border-color:#ff745d;color:#fff}
-.v36-menu-toggle.on{background:#293325;border-color:#4a9a66;color:#91efb3}
-body.clip-mode.v36-side-hidden .clip-layout{
+.v37-menu-toggle:hover{border-color:#ff745d;color:#fff}
+.v37-menu-toggle.on{background:#293325;border-color:#4a9a66;color:#91efb3}
+body.clip-mode.v37-side-hidden .clip-layout{
   grid-template-columns:minmax(0,1fr) 0!important;
   gap:0!important
 }
-body.clip-mode.v36-side-hidden #clipInspector{display:none!important}
-body.clip-mode.v36-side-hidden .clip-preview-card{width:100%!important}
-body.clip-mode.v36-side-hidden .clip-preview-surface{
+body.clip-mode.v37-side-hidden #clipInspector{display:none!important}
+body.clip-mode.v37-side-hidden .clip-preview-card{width:100%!important}
+body.clip-mode.v37-side-hidden .clip-preview-surface{
   max-height:42vh;
   width:min(100%,calc(42vh * var(--preview-ratio)))
 }
@@ -935,19 +935,131 @@ body.clip-mode .clip-track-drag:after{
   content:"KÉO";position:absolute;bottom:2px;left:0;right:0;
   font-size:6px;font-weight:900;color:#7f8794;letter-spacing:.05em
 }
-.v36-audio-near{
+.v37-audio-near{
   border:1px solid #346080!important;background:#172633!important;color:#82d5ff!important;
   border-radius:7px!important;padding:6px 8px!important;font-size:8.5px!important;font-weight:900!important
 }
-.v36-cut-flash{animation:v36CutFlash .28s ease}
-@keyframes v36CutFlash{
+.v37-undo-note{
+  display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border-radius:7px;
+  border:1px solid #3d414b;background:#1c1f25;color:#9da5b2;font-size:8px;white-space:nowrap
+}
+.v37-cut-flash{animation:v37CutFlash .28s ease}
+@keyframes v37CutFlash{
   0%{box-shadow:0 0 0 0 rgba(255,91,70,.8)}
   50%{box-shadow:0 0 0 4px rgba(255,91,70,.45) inset}
   100%{box-shadow:none}
 }
-.v36-undo-note{
+
+/* ================= V41 CAPCUT-LIKE TIMELINE WORKSPACE ================= */
+.v41-workbar{
+  display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+  padding:7px 9px;border-bottom:1px solid #292c34;background:#15171c
+}
+.v41-workbar button{
+  border:1px solid #363b46;background:#20242b;color:#e3e6ec;
+  border-radius:7px;padding:6px 8px;font-size:8.5px;font-weight:900;cursor:pointer
+}
+.v41-workbar button:hover{border-color:#ff745d;color:#fff}
+.v41-workbar .primary{border-color:#346b87;background:#172833;color:#8fdcff}
+.v41-workbar .wide{border-color:#4b765c;background:#1b2a20;color:#91eeb1}
+.v41-track-chips{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.v41-track-chip{
+  min-width:48px!important;padding:5px 7px!important;
+  border-color:#414753!important;background:#23272e!important;color:#cdd2db!important
+}
+.v41-track-chip.off{opacity:.48;text-decoration:line-through}
+.v41-track-chip b{font-size:8px}
+
+body.clip-mode.v41-wide #clipInspector{display:none!important}
+body.clip-mode.v41-wide .clip-layout{
+  grid-template-columns:minmax(0,1fr)!important;gap:0!important
+}
+body.clip-mode.v41-wide .clip-preview-card{width:100%!important}
+body.clip-mode.v41-wide .clip-preview-surface{
+  max-height:46vh;width:min(100%,calc(46vh * var(--preview-ratio)))
+}
+body.clip-mode.v41-wide #clipScroll{height:50vh!important;min-height:380px!important}
+
+#clipScroll .clip-track{
+  transition:min-height .14s ease,border-color .14s ease,opacity .14s ease;
+  position:relative
+}
+#clipScroll .clip-track.v41-hidden{display:none!important}
+#clipScroll .clip-track.v41-collapsed{min-height:31px!important}
+#clipScroll .clip-track.v41-collapsed .clip-lane{min-height:31px!important;height:31px!important}
+#clipScroll .clip-track.v41-collapsed .clip-block{
+  top:4px!important;height:23px!important;border-radius:5px!important
+}
+#clipScroll .clip-track.v41-collapsed .clip-block .bs,
+#clipScroll .clip-track.v41-collapsed .clip-wave{display:none!important}
+#clipScroll .clip-track.v41-collapsed .clip-block .bt{
+  padding:4px 8px!important;font-size:8px!important
+}
+#clipScroll .clip-track.v41-collapsed .clip-track-label{min-height:31px!important}
+
+#clipScroll .clip-track-label{
+  display:grid!important;grid-template-columns:36px minmax(0,1fr) 54px!important;
+  align-items:center!important;gap:5px!important;padding:5px!important
+}
+.v41-track-grab{
+  width:34px;height:42px;border:1px solid #3c424e;border-radius:7px;
+  background:#252932;color:#cfd5df;cursor:ns-resize;touch-action:none;
+  font-weight:900;font-size:16px;position:relative
+}
+.v41-track-grab:after{
+  content:"KÉO";position:absolute;bottom:2px;left:0;right:0;
+  font-size:5.5px;color:#7f8793;letter-spacing:.06em
+}
+.v41-track-main{min-width:0;overflow:hidden}
+.v41-track-main b{display:block;font-size:9.5px;color:#e5e8ed;white-space:nowrap}
+.v41-track-main small{
+  display:block;font-size:7px!important;color:#757d89!important;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap
+}
+.v41-track-ctrl{display:grid;grid-template-columns:1fr 1fr;gap:3px}
+.v41-track-ctrl button{
+  height:19px;border:1px solid #343a44;background:#20242b;color:#aeb5c0;
+  border-radius:5px;font-size:9px;padding:0;cursor:pointer
+}
+.v41-track-ctrl button:hover{border-color:#ff765f;color:#fff}
+
+#clipScroll .clip-track.v41-track-drag{
+  opacity:.58;outline:2px dashed #ff765f;z-index:20
+}
+#clipScroll .clip-track.v41-drop-before{border-top:3px solid #ff765f!important}
+#clipScroll .clip-track.v41-drop-after{border-bottom:3px solid #ff765f!important}
+#clipScroll .clip-track.v41-near-video{animation:v41Near .65s ease}
+@keyframes v41Near{
+  0%,100%{box-shadow:none}
+  35%{box-shadow:0 0 0 2px #5acaff inset,0 0 22px rgba(90,202,255,.22)}
+}
+
+.clip-block.v41-block-dragging{z-index:20!important;opacity:.9;cursor:grabbing!important}
+body.v41-vertical-block-drag{cursor:ns-resize!important}
+body.v41-vertical-block-drag .clip-block{cursor:ns-resize!important}
+.v41-drop-guide{
+  position:fixed;z-index:2147482500;pointer-events:none;
+  background:#ff765f;height:3px;border-radius:3px;box-shadow:0 0 10px rgba(255,118,95,.7)
+}
+.v41-drag-tip{
+  position:fixed;z-index:2147482501;pointer-events:none;
+  padding:5px 8px;border-radius:7px;background:rgba(13,15,19,.94);
+  border:1px solid #4b515d;color:#e8ebef;font-size:8px;font-weight:900;
+  box-shadow:0 7px 20px rgba(0,0,0,.38)
+}
+
+/* ================= V42 DETERMINISTIC MP4 EXPORT ================= */
+.v42-export-note{
   display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border-radius:7px;
-  border:1px solid #3d414b;background:#1c1f25;color:#9da5b2;font-size:8px;white-space:nowrap
+  border:1px solid #3b684e;background:#18271e;color:#8ce9aa;
+  font-size:8px;font-weight:900;white-space:nowrap
+}
+body.v42-exporting #clipExport{
+  pointer-events:none;opacity:.72
+}
+body.v42-exporting .clip-exportbar:after{
+  content:"FRAME-BY-FRAME";font-size:7px;font-weight:900;color:#79e8a6;
+  border:1px solid #315f45;border-radius:999px;padding:3px 6px
 }
 
 </style>
@@ -1326,7 +1438,7 @@ body.clip-mode .clip-track-drag:after{
   <div id="tabClip" style="display:none">
     <div class="clip-head">
       <button class="clip-exit" id="clipExit">← Thoát CLIP</button>
-      <div><b>✂ CLIP · Timeline Editor V36 DIRECT CUT</b><small>CORE V32 · CẮT NGAY PLAYHEAD · CTRL+Z · KÉO TRACK · ẨN MENU</small></div>
+      <div><b>✂ CLIP · Timeline Editor V42 FRAME-BY-FRAME MP4</b><small>CORE V41 · XUẤT MP4 TỪNG FRAME · H.264 + AAC · KHÔNG MEDIARECORDER</small></div>
       <span class="clip-badge">CAPCUT STYLE</span>
     </div>
 
@@ -5164,63 +5276,536 @@ if(clipNv){
     (mix.fallback||[]).forEach(function(x){var it=x.job.it,active=t>=it.start&&t<clipEnd(it);if(active){var local=(Number(it.trimStart)||0)+(t-it.start),sd=Number(it.sourceDuration)||Number(x.el.duration)||0;if(it.loop&&sd>0)local=local%sd;else if(sd>0)local=Math.min(Math.max(0,sd-.025),Math.max(0,local));try{if(!x.active||x.el.paused){x.active=true;if(Math.abs((x.el.currentTime||0)-local)>.05)x.el.currentTime=local;var p=x.el.play();if(p&&p.catch)p.catch(function(){})}else if(Math.abs((x.el.currentTime||0)-local)>.35)x.el.currentTime=local}catch(_){}}else if(x.active){x.active=false;try{x.el.pause()}catch(_){}}})
   }
   function proStopFallback(mix){(mix&&mix.fallback||[]).forEach(function(x){try{x.el.pause();x.el.removeAttribute('src');x.el.load()}catch(_){}})}
-  function proSyncExportVisual(t){
-    var cur=proVisualAt(t);
-    (clipTracks.visual||[]).forEach(function(it){if(it.type!=='video'||!it.video)return;var v=it.video,active=cur&&cur.id===it.id;
-      if(active){var target=(Number(it.trimStart)||0)+(t-it.start),maxT=Math.max(0,(Number(it.sourceDuration)||Number(v.duration)||target+.1)-.025);target=Math.max(0,Math.min(maxT,target));try{v.muted=true;v.volume=0;if(v.paused){if(Math.abs((v.currentTime||0)-target)>.04)v.currentTime=target;var p=v.play();if(p&&p.catch)p.catch(function(){})}else if(Math.abs((v.currentTime||0)-target)>.45)v.currentTime=target}catch(_){}}
-      else{var lead=(Number(it.start)||0)-t;if(lead>0&&lead<.45){try{var ts=Math.max(.01,Number(it.trimStart)||.01);if(v.readyState>=1&&Math.abs((v.currentTime||0)-ts)>.04)v.currentTime=ts}catch(_){}}else if(!v.paused)try{v.pause()}catch(_){}}
+  var v40ExportCtx=null;
+
+  function v40WaitEvent(el,name,ms){
+    return new Promise(function(resolve){
+      var done=false,timer=null;
+      function finish(){
+        if(done)return;
+        done=true;
+        clearTimeout(timer);
+        try{el.removeEventListener(name,finish)}catch(_){}
+        resolve()
+      }
+      try{el.addEventListener(name,finish,{once:true})}catch(_){resolve();return}
+      timer=setTimeout(finish,ms||700)
     })
+  }
+
+  function v40WaitFrame(v,ms){
+    return new Promise(function(resolve){
+      var done=false,timer=null;
+      function finish(){if(done)return;done=true;clearTimeout(timer);resolve()}
+      if(v&&typeof v.requestVideoFrameCallback==='function'){
+        try{v.requestVideoFrameCallback(function(){finish()})}
+        catch(_){requestAnimationFrame(function(){requestAnimationFrame(finish)})}
+      }else{
+        requestAnimationFrame(function(){requestAnimationFrame(finish)})
+      }
+      timer=setTimeout(finish,ms||180)
+    })
+  }
+
+  function v40VisualSegments(){
+    return (clipTracks.visual||[])
+      .filter(function(it){return it&&it.type==='video'&&it.url})
+      .slice()
+      .sort(function(a,b){return a.start-b.start})
+  }
+
+  async function v40CreateDecoder(url,dock){
+    var v=document.createElement('video');
+    v.preload='auto';
+    v.playsInline=true;
+    v.muted=true;
+    v.volume=0;
+    v.setAttribute('muted','');
+    v.setAttribute('playsinline','');
+    v.setAttribute('webkit-playsinline','');
+    v.style.cssText=
+      'position:absolute;left:0;top:0;width:46px;height:46px;'+
+      'opacity:1;pointer-events:none;object-fit:contain;transform:translateZ(0)';
+    v.src=url;
+    dock.appendChild(v);
+
+    try{v.load()}catch(_){}
+    if(v.readyState<2||!v.videoWidth){
+      await Promise.race([
+        v40WaitEvent(v,'loadeddata',1600),
+        v40WaitEvent(v,'canplay',1600)
+      ])
+    }
+    return v
+  }
+
+  async function v40PrepareExportVideos(){
+    /*
+      V40: 2 decoder cho mỗi URL nguồn.
+      Các segment liên tiếp của cùng file được gán A/B xen kẽ, nhờ đó
+      decoder kế tiếp có thể seek trước mà không làm gián đoạn đoạn đang phát.
+    */
+    var dock=document.createElement('div');
+    dock.id='v40ExportDecodeDock';
+    dock.style.cssText=
+      'position:fixed;right:2px;bottom:2px;width:52px;height:52px;overflow:hidden;'+
+      'opacity:.08;pointer-events:none;z-index:2147483000;background:#000';
+    document.body.appendChild(dock);
+
+    var backups=[];
+    var previewStates=[];
+    var pools=new Map();
+    var assignments=new Map();
+    var prepared=new Map();
+
+    /* Nhường tài nguyên decoder của Preview cho exporter. */
+    ['clipNativeVideo','v29MasterVideo','v32MasterVideo'].forEach(function(id){
+      var el=$(id);
+      if(!el)return;
+      previewStates.push({
+        el:el,
+        src:el.getAttribute('src')||'',
+        currentTime:Number(el.currentTime)||0,
+        display:el.style.display
+      });
+      try{
+        el.pause();
+        el.removeAttribute('src');
+        el.load()
+      }catch(_){}
+    });
+
+    var segments=v40VisualSegments();
+
+    segments.forEach(function(it){
+      backups.push({it:it,video:it.video||null});
+      if(it.video){
+        try{
+          it.video.pause();
+          it.video.removeAttribute('src');
+          it.video.load()
+        }catch(_){}
+      }
+    });
+
+    var urls=[];
+    segments.forEach(function(it){
+      if(urls.indexOf(it.url)<0)urls.push(it.url)
+    });
+
+    for(var u=0;u<urls.length;u++){
+      var url=urls[u];
+      var a=await v40CreateDecoder(url,dock);
+      var b=await v40CreateDecoder(url,dock);
+      pools.set(url,[a,b])
+    }
+
+    /* Alternate A/B for consecutive occurrences of the same source. */
+    var counts=new Map();
+    segments.forEach(function(it){
+      var n=counts.get(it.url)||0;
+      var pool=pools.get(it.url);
+      var v=pool[n%2];
+      counts.set(it.url,n+1);
+      assignments.set(it.id,v);
+      it.video=v
+    });
+
+    var ctx={
+      dock:dock,
+      backups:backups,
+      previewStates:previewStates,
+      pools:pools,
+      assignments:assignments,
+      prepared:prepared,
+      segments:segments
+    };
+    v40ExportCtx=ctx;
+    return ctx
+  }
+
+  function v40Target(it,t,player){
+    var target=(Number(it.trimStart)||0)+(Number(t)-Number(it.start||0));
+    var maxT=Math.max(
+      0,
+      (Number(it.sourceDuration)||Number(player&&player.duration)||target+.1)-.025
+    );
+    return Math.max(0,Math.min(maxT,target))
+  }
+
+  async function v40PrepareSegment(ctx,it){
+    if(!ctx||!it||it.type!=='video'||!it.url)return;
+    if(ctx.prepared.get(it.id))return;
+
+    var v=ctx.assignments.get(it.id);
+    if(!v)throw new Error('Thiếu decoder cho '+(it.name||'video'));
+
+    it.video=v;
+    v.muted=true;
+    v.volume=0;
+    v.playbackRate=1;
+
+    if(v.readyState<2||!v.videoWidth){
+      try{v.load()}catch(_){}
+      await v40WaitEvent(v,'loadeddata',1400)
+    }
+
+    var target=v40Target(it,it.start,v);
+
+    if(Math.abs((v.currentTime||0)-target)>.025){
+      var seek=v40WaitEvent(v,'seeked',900);
+      try{v.currentTime=target}catch(_){}
+      await seek
+    }
+
+    await v40WaitFrame(v,240);
+    ctx.prepared.set(it.id,true)
+  }
+
+  function v40NextSegment(ctx,it){
+    if(!ctx||!it)return null;
+    var a=ctx.segments||[];
+    for(var i=0;i<a.length;i++){
+      if(a[i].id===it.id)return a[i+1]||null
+    }
+    return null
+  }
+
+  function v40PreloadUpcoming(ctx,t,current){
+    if(!ctx||!current)return;
+    var next=v40NextSegment(ctx,current);
+    if(!next)return;
+    var lead=Number(next.start)-Number(t);
+    if(lead>0&&lead<1.0&&!ctx.prepared.get(next.id)){
+      v40PrepareSegment(ctx,next).catch(function(e){
+        console.warn('[V40 preload next]',e)
+      })
+    }
+  }
+
+  function proSyncExportVisual(t){
+    var ctx=v40ExportCtx,cur=proVisualAt(t);
+    if(!ctx)return;
+
+    var active=null;
+    if(cur&&cur.type==='video'){
+      active=ctx.assignments.get(cur.id)||null;
+      if(active)cur.video=active
+    }
+
+    ctx.pools.forEach(function(pool){
+      pool.forEach(function(v){
+        if(v!==active&&!v.paused){
+          try{v.pause()}catch(_){}
+        }
+      })
+    });
+
+    if(!cur||cur.type!=='video'||!active)return;
+
+    var target=v40Target(cur,t,active);
+
+    try{
+      active.muted=true;
+      active.volume=0;
+      active.playbackRate=1;
+
+      var drift=Math.abs((active.currentTime||0)-target);
+
+      /*
+        Không seek từng frame. Chỉ sửa lệch lớn.
+        Với segment đã preload, tại boundary drift gần như bằng 0.
+      */
+      if(drift>.22){
+        active.currentTime=target
+      }
+
+      if(active.paused){
+        var p=active.play();
+        if(p&&p.catch)p.catch(function(){})
+      }
+    }catch(_){}
+
+    v40PreloadUpcoming(ctx,t,cur)
+  }
+
+  function v40PauseExportVideos(){
+    var ctx=v40ExportCtx;
+    if(!ctx)return;
+    ctx.pools.forEach(function(pool){
+      pool.forEach(function(v){try{v.pause()}catch(_){}})
+    })
+  }
+
+  function v40RestoreExportVideos(ctx){
+    if(!ctx)return;
+
+    ctx.pools.forEach(function(pool){
+      pool.forEach(function(v){
+        try{
+          v.pause();
+          v.removeAttribute('src');
+          v.load()
+        }catch(_){}
+      })
+    });
+
+    (ctx.backups||[]).forEach(function(x){
+      x.it.video=x.video;
+      if(x.video&&x.it.url){
+        try{
+          x.video.src=x.it.url;
+          x.video.preload='metadata';
+          x.video.load()
+        }catch(_){}
+      }
+    });
+
+    (ctx.previewStates||[]).forEach(function(x){
+      try{
+        x.el.style.display=x.display;
+        if(x.src){
+          x.el.src=x.src;
+          x.el.load();
+          x.el.addEventListener('loadedmetadata',function(){
+            try{x.el.currentTime=x.currentTime}catch(_){}
+          },{once:true})
+        }
+      }catch(_){}
+    });
+
+    try{ctx.dock.remove()}catch(_){}
+    if(v40ExportCtx===ctx)v40ExportCtx=null
   }
 
   async function proExportProject(){
-    if(!clipTracks.visual.length){toast('VIDEO track chưa có video/ảnh',true);throw new Error('empty')}
+    if(!clipTracks.visual.length){
+      toast('VIDEO track chưa có video/ảnh',true);
+      throw new Error('empty')
+    }
     if(!window.MediaRecorder)throw new Error('Trình duyệt chưa hỗ trợ MediaRecorder');
-    clipStopFlag=false;clipPlaying=true;clipIsRecording=true;$('clipPreviewBtn').textContent='■';proHideVisualVideos(null);
-    var total=clipTotalDuration(),first=proVisualAt(0);$('clipProgress').textContent='Chuẩn bị khung hình & âm thanh...';
-    if(first&&first.type==='video')await proReadyVisual(first,(Number(first.trimStart)||0)+.01);
-    var AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw new Error('Trình duyệt không hỗ trợ AudioContext');
-    var ac=new AC();try{await ac.resume()}catch(_){}
-    var dest=ac.createMediaStreamDestination();
-    var mix=await proBuildAudioMix(ac,dest);
-    /* Schedule only AFTER decoding finishes, otherwise early audio can start before recorder exists. */
-    var lead=.12,base=ac.currentTime+lead;
-    (mix.decoded||[]).forEach(function(x){var src=proScheduleBuffer(ac,dest,x.buf,x.job,base);if(src)mix.sources.push(src)});
-    var canvas=$('clipCanvas'),cs=canvas.captureStream(30),audioTracks=dest.stream.getAudioTracks();
-    if(!audioTracks.length){try{ac.close()}catch(_){};throw new Error('Không tạo được audio track để xuất')}
-    var stream=new MediaStream(cs.getVideoTracks().concat(audioTracks)),mime=pickRecMime(),opts={videoBitsPerSecond:$('clipRes').value==='1440'?24000000:($('clipRes').value==='1080'?12000000:6500000),audioBitsPerSecond:192000};
-    if(mime.m)opts.mimeType=mime.m;var rec;
-    try{rec=new MediaRecorder(stream,opts)}catch(e){delete opts.mimeType;rec=new MediaRecorder(stream,opts)}
-    var chunks=[];rec.ondataavailable=function(e){if(e.data&&e.data.size)chunks.push(e.data)};
-    $('clipProgress').textContent='Xuất 0% · Mixer '+mix.total+' nguồn âm thanh';
-    rec.start(500);
-    var startPerf=performance.now()+lead*1000;
-    return new Promise(function(resolve,reject){
+
+    clipStopFlag=false;
+    clipPlaying=true;
+    clipIsRecording=true;
+    $('clipPreviewBtn').textContent='■';
+    $('clipProgress').textContent='Chuẩn bị Double Decoder...';
+
+    var exportCtx=null,wakeLock=null,ac=null,mix=null,rec=null;
+
+    try{
+      exportCtx=await v40PrepareExportVideos();
+
+      var first=proVisualAt(0);
+      if(first&&first.type==='video'){
+        await v40PrepareSegment(exportCtx,first);
+        var next=v40NextSegment(exportCtx,first);
+        if(next)v40PrepareSegment(exportCtx,next).catch(function(){})
+      }
+
+      if(navigator.wakeLock&&navigator.wakeLock.request){
+        try{wakeLock=await navigator.wakeLock.request('screen')}catch(_){}
+      }
+
+      var AC=window.AudioContext||window.webkitAudioContext;
+      if(!AC)throw new Error('Trình duyệt không hỗ trợ AudioContext');
+
+      ac=new AC();
+      try{await ac.resume()}catch(_){}
+
+      var dest=ac.createMediaStreamDestination();
+      mix=await proBuildAudioMix(ac,dest);
+
+      var lead=.14,base=ac.currentTime+lead;
+
+      (mix.decoded||[]).forEach(function(x){
+        var src=proScheduleBuffer(ac,dest,x.buf,x.job,base);
+        if(src)mix.sources.push(src)
+      });
+
+      var canvas=$('clipCanvas');
+      var cs=canvas.captureStream(30);
+      var audioTracks=dest.stream.getAudioTracks();
+
+      if(!audioTracks.length)throw new Error('Không tạo được audio track để xuất');
+
+      var stream=new MediaStream(cs.getVideoTracks().concat(audioTracks));
+      var mime=pickRecMime();
+      var opts={
+        videoBitsPerSecond:$('clipRes').value==='1440'?24000000:
+          ($('clipRes').value==='1080'?12000000:6500000),
+        audioBitsPerSecond:192000
+      };
+      if(mime.m)opts.mimeType=mime.m;
+
+      try{rec=new MediaRecorder(stream,opts)}
+      catch(e){
+        delete opts.mimeType;
+        rec=new MediaRecorder(stream,opts)
+      }
+
+      var chunks=[];
+      rec.ondataavailable=function(e){
+        if(e.data&&e.data.size)chunks.push(e.data)
+      };
+
+      /*
+        V40 CRITICAL:
+        Recorder chỉ start 1 lần và stop 1 lần.
+        TUYỆT ĐỐI không pause/resume tại điểm cắt.
+      */
+      rec.start(1000);
+
+      var total=clipTotalDuration();
+      var startPerf=performance.now()+lead*1000;
       var ended=false;
-      function finish(err){
-        if(ended)return;ended=true;cancelAnimationFrame(clipRAF);clipPlaying=false;clipIsRecording=false;$('clipPreviewBtn').textContent='▶';clipNativePause();proStopFallback(mix);(clipTracks.visual||[]).forEach(function(x){if(x.video)try{x.video.pause()}catch(_){}});
-        if(err){try{if(rec.state!=='inactive')rec.stop()}catch(_){};try{ac.close()}catch(_){};reject(err);return}
-        if(rec.state!=='inactive'){
+
+      $('clipProgress').textContent=
+        'Xuất 0% · Recorder liên tục · Không chuyển tab';
+
+      return await new Promise(function(resolve,reject){
+
+        function cleanup(){
+          cancelAnimationFrame(clipRAF);
+          clipPlaying=false;
+          clipIsRecording=false;
+          $('clipPreviewBtn').textContent='▶';
+
+          try{clipNativePause()}catch(_){}
+          if(mix)proStopFallback(mix);
+          v40PauseExportVideos();
+
+          if(wakeLock){
+            try{wakeLock.release()}catch(_){}
+          }
+        }
+
+        function fail(err){
+          if(ended)return;
+          ended=true;
+          cleanup();
+          try{
+            if(rec&&rec.state!=='inactive')rec.stop()
+          }catch(_){}
+          try{if(ac)ac.close()}catch(_){}
+          v40RestoreExportVideos(exportCtx);
+          reject(err)
+        }
+
+        function finish(){
+          if(ended)return;
+          ended=true;
+          cleanup();
+
           rec.onstop=function(){
-            var type=rec.mimeType||mime.m||'video/webm',ext=type.indexOf('mp4')>=0?'mp4':'webm',blob=new Blob(chunks,{type:type});
-            try{ac.close()}catch(_){};clipSetCurrentTime(Math.min(total,clipCurrentTime));
-            if(!blob.size){reject(new Error('File xuất rỗng'));return}
-            resolve({blob:blob,ext:ext,audioSources:mix.total,audioFallback:mix.errors});
+            var type=rec.mimeType||mime.m||'video/webm';
+            var ext=type.indexOf('mp4')>=0?'mp4':'webm';
+            var blob=new Blob(chunks,{type:type});
+
+            try{if(ac)ac.close()}catch(_){}
+            v40RestoreExportVideos(exportCtx);
+
+            try{clipSetCurrentTime(Math.min(total,clipCurrentTime))}catch(_){}
+
+            if(!blob.size){
+              reject(new Error('File xuất rỗng'));
+              return
+            }
+
+            resolve({
+              blob:blob,
+              ext:ext,
+              audioSources:mix?mix.total:0,
+              audioFallback:mix?mix.errors:0
+            })
           };
-          try{rec.requestData()}catch(_){};setTimeout(function(){try{rec.stop()}catch(e){reject(e)}},60);
-        }else{try{ac.close()}catch(_){};reject(new Error('Recorder đã dừng ngoài dự kiến'))}
-      }
-      function frame(now){
-        if(clipStopFlag){finish(new Error('Đã dừng xuất video'));return}
-        var t=Math.max(0,(now-startPerf)/1000);if(t>=total){clipCurrentTime=total;clipDrawAt(total,true);$('clipProgress').textContent='Đang đóng gói '+(rec.mimeType&&rec.mimeType.indexOf('mp4')>=0?'MP4':'video')+' + âm thanh...';finish();return}
-        clipCurrentTime=t;proSyncExportVisual(t);proSyncFallback(mix,t);clipDrawAt(t,true);
-        var d=Math.max(.1,total);$('clipSeek').value=Math.round(t/d*1000);$('clipTime').textContent=clipFmt(t)+' / '+clipFmt(d);$('clipTlTime').textContent=clipFmt(t);clipUpdatePlayhead();$('clipProgress').textContent='Xuất '+Math.round(t/d*100)+'% · Audio '+mix.total+' track';
+
+          try{rec.requestData()}catch(_){}
+          setTimeout(function(){
+            try{rec.stop()}
+            catch(e){
+              try{if(ac)ac.close()}catch(_){}
+              v40RestoreExportVideos(exportCtx);
+              reject(e)
+            }
+          },120)
+        }
+
+        function frame(now){
+          if(ended)return;
+
+          if(clipStopFlag){
+            fail(new Error('Đã dừng xuất video'));
+            return
+          }
+
+          /*
+            Nếu tab bị ẩn, KHÔNG pause recorder vì pause/resume có thể phá MP4.
+            Dừng hẳn export để không tạo file lỗi.
+          */
+          if(document.hidden){
+            fail(new Error('Bạn đã chuyển/ẩn tab trong lúc xuất. Hãy giữ tab dựng video phía trước cho tới khi hoàn tất.'));
+            return
+          }
+
+          var t=Math.max(0,(now-startPerf)/1000);
+
+          if(t>=total){
+            clipCurrentTime=total;
+            proSyncExportVisual(Math.max(0,total-.001));
+            try{clipDrawAt(Math.max(0,total-.001),true)}catch(_){}
+
+            $('clipProgress').textContent='Đang đóng gói MP4 liên tục...';
+            finish();
+            return
+          }
+
+          clipCurrentTime=t;
+
+          proSyncExportVisual(t);
+          proSyncFallback(mix,t);
+
+          try{
+            clipDrawAt(t,true)
+          }catch(e){
+            console.warn('[V40 export draw]',e)
+          }
+
+          var d=Math.max(.1,total);
+          $('clipSeek').value=Math.round(t/d*1000);
+          $('clipTime').textContent=clipFmt(t)+' / '+clipFmt(d);
+          $('clipTlTime').textContent=clipFmt(t);
+          clipUpdatePlayhead();
+
+          var cur=proVisualAt(t);
+          var next=cur?v40NextSegment(exportCtx,cur):null;
+          var msg='Xuất '+Math.round(t/d*100)+'% · Recorder liên tục';
+          if(next&&next.start-t<1)msg+=' · chuẩn bị đoạn kế';
+          $('clipProgress').textContent=msg;
+
+          clipRAF=requestAnimationFrame(frame)
+        }
+
         clipRAF=requestAnimationFrame(frame)
+      })
+    }
+    catch(e){
+      clipPlaying=false;
+      clipIsRecording=false;
+      $('clipPreviewBtn').textContent='▶';
+
+      if(wakeLock){
+        try{wakeLock.release()}catch(_){}
       }
-      clipRAF=requestAnimationFrame(frame)
-    })
+      try{if(ac)ac.close()}catch(_){}
+      v40RestoreExportVideos(exportCtx);
+      throw e
+    }
   }
 
-  clipRunProject=function(recording){return recording?proExportProject():clipProLegacyRunProject(false)};
+  clipRunProject=function(recording){
+    return recording?proExportProject():clipProLegacyRunProject(false)
+  };
 
   /* Better export status text; existing export click handler still calls global clipRunProject. */
   var eb=document.querySelector('.clip-exportbar');
@@ -6208,7 +6793,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
   var warn=document.createElement('div');warn.className='v29-file-warning';warn.id='v29FileWarning';
   warn.innerHTML='⚠ <b>Đang chạy bằng file://</b>. Chrome có thể chặn Media/Blob/IndexedDB trên ổ mạng. Hãy mở ứng dụng bằng <b>START_V29_LOCAL.bat</b> để Preview ổn định.';
   document.body.appendChild(warn);
-  /* V36: giữ chế độ mở trực tiếp như V32 đã chạy ổn; không hiện cảnh báo file:// */
+  /* V37 direct mode: không hiện cảnh báo localhost cũ */
 
   /* -------- one and only visible preview video -------- */
   var surf=$('clipPreviewSurface'),legacy=$('clipNativeVideo');
@@ -6725,57 +7310,107 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     return t
   }
 
+  var v37PlaySeq=0;
+
   function startPlay(){
     if(playing){pause(true);return Promise.resolve()}
-    if(!clipTracks.visual.length){toast('VIDEO track chưa có video/ảnh',true);return Promise.reject(new Error('empty'))}
+    if(!clipTracks.visual.length){
+      toast('VIDEO track chưa có video/ảnh',true);
+      return Promise.reject(new Error('empty'))
+    }
     if(clipCurrentTime>=clipTotalDuration()-.03)ui(0);
 
     killLegacyPlayers();
     var t=clipCurrentTime,it=visualAt(t);
-    if(!it){toast('Không có clip tại playhead',true);return Promise.reject(new Error('no clip'))}
+    if(!it){
+      toast('Không có clip tại playhead',true);
+      return Promise.reject(new Error('no clip'))
+    }
 
-    playing=true;clipPlaying=true;clipStopFlag=false;setState(true);
+    /*
+      V37 FIX:
+      Nạp/đổi source TRƯỚC khi đặt playing=true.
+      V32 cũ đặt playing=true rồi sourceFor() có thể pause/load player,
+      tạo AbortError "play() interrupted by pause()".
+    */
+    if(it.type==='video') sourceFor(it,t);
+
+    playing=true;
+    clipPlaying=true;
+    clipStopFlag=false;
+    setState(true);
     if($('clipPreviewBtn'))$('clipPreviewBtn').textContent='■';
-    startProject=t;startPerf=performance.now();lastUi=0;lastOverlay=0;
+
+    var mySeq=++v37PlaySeq;
+    startProject=t;
+    startPerf=performance.now();
+    lastUi=0;
+    lastOverlay=0;
 
     if(it.type==='video'){
-      sourceFor(it,t);
       var target=localTime(it,t);
+
       if(player.readyState>=1){
-        try{if(Math.abs((player.currentTime||0)-target)>.08)player.currentTime=target}catch(_){}
+        try{
+          if(Math.abs((player.currentTime||0)-target)>.08)player.currentTime=target
+        }catch(_){}
       }else{
         var token=loadToken;
         player.addEventListener('loadedmetadata',function(){
-          if(token!==loadToken||!playing)return;
+          if(token!==loadToken||!playing||mySeq!==v37PlaySeq)return;
           try{player.currentTime=localTime(it,clipCurrentTime)}catch(_){}
         },{once:true})
       }
 
-      /*
-        CRITICAL V32 FIX:
-        play() is called synchronously inside the user's click handler.
-        It is NOT delayed behind loadedmetadata/seeked callbacks.
-      */
-      var promise;
-      try{promise=player.play()}catch(e){
-        playing=false;clipPlaying=false;setState(false);stat('bad','PLAY ERROR · '+(e.name||'Error'));
-        toast('Preview không chạy: '+(e.message||e),true);
-        return Promise.reject(e)
+      var tries=0;
+      function failFinal(e){
+        console.error('[V37 play()]',e);
+        if(mySeq!==v37PlaySeq)return;
+        playing=false;
+        clipPlaying=false;
+        clipStopFlag=true;
+        setState(false);
+        if($('clipPreviewBtn'))$('clipPreviewBtn').textContent='▶';
+        stat('bad','PLAY ERROR · '+(e.name||'Error'));
+        toast('Preview không chạy: '+(e.name||'')+' '+(e.message||''),true)
       }
-      if(promise&&promise.then){
-        promise.then(function(){
-          if(!playing)return;
-          stat(player.videoWidth>0?'ok':'','PLAY · '+(player.videoWidth||'?')+'×'+(player.videoHeight||'?'));
-        }).catch(function(e){
-          console.error('[V32 play()]',e);
-          playing=false;clipPlaying=false;clipStopFlag=true;setState(false);
-          if($('clipPreviewBtn'))$('clipPreviewBtn').textContent='▶';
-          stat('bad','PLAY BLOCKED · '+(e.name||'Error'));
-          toast('Chrome chặn Preview: '+(e.name||'')+' '+(e.message||''),true);
-        })
+      function tryPlay(){
+        if(!playing||mySeq!==v37PlaySeq)return;
+        var promise;
+        try{
+          promise=player.play()
+        }catch(e){
+          failFinal(e);
+          return
+        }
+        if(promise&&promise.then){
+          promise.then(function(){
+            if(!playing||mySeq!==v37PlaySeq)return;
+            stat(player.videoWidth>0?'ok':'',
+              'PLAY · '+(player.videoWidth||'?')+'×'+(player.videoHeight||'?'))
+          }).catch(function(e){
+            /*
+              AbortError = play() bị một pause/load chen ngang.
+              Đây KHÔNG phải Chrome block autoplay.
+              Cho media ổn định một nhịp rồi tự phát lại.
+            */
+            if(e&&e.name==='AbortError' &&
+               playing && mySeq===v37PlaySeq && tries<2){
+              tries++;
+              stat('','ĐANG ỔN ĐỊNH VIDEO…');
+              setTimeout(tryPlay,70*tries);
+              return
+            }
+            failFinal(e)
+          })
+        }
       }
+
+      /* First play() still happens synchronously inside the user's click. */
+      tryPlay()
     }else{
-      player.style.display='none';originalDrawV32(t,true)
+      player.style.display='none';
+      originalDrawV32(t,true)
     }
 
     syncExtraAudio(t,true);
@@ -6829,6 +7464,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
   }
 
   function pause(settle){
+    v37PlaySeq++;
     if(!playing){
       if(settle)scrub(clipCurrentTime);
       return
@@ -6940,313 +7576,1206 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
 
 
 
-/* ================= V36 FINAL PATCH: IMMEDIATE CUT + CTRL+Z + UI ONLY ================= */
+/* ================= V37 CUT / UNDO / TRACK UI — PREVIEW CORE UNTOUCHED ================= */
 (function(){
-  var FPS=30;
-  var undoStack=[];
-  var maxUndo=30;
-  var sideHidden=false;
+  var FPS=30, undoStack=[], sideHidden=false;
+  var trackOrder=['visual','audio','sfx','overlay','text','effect'];
+
+  /* Remove the old V29 file:// warning box entirely. */
+  var oldWarn=$('v29FileWarning');
+  if(oldWarn)oldWarn.remove();
 
   function snap(t){return Math.max(0,Math.round((Number(t)||0)*FPS)/FPS)}
-  function isTyping(el){
+  function typing(el){
     return !!(el&&(el.tagName==='INPUT'||el.tagName==='TEXTAREA'||el.tagName==='SELECT'||el.isContentEditable))
   }
-  function cloneKeyframes(k){
-    try{return JSON.parse(JSON.stringify(k||[]))}catch(_){return []}
-  }
-  function cloneItemState(it){
+  function cloneItem(it){
     var c=Object.assign({},it);
-    if(it.keyframes)c.keyframes=cloneKeyframes(it.keyframes);
+    if(it.keyframes){
+      try{c.keyframes=JSON.parse(JSON.stringify(it.keyframes))}catch(_){c.keyframes=[]}
+    }
     return c
   }
-  function snapshot(reason){
-    var snap={reason:reason||'Thao tác',time:clipCurrentTime,selected:clipSelectedId,last:clipLastSelectedId,tracks:{}};
-    Object.keys(clipTracks).forEach(function(k){
-      snap.tracks[k]=(clipTracks[k]||[]).map(cloneItemState)
-    });
-    undoStack.push(snap);
-    if(undoStack.length>maxUndo)undoStack.shift()
+  function takeSnapshot(label){
+    var x={label:label||'Thao tác',time:clipCurrentTime,selected:clipSelectedId,last:clipLastSelectedId,tracks:{}};
+    Object.keys(clipTracks).forEach(function(k){x.tracks[k]=(clipTracks[k]||[]).map(cloneItem)});
+    undoStack.push(x);
+    if(undoStack.length>30)undoStack.shift()
   }
-  function restoreSnapshot(){
-    var snap=undoStack.pop();
-    if(!snap){toast('Không còn thao tác để hoàn tác',true);return false}
-    Object.keys(clipTracks).forEach(function(k){
-      clipTracks[k]=(snap.tracks[k]||[]).map(cloneItemState)
-    });
-    clipSelectedId=snap.selected||null;
-    clipLastSelectedId=snap.last||null;
-    clipCurrentTime=Math.max(0,Math.min(clipTotalDuration(),snap.time||0));
-    clipRenderTimeline();
-    clipLoadInspector();
-    clipUpdatePlayhead();
+  function undo(){
+    var x=undoStack.pop();
+    if(!x){toast('Không còn thao tác để hoàn tác',true);return}
+    Object.keys(clipTracks).forEach(function(k){clipTracks[k]=(x.tracks[k]||[]).map(cloneItem)});
+    clipSelectedId=x.selected||null;clipLastSelectedId=x.last||null;clipCurrentTime=x.time||0;
+    clipRenderTimeline();applyTrackOrder();clipLoadInspector();clipUpdatePlayhead();
     try{clipDrawAt(clipCurrentTime,false)}catch(_){}
-    try{
-      var total=Math.max(.1,clipTotalDuration());
-      if($('clipSeek'))$('clipSeek').value=Math.round(clipCurrentTime/total*1000);
-      if($('clipTime'))$('clipTime').textContent=clipFmt(clipCurrentTime)+' / '+clipFmt(total);
-      if($('clipTlTime'))$('clipTlTime').textContent=clipFmt(clipCurrentTime)
-    }catch(_){}
-    toast('↶ Đã hoàn tác: '+snap.reason);
-    return true
+    toast('↶ Đã hoàn tác: '+x.label)
   }
 
-  function evalEase(mode,p){
-    if(mode==='easein')return p*p*p;
-    if(mode==='easeout')return 1-Math.pow(1-p,3);
-    if(mode==='easeinout')return p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
-    return p
-  }
-  function evalKeyState(it,projectTime){
-    var base={
-      x:Number(it.x)||0,y:Number(it.y)||0,scale:Number(it.scale)||100,
-      rotation:Number(it.rotation)||0,opacity:it.opacity==null?100:Number(it.opacity),
-      size:Number(it.size)||54
-    };
-    var ks=cloneKeyframes(it.keyframes).sort(function(a,b){return a.at-b.at});
-    if(!ks.length)return base;
-    var at=Math.max(0,Math.min(Number(it.duration)||0,projectTime-(Number(it.start)||0)));
-    function merged(k){return Object.assign({},base,k&&k.props||{})}
-    if(at<=ks[0].at)return merged(ks[0]);
-    if(at>=ks[ks.length-1].at)return merged(ks[ks.length-1]);
-    var a=ks[0],b=ks[1];
-    for(var i=0;i<ks.length-1;i++){
-      if(at>=ks[i].at&&at<=ks[i+1].at){a=ks[i];b=ks[i+1];break}
+  function targetAt(t){
+    var f=clipFind(clipSelectedId);
+    if(f&&['video','image','audio','sfx'].indexOf(f.it.type)>=0 &&
+       t>f.it.start+.02&&t<clipEnd(f.it)-.02)return f;
+
+    for(var i=(clipTracks.visual||[]).length-1;i>=0;i--){
+      var it=clipTracks.visual[i];
+      if(t>it.start+.02&&t<clipEnd(it)-.02)
+        return {track:'visual',arr:clipTracks.visual,i:i,it:it}
     }
-    var p=evalEase(it.keyframeEase||'easeinout',(at-a.at)/Math.max(.0001,b.at-a.at));
-    var A=merged(a),B=merged(b),o={};
-    ['x','y','scale','rotation','opacity','size'].forEach(function(k){
-      o[k]=Number(A[k])+(Number(B[k])-Number(A[k]))*p
-    });
+    return null
+  }
+  function duplicateMedia(it){
+    var o={};
+    if(it.type==='video'&&it.url){
+      var v=document.createElement('video');v.preload='auto';v.playsInline=true;v.muted=true;v.src=it.url;
+      v.style.cssText='position:absolute;width:1px;height:1px;opacity:0;pointer-events:none';
+      var bin=$('clipMediaBin');if(bin)bin.appendChild(v);try{v.load()}catch(_){}
+      o.video=v
+    }else if((it.type==='audio'||it.type==='sfx')&&it.url){
+      var a=document.createElement('audio');a.preload='auto';a.src=it.url;
+      a.style.cssText='position:absolute;width:1px;height:1px;opacity:0;pointer-events:none';
+      var bin2=$('clipMediaBin');if(bin2)bin2.appendChild(a);try{a.load()}catch(_){}
+      o.audio=a
+    }
     return o
   }
-
-  function cloneMediaForRight(it){
-    var out={};
-    if(it.type==='video'&&it.url){
-      var v=document.createElement('video');
-      v.preload='auto';v.playsInline=true;v.muted=true;
-      v.setAttribute('playsinline','');v.setAttribute('webkit-playsinline','');
-      v.src=it.url;
-      v.style.cssText='position:absolute;width:1px;height:1px;opacity:0;pointer-events:none';
-      var bin=$('clipMediaBin');if(bin)bin.appendChild(v);
-      try{v.load()}catch(_){}
-      out.video=v
-    }else if((it.type==='audio'||it.type==='sfx')&&it.url){
-      var a=document.createElement('audio');
-      a.preload='auto';a.src=it.url;a.setAttribute('playsinline','');
-      a.style.cssText='position:absolute;width:1px;height:1px;opacity:0;pointer-events:none';
-      var bin2=$('clipMediaBin');if(bin2)bin2.appendChild(a);
-      try{a.load()}catch(_){}
-      out.audio=a
-    }
-    return out
-  }
-
-  function findCutTarget(t){
-    var selected=clipFind(clipSelectedId);
-    if(selected&&['video','image','audio','sfx'].indexOf(selected.it.type)>=0 &&
-       t>selected.it.start+.02 && t<clipEnd(selected.it)-.02) return selected;
-
-    /* Ưu tiên VIDEO tại playhead, đúng theo thao tác dựng hình. */
-    var vis=clipTracks.visual||[];
-    for(var i=vis.length-1;i>=0;i--){
-      if(t>vis[i].start+.02&&t<clipEnd(vis[i])-.02)
-        return {track:'visual',arr:vis,i:i,it:vis[i]}
-    }
-
-    /* Nếu không có video, mới cắt audio/sfx tại playhead. */
-    ['audio','sfx'].some(function(tr){
-      var a=clipTracks[tr]||[];
-      for(var j=a.length-1;j>=0;j--){
-        if(t>a[j].start+.02&&t<clipEnd(a[j])-.02){
-          selected={track:tr,arr:a,i:j,it:a[j]};return true
-        }
-      }
-      return false
-    });
-    return selected&&selected.it?selected:null
-  }
-
-  function splitKeyframes(left,right,cutRel,projectCut){
-    if(!left.keyframes||!left.keyframes.length)return;
-    var state=evalKeyState(left,projectCut);
-    var old=cloneKeyframes(left.keyframes),lk=[],rk=[],eps=.002;
-    old.forEach(function(k){
-      if(k.at<cutRel-eps)lk.push(k);
-      else if(k.at>cutRel+eps){
-        var z=Object.assign({},k);z.at=Math.max(0,k.at-cutRel);rk.push(z)
-      }
-    });
-    lk.push({id:'kf_'+Date.now().toString(36)+'L',at:cutRel,props:Object.assign({},state)});
-    rk.unshift({id:'kf_'+Date.now().toString(36)+'R',at:0,props:Object.assign({},state)});
-    left.keyframes=lk;right.keyframes=rk;
-    right.keyframeEase=left.keyframeEase||'easeinout'
-  }
-
-  function stopPreviewIfPlaying(){
-    /* V32's real player is private; clicking its reset Play button is the safest public stop. */
+  function cutNow(){
+    /* If preview is running, stop via V32 button before modifying timeline. */
     if(document.body.classList.contains('v32-playing')){
-      var b=$('clipPreviewBtn');
-      if(b)try{b.click()}catch(_){}
+      var pb=$('clipPreviewBtn');if(pb)try{pb.click()}catch(_){}
     }
-    clipPlaying=false;clipStopFlag=true
-  }
 
-  function immediateCut(){
-    stopPreviewIfPlaying();
+    var t=snap(clipCurrentTime),f=targetAt(t);
+    if(!f){toast('Đặt vạch thời gian vào giữa VIDEO rồi bấm CẮT',true);return}
 
-    var cut=snap(clipCurrentTime);
-    var f=findCutTarget(cut);
-    if(!f){
-      toast('Đặt vạch thời gian vào giữa VIDEO rồi bấm CẮT',true);
-      return false
-    }
     var it=f.it;
-    if(cut<=it.start+.02||cut>=clipEnd(it)-.02){
-      toast('Vạch cắt đang quá sát đầu hoặc cuối clip',true);
-      return false
-    }
+    if(t<=it.start+.02||t>=clipEnd(it)-.02){toast('Vạch cắt quá sát đầu/cuối clip',true);return}
 
-    snapshot('Cắt clip tại '+clipFmt(cut));
+    takeSnapshot('Cắt tại '+clipFmt(t));
 
-    var leftDur=cut-it.start;
-    var rightDur=it.duration-leftDur;
-    var right=Object.assign({},it,{
-      id:clipUid(),
-      start:cut,
-      duration:rightDur
-    });
+    var left=t-it.start,rightDur=it.duration-left;
+    var right=Object.assign({},it,{id:clipUid(),start:t,duration:rightDur});
+    if(it.sourceDuration)right.trimStart=(Number(it.trimStart)||0)+left;
 
-    if(it.sourceDuration)right.trimStart=(Number(it.trimStart)||0)+leftDur;
-
-    /* Independent media instance for the right half. */
-    var media=cloneMediaForRight(it);
+    var media=duplicateMedia(it);
     if(media.video)right.video=media.video;
     if(media.audio)right.audio=media.audio;
 
-    /* Preserve keyframe motion continuously across the cut. */
-    if(it.keyframes&&it.keyframes.length)splitKeyframes(it,right,leftDur,cut);
+    if(Array.isArray(it.keyframes)&&it.keyframes.length){
+      var old=it.keyframes.map(function(k){return Object.assign({},k,{props:Object.assign({},k.props||{})})});
+      var lk=[],rk=[];
+      old.forEach(function(k){
+        if(k.at<left-.002)lk.push(k);
+        else if(k.at>left+.002){
+          var z=Object.assign({},k);z.at=k.at-left;rk.push(z)
+        }
+      });
+      it.keyframes=lk;right.keyframes=rk
+    }
 
-    it.duration=leftDur;
+    it.duration=left;
     f.arr.splice(f.i+1,0,right);
-    clipSelectedId=right.id;
-    clipLastSelectedId=right.id;
-    clipCurrentTime=cut;
+    clipSelectedId=right.id;clipLastSelectedId=right.id;clipCurrentTime=t;
 
-    /*
-      IMPORTANT: no clipSetCurrentTime(), no seekExact(), no wait for seeked.
-      Cut happens synchronously at the playhead.
-    */
-    clipRenderTimeline();
-    clipLoadInspector();
-    clipUpdatePlayhead();
-    try{clipDrawAt(cut,false)}catch(_){}
+    /* No seekExact / no wait for seeked. */
+    clipRenderTimeline();applyTrackOrder();clipLoadInspector();clipUpdatePlayhead();
+    try{clipDrawAt(t,false)}catch(_){}
 
     var surf=$('clipPreviewSurface');
-    if(surf){
-      surf.classList.remove('v36-cut-flash');
-      void surf.offsetWidth;
-      surf.classList.add('v36-cut-flash')
-    }
-    toast('✂ Đã cắt ngay tại '+clipFmt(cut)+' · Ctrl+Z để hoàn tác');
-    return true
+    if(surf){surf.classList.remove('v37-cut-flash');void surf.offsetWidth;surf.classList.add('v37-cut-flash')}
+    toast('✂ Đã cắt ngay tại '+clipFmt(t)+' · Ctrl+Z để hoàn tác')
   }
 
-  /* Replace DOM nodes so ALL previous async cut listeners disappear. */
   function replaceButton(id){
     var old=$(id);if(!old)return null;
-    var neo=old.cloneNode(true);
-    old.parentNode.replaceChild(neo,old);
-    return neo
+    var n=old.cloneNode(true);old.parentNode.replaceChild(n,old);return n
   }
   ['clipSplit','clipQuickSplit','v23CutNow'].forEach(function(id){
     var b=replaceButton(id);
-    if(b)b.addEventListener('click',function(e){
-      e.preventDefault();e.stopPropagation();immediateCut()
-    })
+    if(b)b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();cutNow()})
   });
-  clipSplitAtPlayhead=immediateCut;
+  clipSplitAtPlayhead=cutNow;
 
-  /* Ctrl+Z and S are captured before legacy keyboard handlers. */
   window.addEventListener('keydown',function(e){
-    if(!document.body.classList.contains('clip-mode')||isTyping(e.target))return;
-
+    if(!document.body.classList.contains('clip-mode')||typing(e.target))return;
     if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&String(e.key).toLowerCase()==='z'){
-      e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
-      restoreSnapshot();return
-    }
-    if(!e.ctrlKey&&!e.metaKey&&!e.altKey&&String(e.key).toLowerCase()==='s'){
-      e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
-      immediateCut();return
+      e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();undo()
     }
   },true);
 
-  /* ---------- Workspace UI, no localStorage / no persistence ---------- */
-  function audioNearVideo(){
-    var sc=$('clipScroll');
-    var vl=document.querySelector('#clipScroll .clip-lane[data-track="visual"]');
-    var al=document.querySelector('#clipScroll .clip-lane[data-track="audio"]');
-    if(!sc||!vl||!al)return;
-    var vr=vl.closest('.clip-track'),ar=al.closest('.clip-track');
-    if(vr&&ar){sc.insertBefore(ar,vr.nextSibling);toast('🎵 AUDIO đã được đưa sát VIDEO')}
+  /* ---------- Track order: memory only, never localStorage ---------- */
+  function rowTrack(row){
+    var lane=row&&row.querySelector&&row.querySelector('.clip-lane');
+    return lane&&lane.dataset?lane.dataset.track:null
   }
-  function enhanceTracks(){
-    document.querySelectorAll('#clipScroll .clip-track').forEach(function(row){
-      var drag=row.querySelector('.clip-track-drag');
-      if(drag){
-        drag.title='Giữ và kéo track lên / xuống';
-        drag.setAttribute('aria-label','Kéo track lên xuống')
-      }
-    })
+  function readTrackOrder(){
+    return Array.prototype.slice.call(document.querySelectorAll('#clipScroll > .clip-track'))
+      .map(rowTrack).filter(Boolean)
   }
-  function installToolbar(){
-    var bar=document.querySelector('.clip-tl-toolbar');if(!bar)return;
-    if(!$('v36AudioNear')){
-      var b=document.createElement('button');b.id='v36AudioNear';b.type='button';
-      b.className='v36-audio-near';b.textContent='🎵 AUDIO SÁT VIDEO';b.onclick=audioNearVideo;
-      var sp=bar.querySelector('.spacer');if(sp)bar.insertBefore(b,sp);else bar.appendChild(b)
-    }
-    if(!$('v36UndoNote')){
-      var n=document.createElement('span');n.id='v36UndoNote';n.className='v36-undo-note';
-      n.textContent='Ctrl+Z = hoàn tác cắt';
-      var b=$('v36AudioNear');if(b)b.insertAdjacentElement('afterend',n)
-    }
+  function applyTrackOrder(){
+    var sc=$('clipScroll');if(!sc)return;
+    var map={};
+    Array.prototype.slice.call(sc.children).forEach(function(r){
+      var k=rowTrack(r);if(k)map[k]=r
+    });
+    trackOrder.forEach(function(k){if(map[k])sc.appendChild(map[k])})
   }
-  function setSide(hidden){
-    sideHidden=!!hidden;
-    document.body.classList.toggle('v36-side-hidden',sideHidden);
-    var b=$('v36MenuToggle');
-    if(b){
-      b.classList.toggle('on',sideHidden);
-      b.textContent=sideHidden?'☰ HIỆN MENU':'▸ ẨN MENU'
-    }
+  function audioNear(){
+    var order=readTrackOrder();
+    var vi=order.indexOf('visual'),ai=order.indexOf('audio');
+    if(vi<0||ai<0)return;
+    order.splice(ai,1);
+    vi=order.indexOf('visual');
+    order.splice(vi+1,0,'audio');
+    trackOrder=order;
+    applyTrackOrder();
+    toast('🎵 AUDIO đã được đưa sát VIDEO')
+  }
+
+  /* Existing V18 already performs drag/drop. We only enlarge its handle and remember order in RAM. */
+  window.addEventListener('pointerup',function(){
     setTimeout(function(){
-      try{clipRenderRuler();clipUpdatePlayhead()}catch(_){}
-    },30)
-  }
-  function installMenu(){
-    var head=document.querySelector('.clip-head');if(!head||$('v36MenuToggle'))return;
-    var wrap=document.createElement('div');wrap.className='v36-head-actions';
-    var b=document.createElement('button');b.id='v36MenuToggle';b.type='button';b.className='v36-menu-toggle';
-    b.textContent='▸ ẨN MENU';b.onclick=function(){setSide(!sideHidden)};
-    wrap.appendChild(b);head.appendChild(wrap)
-  }
+      var x=readTrackOrder();
+      if(x.length)trackOrder=x
+    },0)
+  },false);
 
-  /* Default view: put AUDIO immediately below VIDEO, no saved browser state. */
-  function initLayout(){
-    installMenu();installToolbar();enhanceTracks();audioNearVideo()
-  }
-
-  var oldRender=clipRenderTimeline;
+  var renderBase=clipRenderTimeline;
   clipRenderTimeline=function(){
-    var r=oldRender();
-    enhanceTracks();
-    installToolbar();
+    var r=renderBase();
+    applyTrackOrder();
     return r
   };
 
-  initLayout();
-  toast('V36: cắt ngay tại playhead · Ctrl+Z hoàn tác · giữ core V32 trực tiếp');
+  function setSide(h){
+    sideHidden=!!h;document.body.classList.toggle('v37-side-hidden',sideHidden);
+    var b=$('v37MenuToggle');if(b){b.classList.toggle('on',sideHidden);b.textContent=sideHidden?'☰ HIỆN MENU':'▸ ẨN MENU'}
+    setTimeout(function(){try{clipRenderRuler();clipUpdatePlayhead()}catch(_){}},30)
+  }
+  function installUi(){
+    var head=document.querySelector('.clip-head');
+    if(head&&!$('v37MenuToggle')){
+      var wrap=document.createElement('div');wrap.className='v37-head-actions';
+      var b=document.createElement('button');b.id='v37MenuToggle';b.type='button';b.className='v37-menu-toggle';
+      b.textContent='▸ ẨN MENU';b.onclick=function(){setSide(!sideHidden)};
+      wrap.appendChild(b);head.appendChild(wrap)
+    }
+    var bar=document.querySelector('.clip-tl-toolbar');
+    if(bar&&!$('v37AudioNear')){
+      var a=document.createElement('button');a.id='v37AudioNear';a.type='button';a.className='v37-audio-near';
+      a.textContent='🎵 AUDIO SÁT VIDEO';a.onclick=audioNear;
+      var sp=bar.querySelector('.spacer');if(sp)bar.insertBefore(a,sp);else bar.appendChild(a);
+
+      var n=document.createElement('span');n.className='v37-undo-note';n.textContent='Ctrl+Z = hoàn tác cắt';
+      a.insertAdjacentElement('afterend',n)
+    }
+  }
+
+  installUi();
+  /* Default only for this session: VIDEO -> AUDIO -> SFX close together. */
+  trackOrder=['visual','audio','sfx','overlay','text','effect'];
+  applyTrackOrder();
+
+  toast('V37: sửa AbortError play/pause · cắt ngay playhead · Ctrl+Z · không dùng localStorage UI');
+})();
+
+
+
+/* ================= V41 CAPCUT-LIKE TRACK WORKSPACE — UI/TIMELINE ONLY ================= */
+(function(){
+  var FPS=30;
+  var META={
+    visual:{title:'VIDEO / ẢNH',sub:'Hình chính',short:'VIDEO'},
+    effect:{title:'FX',sub:'Hiệu ứng hình',short:'FX'},
+    audio:{title:'AUDIO',sub:'Nhạc / lời',short:'AUDIO'},
+    sfx:{title:'SFX',sub:'Sound effect',short:'SFX'},
+    overlay:{title:'OVERLAY',sub:'Ảnh / logo',short:'OVER'},
+    text:{title:'TEXT',sub:'Chữ',short:'TEXT'}
+  };
+
+  var order=['visual','effect','audio','sfx','overlay','text'];
+  var hidden={};
+  var collapsed={};
+  var wide=false;
+  var autoNear=true;
+  var trackDrag=null;
+  var blockDrag=null;
+  var dropGuide=null,dragTip=null;
+
+  function laneOfRow(row){return row&&row.querySelector('.clip-lane')}
+  function trackOfRow(row){
+    var lane=laneOfRow(row);
+    return lane&&lane.dataset?lane.dataset.track:null
+  }
+  function rowOf(track){
+    var lane=document.querySelector('#clipScroll .clip-lane[data-track="'+track+'"]');
+    return lane&&lane.closest?lane.closest('.clip-track'):null
+  }
+  function allRows(){
+    return Array.prototype.slice.call(document.querySelectorAll('#clipScroll > .clip-track'))
+  }
+  function refreshOrderFromDom(){
+    var a=allRows().map(trackOfRow).filter(Boolean);
+    if(a.length)order=a
+  }
+  function applyOrder(){
+    var sc=$('clipScroll');if(!sc)return;
+    var map={};
+    allRows().forEach(function(r){var k=trackOfRow(r);if(k)map[k]=r});
+    order.forEach(function(k){if(map[k])sc.appendChild(map[k])});
+    Object.keys(map).forEach(function(k){
+      if(order.indexOf(k)<0){order.push(k);sc.appendChild(map[k])}
+    })
+  }
+  function applyVisibility(){
+    Object.keys(META).forEach(function(k){
+      var row=rowOf(k);if(!row)return;
+      row.classList.toggle('v41-hidden',!!hidden[k]);
+      row.classList.toggle('v41-collapsed',!!collapsed[k])
+    });
+    updateChips()
+  }
+  function relayout(){
+    try{clipRenderRuler();clipUpdatePlayhead()}catch(_){}
+  }
+
+  function moveTrack(track,targetTrack,after){
+    var row=rowOf(track),target=rowOf(targetTrack),sc=$('clipScroll');
+    if(!row||!target||!sc||row===target)return;
+
+    if(after)sc.insertBefore(row,target.nextSibling);
+    else sc.insertBefore(row,target);
+
+    refreshOrderFromDom();
+    row.classList.remove('v41-near-video');
+    void row.offsetWidth;
+    row.classList.add('v41-near-video');
+    setTimeout(function(){row.classList.remove('v41-near-video')},750);
+    relayout()
+  }
+
+  function moveNearVideo(track){
+    if(track==='visual')return;
+    var visual=rowOf('visual'),row=rowOf(track),sc=$('clipScroll');
+    if(!visual||!row||!sc)return;
+
+    /* Insert directly after video. Previous "near" tracks shift down naturally. */
+    sc.insertBefore(row,visual.nextSibling);
+    refreshOrderFromDom();
+
+    row.classList.remove('v41-near-video');
+    void row.offsetWidth;
+    row.classList.add('v41-near-video');
+    setTimeout(function(){row.classList.remove('v41-near-video')},750);
+    relayout()
+  }
+
+  function toggleHidden(track){
+    hidden[track]=!hidden[track];
+    applyVisibility();relayout()
+  }
+  function toggleCollapse(track){
+    collapsed[track]=!collapsed[track];
+    applyVisibility();relayout()
+  }
+  function showAll(){
+    Object.keys(hidden).forEach(function(k){hidden[k]=false});
+    applyVisibility();relayout()
+  }
+  function hideEmpty(){
+    Object.keys(META).forEach(function(k){
+      if(k==='visual')return;
+      hidden[k]=!(clipTracks[k]&&clipTracks[k].length)
+    });
+    applyVisibility();relayout()
+  }
+  function collapseAll(){
+    Object.keys(META).forEach(function(k){collapsed[k]=(k!=='visual')});
+    applyVisibility();relayout()
+  }
+
+  function enhanceLabels(){
+    allRows().forEach(function(row){
+      var k=trackOfRow(row),lab=row.querySelector('.clip-track-label');
+      if(!k||!lab)return;
+
+      lab.dataset.v41='1';
+      lab.innerHTML='';
+
+      var grab=document.createElement('button');
+      grab.type='button';grab.className='v41-track-grab';
+      grab.textContent='↕';grab.title='Giữ và kéo cả track lên / xuống';
+
+      var main=document.createElement('div');
+      main.className='v41-track-main';
+      main.innerHTML='<b>'+(META[k]?META[k].title:k.toUpperCase())+'</b><small>'+
+        (META[k]?META[k].sub:'Track')+'</small>';
+
+      var ctrl=document.createElement('div');ctrl.className='v41-track-ctrl';
+      var eye=document.createElement('button');eye.type='button';eye.textContent='👁';eye.title='Ẩn track';
+      var col=document.createElement('button');col.type='button';col.textContent='▾';col.title='Thu gọn / mở track';
+      ctrl.appendChild(eye);ctrl.appendChild(col);
+
+      lab.appendChild(grab);lab.appendChild(main);lab.appendChild(ctrl);
+
+      eye.onclick=function(e){e.stopPropagation();toggleHidden(k)};
+      col.onclick=function(e){e.stopPropagation();toggleCollapse(k)};
+
+      grab.addEventListener('pointerdown',function(e){
+        if(e.button!=null&&e.button!==0)return;
+        trackDrag={row:row,track:k,pointerId:e.pointerId};
+        row.classList.add('v41-track-drag');
+        try{grab.setPointerCapture(e.pointerId)}catch(_){}
+        e.preventDefault();e.stopPropagation()
+      })
+    })
+  }
+
+  function clearTrackDrop(){
+    allRows().forEach(function(r){
+      r.classList.remove('v41-drop-before','v41-drop-after','v41-track-drag')
+    })
+  }
+  function markTargetAt(x,y,row){
+    allRows().forEach(function(r){r.classList.remove('v41-drop-before','v41-drop-after')});
+    var el=document.elementFromPoint(x,y);
+    var target=el&&el.closest?el.closest('#clipScroll .clip-track'):null;
+    if(!target||target===row)return null;
+    var rr=target.getBoundingClientRect();
+    target.classList.add(y<rr.top+rr.height/2?'v41-drop-before':'v41-drop-after');
+    return target
+  }
+
+  window.addEventListener('pointermove',function(e){
+    if(!trackDrag||trackDrag.pointerId!==e.pointerId)return;
+    markTargetAt(e.clientX,e.clientY,trackDrag.row)
+  },true);
+
+  window.addEventListener('pointerup',function(e){
+    if(!trackDrag||trackDrag.pointerId!==e.pointerId)return;
+    var row=trackDrag.row;
+    var el=document.elementFromPoint(e.clientX,e.clientY);
+    var target=el&&el.closest?el.closest('#clipScroll .clip-track'):null;
+    if(target&&target!==row){
+      var rr=target.getBoundingClientRect();
+      if(e.clientY<rr.top+rr.height/2)target.parentNode.insertBefore(row,target);
+      else target.parentNode.insertBefore(row,target.nextSibling)
+    }
+    clearTrackDrop();
+    trackDrag=null;
+    refreshOrderFromDom();relayout()
+  },true);
+
+  /* ---------- Toolbar ---------- */
+  function updateChips(){
+    var box=$('v41TrackChips');if(!box)return;
+    box.querySelectorAll('[data-v41-track]').forEach(function(b){
+      var k=b.dataset.v41Track;
+      b.classList.toggle('off',!!hidden[k]);
+      b.title=hidden[k]?'Bấm để hiện '+META[k].title:'Bấm để ẩn '+META[k].title
+    })
+  }
+  function installToolbar(){
+    var tl=document.querySelector('.clip-timeline-wrap');if(!tl||$('v41Workbar'))return;
+    var bar=document.createElement('div');bar.className='v41-workbar';bar.id='v41Workbar';
+
+    var wideBtn=document.createElement('button');wideBtn.className='wide';wideBtn.id='v41Wide';
+    wideBtn.textContent='⛶ DỰNG RỘNG';
+    wideBtn.onclick=function(){
+      wide=!wide;document.body.classList.toggle('v41-wide',wide);
+      this.textContent=wide?'↩ HIỆN MENU':'⛶ DỰNG RỘNG';
+      setTimeout(relayout,50)
+    };
+
+    var fx=document.createElement('button');fx.className='primary';fx.textContent='✨ FX SÁT VIDEO';
+    fx.onclick=function(){moveNearVideo('effect')};
+    var au=document.createElement('button');au.className='primary';au.textContent='🎵 AUDIO SÁT VIDEO';
+    au.onclick=function(){moveNearVideo('audio')};
+    var sf=document.createElement('button');sf.className='primary';sf.textContent='🔊 SFX SÁT VIDEO';
+    sf.onclick=function(){moveNearVideo('sfx')};
+
+    var empty=document.createElement('button');empty.textContent='ẨN TRACK TRỐNG';empty.onclick=hideEmpty;
+    var show=document.createElement('button');show.textContent='HIỆN TẤT CẢ';show.onclick=showAll;
+    var compact=document.createElement('button');compact.textContent='THU GỌN TRACK';compact.onclick=collapseAll;
+
+    var chips=document.createElement('div');chips.className='v41-track-chips';chips.id='v41TrackChips';
+    Object.keys(META).forEach(function(k){
+      var b=document.createElement('button');b.className='v41-track-chip';b.dataset.v41Track=k;
+      b.innerHTML='<b>'+META[k].short+'</b>';
+      b.onclick=function(){toggleHidden(k)};
+      chips.appendChild(b)
+    });
+
+    bar.appendChild(wideBtn);bar.appendChild(fx);bar.appendChild(au);bar.appendChild(sf);
+    bar.appendChild(empty);bar.appendChild(show);bar.appendChild(compact);bar.appendChild(chips);
+
+    var toolbar=tl.querySelector('.clip-tl-toolbar');
+    if(toolbar)toolbar.insertAdjacentElement('afterend',bar);
+    else tl.insertBefore(bar,tl.firstChild);
+
+    updateChips()
+  }
+
+  /* ---------- Block drag: horizontal = time, vertical = reorder whole track ---------- */
+  function snapCandidates(it){
+    var a=[0,clipCurrentTime];
+    clipAll().forEach(function(x){
+      if(x.id===it.id)return;
+      a.push(Number(x.start)||0);a.push(clipEnd(x))
+    });
+    return a
+  }
+  function nearest(v,cands,threshold){
+    var best=null,bd=Infinity;
+    cands.forEach(function(x){
+      var d=Math.abs(v-x);if(d<threshold&&d<bd){best=x;bd=d}
+    });
+    return best
+  }
+  function ensureDragUi(){
+    if(!dropGuide){dropGuide=document.createElement('div');dropGuide.className='v41-drop-guide';dropGuide.style.display='none';document.body.appendChild(dropGuide)}
+    if(!dragTip){dragTip=document.createElement('div');dragTip.className='v41-drag-tip';dragTip.style.display='none';document.body.appendChild(dragTip)}
+  }
+  function showVerticalGuide(target,after,x,y){
+    ensureDragUi();
+    if(!target){dropGuide.style.display='none';return}
+    var r=target.getBoundingClientRect();
+    dropGuide.style.display='block';
+    dropGuide.style.left=r.left+'px';dropGuide.style.width=r.width+'px';
+    dropGuide.style.top=(after?r.bottom-1:r.top-1)+'px';
+    dragTip.style.display='block';dragTip.style.left=(x+12)+'px';dragTip.style.top=(y+12)+'px';
+    dragTip.textContent='↕ DỜI TRACK '+(META[blockDrag.track]?META[blockDrag.track].short:blockDrag.track)
+  }
+  function hideDragUi(){
+    if(dropGuide)dropGuide.style.display='none';
+    if(dragTip)dragTip.style.display='none';
+    document.body.classList.remove('v41-vertical-block-drag')
+  }
+
+  var oldBlockPD=clipBlockPointerDown;
+  clipBlockPointerDown=function(e){
+    if(e.button!=null&&e.button!==0)return;
+    var resize=e.target&&e.target.dataset&&e.target.dataset.resize;
+    if(resize)return oldBlockPD(e);
+
+    var b=e.currentTarget,id=b.dataset.id,f=clipFind(id);
+    if(!f)return;
+
+    clipSelectId(id);
+    clipDrag=null;
+
+    blockDrag={
+      id:id,track:f.track,row:b.closest('.clip-track'),block:b,pointerId:e.pointerId,
+      x0:e.clientX,y0:e.clientY,start0:Number(f.it.start)||0,dur0:Number(f.it.duration)||.1,
+      mode:null,lastTarget:null,lastAfter:false
+    };
+    b.classList.add('v41-block-dragging');
+    try{b.setPointerCapture&&b.setPointerCapture(e.pointerId)}catch(_){}
+    e.preventDefault();e.stopPropagation()
+  };
+
+  window.addEventListener('pointermove',function(e){
+    var d=blockDrag;if(!d||d.pointerId!==e.pointerId)return;
+    var f=clipFind(d.id);if(!f)return;
+    var dx=e.clientX-d.x0,dy=e.clientY-d.y0;
+
+    if(!d.mode){
+      if(Math.max(Math.abs(dx),Math.abs(dy))<6)return;
+      d.mode=(Math.abs(dy)>14&&Math.abs(dy)>Math.abs(dx)*1.08)?'vertical':'horizontal'
+    }
+
+    if(d.mode==='vertical'){
+      f.it.start=d.start0;
+      document.body.classList.add('v41-vertical-block-drag');
+
+      var el=document.elementFromPoint(e.clientX,e.clientY);
+      var target=el&&el.closest?el.closest('#clipScroll .clip-track'):null;
+      if(target===d.row)target=null;
+
+      var after=false;
+      if(target){
+        var rr=target.getBoundingClientRect();
+        after=e.clientY>=rr.top+rr.height/2
+      }
+      d.lastTarget=target;d.lastAfter=after;
+      showVerticalGuide(target,after,e.clientX,e.clientY)
+    }else{
+      hideDragUi();
+      var sec=dx/Math.max(4,clipTimelinePx);
+      var ns=Math.max(0,d.start0+sec);
+      var threshold=Math.max(.025,8/Math.max(4,clipTimelinePx));
+      var c=snapCandidates(f.it),sn=nearest(ns,c,threshold),en=nearest(ns+d.dur0,c,threshold);
+      if(sn!=null&&(en==null||Math.abs(ns-sn)<=Math.abs(ns+d.dur0-en)))ns=Math.max(0,sn);
+      else if(en!=null)ns=Math.max(0,en-d.dur0);
+      ns=Math.round(ns*FPS)/FPS;
+      f.it.start=ns;
+
+      d.block.style.left=Math.round(ns*clipTimelinePx)+'px';
+      var bs=d.block.querySelector('.bs');
+      if(bs)bs.textContent=ns.toFixed(2)+'s · '+d.dur0.toFixed(2)+'s'
+    }
+  },true);
+
+  window.addEventListener('pointerup',function(e){
+    var d=blockDrag;if(!d||d.pointerId!==e.pointerId)return;
+    var f=clipFind(d.id);
+
+    if(d.block)d.block.classList.remove('v41-block-dragging');
+
+    if(d.mode==='vertical'&&d.lastTarget&&d.row){
+      var targetTrack=trackOfRow(d.lastTarget);
+      /*
+        Thả lên VIDEO => luôn đặt track ngay dưới VIDEO.
+        Thả lên track khác => đặt trước/sau theo vị trí chuột.
+      */
+      if(targetTrack==='visual'&&d.track!=='visual'){
+        moveNearVideo(d.track)
+      }else if(targetTrack){
+        moveTrack(d.track,targetTrack,d.lastAfter)
+      }
+      if(f)f.it.start=d.start0
+    }else if(d.mode==='horizontal'&&f){
+      clipRenderTimeline();applyOrder();enhanceLabels();applyVisibility();
+      clipLoadInspector();try{clipDrawAt(clipCurrentTime,false)}catch(_){}
+    }
+
+    hideDragUi();
+    blockDrag=null;
+    refreshOrderFromDom()
+  },true);
+
+  window.addEventListener('pointercancel',function(){
+    if(blockDrag&&blockDrag.block)blockDrag.block.classList.remove('v41-block-dragging');
+    if(blockDrag){
+      var f=clipFind(blockDrag.id);if(f)f.it.start=blockDrag.start0
+    }
+    blockDrag=null;hideDragUi();clearTrackDrop()
+  },true);
+
+  /* ---------- Auto bring newly added audio / FX / SFX close to VIDEO ---------- */
+  var oldAddFx=clipAddEffect;
+  clipAddEffect=function(fx,t){
+    var it=oldAddFx(fx,t);
+    if(autoNear)setTimeout(function(){moveNearVideo('effect')},20);
+    return it
+  };
+
+  var oldAddSfxPreset=clipAddPresetSfx;
+  clipAddPresetSfx=function(kind,t){
+    var it=oldAddSfxPreset(kind,t);
+    if(autoNear)setTimeout(function(){moveNearVideo('sfx')},20);
+    return it
+  };
+
+  var oldAddAudio=clipAddAudioFile;
+  clipAddAudioFile=function(f,track){
+    var it=oldAddAudio(f,track);
+    if(autoNear&&track==='audio')setTimeout(function(){moveNearVideo('audio')},20);
+    if(autoNear&&track==='sfx')setTimeout(function(){moveNearVideo('sfx')},20);
+    return it
+  };
+
+  /* ---------- Keep UI after timeline rerender ---------- */
+  var baseRender=clipRenderTimeline;
+  clipRenderTimeline=function(){
+    var r=baseRender();
+    applyOrder();enhanceLabels();applyVisibility();
+    return r
+  };
+
+  installToolbar();
+
+  /* Start with the useful CapCut-like stack. */
+  applyOrder();
+  enhanceLabels();
+  applyVisibility();
+
+  /* Recreate blocks so they use V41 pointer handler. */
+  clipRenderTimeline();
+
+  toast('V41: kéo block dọc = dời track · kéo ngang = dời thời gian · có ẨN/THU GỌN/DỰNG RỘNG');
+})();
+
+
+
+/* ================= V42 FRAME-BY-FRAME MP4 EXPORT ================= */
+(function(){
+  var FPS=30;
+  var legacyRun=clipRunProject;
+  var exportDraw=clipDrawAt;
+  var muxerPromise=null;
+  var cancelExport=false;
+
+  function sleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
+
+  function v42LoadMuxer(){
+    if(window.Mp4Muxer)return Promise.resolve(window.Mp4Muxer);
+    if(muxerPromise)return muxerPromise;
+
+    muxerPromise=new Promise(function(resolve,reject){
+      var urls=[
+        'https://unpkg.com/mp4-muxer@5.2.1/build/mp4-muxer.js',
+        'https://cdn.jsdelivr.net/npm/mp4-muxer@5.2.1/build/mp4-muxer.js'
+      ];
+      var i=0;
+
+      function next(){
+        if(window.Mp4Muxer){resolve(window.Mp4Muxer);return}
+        if(i>=urls.length){
+          reject(new Error('Không tải được bộ đóng gói MP4. Kiểm tra Internet/CDN rồi thử lại.'));
+          return
+        }
+
+        var sc=document.createElement('script');
+        sc.src=urls[i++];
+        sc.async=false;
+        sc.onload=function(){
+          if(window.Mp4Muxer)resolve(window.Mp4Muxer);
+          else next()
+        };
+        sc.onerror=function(){try{sc.remove()}catch(_){};next()};
+        document.head.appendChild(sc)
+      }
+      next()
+    });
+
+    return muxerPromise
+  }
+
+  function activeVisual(t){
+    if(typeof proVisualAt==='function')return proVisualAt(t);
+    var a=clipActive('visual',t);
+    return a.length?a[a.length-1]:null
+  }
+
+  function sourceTarget(it,t,video){
+    var x=(Number(it.trimStart)||0)+(Number(t)||0)-(Number(it.start)||0);
+    var sd=Number(it.sourceDuration)||Number(video&&video.duration)||0;
+    if(sd>0)x=Math.min(Math.max(0,sd-.025),Math.max(0,x));
+    return Math.max(0,x)
+  }
+
+  function waitEvent(el,name,ms){
+    return new Promise(function(resolve){
+      var done=false,timer=null;
+      function finish(){
+        if(done)return;
+        done=true;
+        clearTimeout(timer);
+        try{el.removeEventListener(name,finish)}catch(_){}
+        resolve()
+      }
+      try{el.addEventListener(name,finish,{once:true})}catch(_){resolve();return}
+      timer=setTimeout(finish,ms||1000)
+    })
+  }
+
+  function waitFrame(v,ms){
+    return new Promise(function(resolve){
+      var done=false,timer=null;
+      function finish(){
+        if(done)return;
+        done=true;
+        clearTimeout(timer);
+        resolve()
+      }
+      if(v&&typeof v.requestVideoFrameCallback==='function'){
+        try{v.requestVideoFrameCallback(function(){finish()})}
+        catch(_){requestAnimationFrame(function(){requestAnimationFrame(finish)})}
+      }else{
+        requestAnimationFrame(function(){requestAnimationFrame(finish)})
+      }
+      timer=setTimeout(finish,ms||250)
+    })
+  }
+
+  async function createDecoder(url,dock){
+    var v=document.createElement('video');
+    v.preload='auto';
+    v.playsInline=true;
+    v.muted=true;
+    v.volume=0;
+    v.setAttribute('muted','');
+    v.setAttribute('playsinline','');
+    v.setAttribute('webkit-playsinline','');
+    v.style.cssText=
+      'position:absolute;left:0;top:0;width:24px;height:24px;'+
+      'opacity:.05;pointer-events:none;object-fit:contain';
+    v.src=url;
+    dock.appendChild(v);
+
+    try{v.load()}catch(_){}
+
+    if(v.readyState<2||!v.videoWidth){
+      await Promise.race([
+        waitEvent(v,'loadeddata',1800),
+        waitEvent(v,'canplay',1800)
+      ])
+    }
+
+    if(!v.videoWidth||!v.videoHeight){
+      throw new Error('Chrome không giải mã được hình của một video nguồn.')
+    }
+
+    try{v.pause()}catch(_){}
+    return v
+  }
+
+  async function prepareDecoders(){
+    var dock=document.createElement('div');
+    dock.id='v42DecoderDock';
+    dock.style.cssText=
+      'position:fixed;right:1px;bottom:1px;width:30px;height:30px;overflow:hidden;'+
+      'opacity:.06;pointer-events:none;z-index:2147483000;background:#000';
+    document.body.appendChild(dock);
+
+    var map=new Map();
+    var backups=[];
+
+    var items=(clipTracks.visual||[]).filter(function(it){
+      return it&&it.type==='video'&&it.url
+    });
+
+    for(var i=0;i<items.length;i++){
+      var it=items[i];
+      backups.push({it:it,video:it.video||null});
+
+      if(!map.has(it.url)){
+        $('clipProgress').textContent=
+          'Đang chuẩn bị video nguồn '+(map.size+1)+'...';
+        map.set(it.url,await createDecoder(it.url,dock))
+      }
+    }
+
+    return {dock:dock,map:map,backups:backups}
+  }
+
+  function restoreDecoders(ctx){
+    if(!ctx)return;
+    (ctx.backups||[]).forEach(function(x){x.it.video=x.video});
+    if(ctx.map){
+      ctx.map.forEach(function(v){
+        try{
+          v.pause();
+          v.removeAttribute('src');
+          v.load()
+        }catch(_){}
+      })
+    }
+    try{ctx.dock.remove()}catch(_){}
+  }
+
+  async function seekExact(v,target){
+    if(v.readyState<2){
+      try{v.load()}catch(_){}
+      await waitEvent(v,'loadeddata',1600)
+    }
+
+    target=Math.max(0,Number(target)||0);
+
+    if(Math.abs((Number(v.currentTime)||0)-target)>.003){
+      var p=waitEvent(v,'seeked',1200);
+      try{v.currentTime=target}catch(_){}
+      await p
+    }
+
+    await waitFrame(v,320)
+  }
+
+  async function renderFrameAt(t,decoderCtx){
+    var it=activeVisual(t);
+
+    if(it&&it.type==='video'){
+      var v=decoderCtx.map.get(it.url);
+      if(!v)throw new Error('Thiếu decoder video nguồn');
+
+      var target=sourceTarget(it,t,v);
+      await seekExact(v,target);
+
+      it.video=v
+    }
+
+    /*
+      Export renderer cũ đã biết cách vẽ:
+      video/image + keyframe + overlay + text + FX.
+      Vì decoder đã đứng đúng frame, gọi live=true để nó không seek lại.
+    */
+    exportDraw(t,true);
+
+    await new Promise(function(r){
+      requestAnimationFrame(function(){requestAnimationFrame(r)})
+    })
+  }
+
+  async function chooseVideoConfig(w,h,bitrate){
+    var level=(Math.max(w,h)>=2200||w*h>2500000)?'32':'2a';
+    var candidates=[
+      'avc1.4200'+level,
+      'avc1.4d00'+level,
+      'avc1.6400'+level
+    ];
+
+    for(var i=0;i<candidates.length;i++){
+      var cfg={
+        codec:candidates[i],
+        width:w,
+        height:h,
+        bitrate:bitrate,
+        framerate:FPS,
+        hardwareAcceleration:'prefer-hardware',
+        latencyMode:'quality',
+        avc:{format:'avc'}
+      };
+      try{
+        var r=await VideoEncoder.isConfigSupported(cfg);
+        if(r&&r.supported)return r.config||cfg
+      }catch(_){}
+    }
+
+    throw new Error(
+      'Máy/Chrome không hỗ trợ mã hóa H.264 ở độ phân giải này. Hãy thử HD 720p hoặc Full HD.'
+    )
+  }
+
+  async function decodeAudioBuffer(ac,url,cache){
+    if(cache.has(url))return cache.get(url);
+
+    var p=fetch(url)
+      .then(function(r){
+        if(!r.ok)throw new Error('HTTP '+r.status);
+        return r.arrayBuffer()
+      })
+      .then(function(ab){
+        return new Promise(function(resolve,reject){
+          try{
+            var x=ac.decodeAudioData(ab.slice(0));
+            if(x&&x.then)x.then(resolve,reject);
+            else ac.decodeAudioData(ab.slice(0),resolve,reject)
+          }catch(e){reject(e)}
+        })
+      });
+
+    cache.set(url,p);
+    return p
+  }
+
+  async function renderOfflineAudio(total){
+    var SR=48000,CH=2;
+    var frames=Math.max(1,Math.ceil(total*SR));
+    var offline=new OfflineAudioContext(CH,frames,SR);
+    var cache=new Map();
+    var jobs=typeof proAudioJobs==='function'?proAudioJobs():[];
+
+    for(var i=0;i<jobs.length;i++){
+      var job=jobs[i],it=job.it;
+      if(!job.url)continue;
+
+      try{
+        $('clipProgress').textContent=
+          'Mix âm thanh '+(i+1)+'/'+jobs.length+'...';
+
+        var buf=await decodeAudioBuffer(offline,job.url,cache);
+        var src=offline.createBufferSource();
+        var gain=offline.createGain();
+
+        src.buffer=buf;
+        src.connect(gain);
+        gain.connect(offline.destination);
+
+        var when=Math.max(0,Number(it.start)||0);
+        var offset=Math.max(0,Number(it.trimStart)||0);
+        var dur=Math.max(.001,Number(it.duration)||.001);
+        var vol=Math.max(0,Math.min(2,Number(job.volume)||0));
+
+        if(it.loop&&buf.duration>.02){
+          src.loop=true;
+          src.loopStart=0;
+          src.loopEnd=buf.duration;
+          offset=offset%buf.duration
+        }else{
+          if(offset>=buf.duration-.005)continue;
+          dur=Math.min(dur,Math.max(.001,buf.duration-offset))
+        }
+
+        var end=Math.min(total,when+dur);
+        var realDur=Math.max(.001,end-when);
+        var fade=Math.min(.012,realDur*.2);
+
+        gain.gain.setValueAtTime(0,when);
+        gain.gain.linearRampToValueAtTime(vol,when+fade);
+        gain.gain.setValueAtTime(vol,Math.max(when+fade,end-fade));
+        gain.gain.linearRampToValueAtTime(0,end);
+
+        if(it.loop){
+          src.start(when,offset);
+          src.stop(end)
+        }else{
+          src.start(when,offset,realDur)
+        }
+      }catch(e){
+        console.warn('[V42 audio skip]',job&&job.url,e)
+      }
+    }
+
+    $('clipProgress').textContent='Đang render audio hoàn chỉnh...';
+    var rendered=await offline.startRendering();
+    return rendered
+  }
+
+  async function chooseAudioConfig(sampleRate,channels){
+    var cfg={
+      codec:'mp4a.40.2',
+      sampleRate:sampleRate,
+      numberOfChannels:channels,
+      bitrate:192000
+    };
+
+    try{
+      var r=await AudioEncoder.isConfigSupported(cfg);
+      if(r&&r.supported)return r.config||cfg
+    }catch(_){}
+
+    throw new Error(
+      'Chrome trên máy này không hỗ trợ AudioEncoder AAC. Hãy cập nhật Chrome/Edge mới.'
+    )
+  }
+
+  async function encodeAudio(buffer,muxer){
+    var sr=buffer.sampleRate;
+    var ch=Math.min(2,buffer.numberOfChannels||1);
+    var cfg=await chooseAudioConfig(sr,ch);
+
+    var encoderError=null;
+    var enc=new AudioEncoder({
+      output:function(chunk,meta){muxer.addAudioChunk(chunk,meta)},
+      error:function(e){encoderError=e;console.error('[V42 AudioEncoder]',e)}
+    });
+    enc.configure(cfg);
+
+    var block=4096;
+    var total=buffer.length;
+
+    for(var off=0;off<total;off+=block){
+      if(cancelExport)throw new Error('Đã hủy xuất video');
+
+      var len=Math.min(block,total-off);
+      var data=new Float32Array(len*ch);
+
+      for(var c=0;c<ch;c++){
+        var src=buffer.getChannelData(
+          Math.min(c,buffer.numberOfChannels-1)
+        ).subarray(off,off+len);
+        data.set(src,c*len)
+      }
+
+      var ad=new AudioData({
+        format:'f32-planar',
+        sampleRate:sr,
+        numberOfFrames:len,
+        numberOfChannels:ch,
+        timestamp:Math.round(off/sr*1000000),
+        data:data
+      });
+
+      enc.encode(ad);
+      ad.close();
+
+      if(enc.encodeQueueSize>10)await sleep(4)
+    }
+
+    await enc.flush();
+    enc.close();
+
+    if(encoderError)throw encoderError
+  }
+
+  async function exportFrameByFrame(){
+    if(!clipTracks.visual.length)
+      throw new Error('VIDEO track chưa có nội dung');
+
+    if(!window.VideoEncoder||!window.VideoFrame||!window.AudioEncoder||!window.AudioData){
+      throw new Error(
+        'Xuất MP4 chuẩn cần WebCodecs. Hãy dùng Chrome/Edge mới; tốt nhất chạy trên GitHub Pages HTTPS.'
+      )
+    }
+
+    document.body.classList.add('v42-exporting');
+    cancelExport=false;
+    clipStopFlag=false;
+
+    var oldRecording=clipIsRecording;
+    var oldPlaying=clipPlaying;
+    var decoderCtx=null;
+    var videoEncoder=null;
+
+    try{
+      clipPlaying=false;
+      clipIsRecording=true;
+      try{clipNativePause()}catch(_){}
+
+      var Mp4=await v42LoadMuxer();
+
+      clipApplyCanvasSize();
+
+      var canvas=$('clipCanvas');
+      var w=canvas.width,h=canvas.height;
+      if(w%2)w--;
+      if(h%2)h--;
+      if(canvas.width!==w||canvas.height!==h){
+        canvas.width=w;canvas.height=h
+      }
+
+      var total=Math.max(.001,clipTotalDuration());
+      var frameCount=Math.max(1,Math.ceil(total*FPS));
+      var bitrate=$('clipRes').value==='1440'?18000000:
+        ($('clipRes').value==='1080'?10000000:5500000);
+
+      $('clipProgress').textContent=
+        'Khởi tạo MP4 frame-by-frame...';
+
+      var target=new Mp4.ArrayBufferTarget();
+      var muxer=new Mp4.Muxer({
+        target:target,
+        video:{
+          codec:'avc',
+          width:w,
+          height:h,
+          frameRate:FPS
+        },
+        audio:{
+          codec:'aac',
+          numberOfChannels:2,
+          sampleRate:48000
+        },
+        fastStart:'in-memory',
+        firstTimestampBehavior:'offset'
+      });
+
+      var videoCfg=await chooseVideoConfig(w,h,bitrate);
+      var videoError=null;
+
+      videoEncoder=new VideoEncoder({
+        output:function(chunk,meta){muxer.addVideoChunk(chunk,meta)},
+        error:function(e){videoError=e;console.error('[V42 VideoEncoder]',e)}
+      });
+      videoEncoder.configure(videoCfg);
+
+      decoderCtx=await prepareDecoders();
+
+      /*
+        VIDEO: mỗi frame timeline được lấy độc lập.
+        Không video.play(), không MediaRecorder, không phụ thuộc realtime.
+      */
+      for(var i=0;i<frameCount;i++){
+        if(cancelExport||clipStopFlag)
+          throw new Error('Đã hủy xuất video');
+
+        var t=Math.min(total-.000001,i/FPS);
+        clipCurrentTime=t;
+
+        await renderFrameAt(t,decoderCtx);
+
+        var vf=new VideoFrame(canvas,{
+          timestamp:Math.round(i/FPS*1000000),
+          duration:Math.round(1000000/FPS),
+          alpha:'discard'
+        });
+
+        videoEncoder.encode(vf,{
+          keyFrame:(i===0||i%(FPS*2)===0)
+        });
+        vf.close();
+
+        if(videoEncoder.encodeQueueSize>6){
+          await sleep(3)
+        }
+
+        if(i%3===0||i===frameCount-1){
+          var pct=Math.round((i+1)/frameCount*78);
+          $('clipProgress').textContent=
+            '🎞 Render frame '+(i+1)+'/'+frameCount+
+            ' · '+pct+'% · không realtime';
+          $('clipSeek').value=Math.round(t/total*1000);
+          $('clipTime').textContent=clipFmt(t)+' / '+clipFmt(total);
+          $('clipTlTime').textContent=clipFmt(t);
+          clipUpdatePlayhead()
+        }
+      }
+
+      $('clipProgress').textContent=
+        'Đang hoàn tất H.264...';
+      await videoEncoder.flush();
+      videoEncoder.close();
+      videoEncoder=null;
+
+      if(videoError)throw videoError;
+
+      /*
+        AUDIO: mix toàn timeline bằng OfflineAudioContext,
+        sau đó AAC encode với timestamp tuyệt đối.
+      */
+      var audioBuffer=await renderOfflineAudio(total);
+
+      $('clipProgress').textContent=
+        '🔊 Đang mã hóa AAC...';
+      await encodeAudio(audioBuffer,muxer);
+
+      $('clipProgress').textContent=
+        '📦 Đang đóng gói MP4 Fast Start...';
+
+      muxer.finalize();
+
+      var blob=new Blob([target.buffer],{type:'video/mp4'});
+      if(!blob.size)throw new Error('MP4 xuất ra bị rỗng');
+
+      $('clipProgress').textContent=
+        '✅ MP4 FRAME-BY-FRAME · '+(blob.size/1048576).toFixed(1)+' MB';
+
+      return {
+        blob:blob,
+        ext:'mp4',
+        deterministic:true
+      }
+    }
+    finally{
+      if(videoEncoder){
+        try{videoEncoder.close()}catch(_){}
+      }
+      restoreDecoders(decoderCtx);
+
+      clipIsRecording=oldRecording;
+      clipPlaying=oldPlaying;
+      clipStopFlag=false;
+      document.body.classList.remove('v42-exporting');
+
+      try{
+        clipSetCurrentTime(Math.min(clipCurrentTime,clipTotalDuration()))
+      }catch(_){}
+    }
+  }
+
+  /*
+    Chỉ thay đường XUẤT.
+    Preview vẫn giữ nguyên V41/V37.
+  */
+  clipRunProject=function(recording){
+    return recording?exportFrameByFrame():legacyRun(false)
+  };
+
+  var bar=document.querySelector('.clip-exportbar');
+  if(bar&&!$('v42ExportNote')){
+    var n=document.createElement('span');
+    n.id='v42ExportNote';
+    n.className='v42-export-note';
+    n.textContent='✓ MP4 FRAME-BY-FRAME';
+    bar.insertBefore(n,$('clipExport'))
+  }
+
+  if($('clipExport')){
+    $('clipExport').textContent='⬇ XUẤT MP4 CHUẨN'
+  }
+
+  toast('V42: Xuất MP4 không còn dùng MediaRecorder · render từng frame H.264 + AAC');
 })();
 
 
