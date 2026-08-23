@@ -900,46 +900,33 @@ body.v32-playing .clip-preview-surface:after{
   padding:3px 7px;border-radius:999px;font-size:8px;font-weight:900;pointer-events:none
 }
 
-/* ================= V35 WORKSPACE ONLY — NO PREVIEW CORE CHANGES ================= */
-body.clip-mode .clip-head{gap:8px}
-.v35-head-actions{
+/* ================= V36 DIRECT CUT + UNDO + WORKSPACE ================= */
+.v36-head-actions{
   margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto
 }
-.v35-menu-toggle{
-  border:1px solid #4a4f5a;background:#23262d;color:#e9ebef;
-  border-radius:8px;padding:7px 10px;font-size:9px;font-weight:900;cursor:pointer;
-  white-space:nowrap
+.v36-menu-toggle{
+  border:1px solid #4a4f5a;background:#23262d;color:#e9ebef;border-radius:8px;
+  padding:7px 10px;font-size:9px;font-weight:900;cursor:pointer;white-space:nowrap
 }
-.v35-menu-toggle:hover{border-color:#ff745d;color:#fff}
-.v35-menu-toggle.on{background:#293325;border-color:#4a9a66;color:#91efb3}
-body.clip-mode.v35-side-hidden .clip-layout{
+.v36-menu-toggle:hover{border-color:#ff745d;color:#fff}
+.v36-menu-toggle.on{background:#293325;border-color:#4a9a66;color:#91efb3}
+body.clip-mode.v36-side-hidden .clip-layout{
   grid-template-columns:minmax(0,1fr) 0!important;
   gap:0!important
 }
-body.clip-mode.v35-side-hidden #clipInspector{
-  display:none!important
-}
-body.clip-mode.v35-side-hidden .clip-preview-surface{
+body.clip-mode.v36-side-hidden #clipInspector{display:none!important}
+body.clip-mode.v36-side-hidden .clip-preview-card{width:100%!important}
+body.clip-mode.v36-side-hidden .clip-preview-surface{
   max-height:42vh;
   width:min(100%,calc(42vh * var(--preview-ratio)))
 }
-body.clip-mode.v35-side-hidden .clip-preview-card{
-  width:100%!important
-}
-
-/* Track reordering — make the existing V18 capability obvious and easier to grab */
-body.clip-mode #clipScroll .clip-track{
-  transition:box-shadow .12s ease,opacity .12s ease,border-color .12s ease
-}
 body.clip-mode .clip-track-label{
   grid-template-columns:34px 1fr 38px!important;
-  min-height:58px;
-  padding:5px 5px!important
+  min-height:58px;padding:5px 5px!important
 }
 body.clip-mode .clip-track-drag{
-  width:32px!important;height:42px!important;
-  border-color:#454b58!important;background:#272b34!important;color:#d7dbe3!important;
-  font-size:0!important;position:relative
+  width:32px!important;height:42px!important;font-size:0!important;position:relative;
+  border-color:#454b58!important;background:#272b34!important;color:#d7dbe3!important
 }
 body.clip-mode .clip-track-drag:before{
   content:"↕";font-size:17px;font-weight:900;line-height:1
@@ -948,36 +935,19 @@ body.clip-mode .clip-track-drag:after{
   content:"KÉO";position:absolute;bottom:2px;left:0;right:0;
   font-size:6px;font-weight:900;color:#7f8794;letter-spacing:.05em
 }
-body.clip-mode .clip-track-drag:hover{
-  border-color:#ff765f!important;color:#ff9b89!important;background:#35231f!important
-}
-body.clip-mode .clip-track.drag-track{
-  opacity:.62!important;box-shadow:0 0 0 2px #ff765f inset!important
-}
-body.clip-mode .clip-track.track-drop-before{border-top:3px solid #ff765f!important}
-body.clip-mode .clip-track.track-drop-after{border-bottom:3px solid #ff765f!important}
-.v35-track-tip{
-  display:inline-flex;align-items:center;gap:5px;color:#9ba1ad;font-size:8px;
-  white-space:nowrap;padding:4px 7px;border:1px solid #343842;border-radius:7px;background:#1d2026
-}
-.v35-audio-near{
+.v36-audio-near{
   border:1px solid #346080!important;background:#172633!important;color:#82d5ff!important;
   border-radius:7px!important;padding:6px 8px!important;font-size:8.5px!important;font-weight:900!important
 }
-.v35-audio-near:hover{border-color:#55b8f4!important}
-.v35-track-flash{
-  animation:v35TrackFlash .7s ease
+.v36-cut-flash{animation:v36CutFlash .28s ease}
+@keyframes v36CutFlash{
+  0%{box-shadow:0 0 0 0 rgba(255,91,70,.8)}
+  50%{box-shadow:0 0 0 4px rgba(255,91,70,.45) inset}
+  100%{box-shadow:none}
 }
-@keyframes v35TrackFlash{
-  0%,100%{box-shadow:none}
-  35%{box-shadow:0 0 0 2px #5ac8ff inset,0 0 18px rgba(90,200,255,.25)}
-}
-
-/* When menu is hidden give timeline a little more vertical room too */
-body.clip-mode.v35-side-hidden .clip-timeline-wrap{min-height:270px}
-@media(max-width:900px){
-  .v35-head-actions{margin-left:0}
-  .v35-menu-toggle{padding:6px 8px}
+.v36-undo-note{
+  display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border-radius:7px;
+  border:1px solid #3d414b;background:#1c1f25;color:#9da5b2;font-size:8px;white-space:nowrap
 }
 
 </style>
@@ -1356,7 +1326,7 @@ body.clip-mode.v35-side-hidden .clip-timeline-wrap{min-height:270px}
   <div id="tabClip" style="display:none">
     <div class="clip-head">
       <button class="clip-exit" id="clipExit">← Thoát CLIP</button>
-      <div><b>✂ CLIP · Timeline Editor V35 WORKSPACE</b><small>V32 PREVIEW CORE · TRACK KÉO THẢ · ẨN MENU · HD/FHD/2K</small></div>
+      <div><b>✂ CLIP · Timeline Editor V36 DIRECT CUT</b><small>CORE V32 · CẮT NGAY PLAYHEAD · CTRL+Z · KÉO TRACK · ẨN MENU</small></div>
       <span class="clip-badge">CAPCUT STYLE</span>
     </div>
 
@@ -6238,7 +6208,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
   var warn=document.createElement('div');warn.className='v29-file-warning';warn.id='v29FileWarning';
   warn.innerHTML='⚠ <b>Đang chạy bằng file://</b>. Chrome có thể chặn Media/Blob/IndexedDB trên ổ mạng. Hãy mở ứng dụng bằng <b>START_V29_LOCAL.bat</b> để Preview ổn định.';
   document.body.appendChild(warn);
-  if(location.protocol==='file:')warn.classList.add('show');
+  /* V36: giữ chế độ mở trực tiếp như V32 đã chạy ổn; không hiện cảnh báo file:// */
 
   /* -------- one and only visible preview video -------- */
   var surf=$('clipPreviewSurface'),legacy=$('clipNativeVideo');
@@ -6970,176 +6940,313 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
 
 
 
-/* ================= V35 WORKSPACE PATCH — UI/TRACKS ONLY ================= */
+/* ================= V36 FINAL PATCH: IMMEDIATE CUT + CTRL+Z + UI ONLY ================= */
 (function(){
-  var ORDER_KEY='ideco_clip_track_order_v35';
-  var SIDE_KEY='ideco_clip_side_hidden_v35';
-  var DEFAULT_ORDER=['visual','audio','sfx','overlay','text','effect'];
-  var applyingOrder=false;
+  var FPS=30;
+  var undoStack=[];
+  var maxUndo=30;
+  var sideHidden=false;
 
-  function rowTrack(row){
-    var lane=row&&row.querySelector&&row.querySelector('.clip-lane');
-    return lane&&lane.dataset?lane.dataset.track:null;
+  function snap(t){return Math.max(0,Math.round((Number(t)||0)*FPS)/FPS)}
+  function isTyping(el){
+    return !!(el&&(el.tagName==='INPUT'||el.tagName==='TEXTAREA'||el.tagName==='SELECT'||el.isContentEditable))
   }
-  function rows(){
-    return Array.prototype.slice.call(document.querySelectorAll('#clipScroll > .clip-track'));
+  function cloneKeyframes(k){
+    try{return JSON.parse(JSON.stringify(k||[]))}catch(_){return []}
   }
-  function savedOrder(){
+  function cloneItemState(it){
+    var c=Object.assign({},it);
+    if(it.keyframes)c.keyframes=cloneKeyframes(it.keyframes);
+    return c
+  }
+  function snapshot(reason){
+    var snap={reason:reason||'Thao tác',time:clipCurrentTime,selected:clipSelectedId,last:clipLastSelectedId,tracks:{}};
+    Object.keys(clipTracks).forEach(function(k){
+      snap.tracks[k]=(clipTracks[k]||[]).map(cloneItemState)
+    });
+    undoStack.push(snap);
+    if(undoStack.length>maxUndo)undoStack.shift()
+  }
+  function restoreSnapshot(){
+    var snap=undoStack.pop();
+    if(!snap){toast('Không còn thao tác để hoàn tác',true);return false}
+    Object.keys(clipTracks).forEach(function(k){
+      clipTracks[k]=(snap.tracks[k]||[]).map(cloneItemState)
+    });
+    clipSelectedId=snap.selected||null;
+    clipLastSelectedId=snap.last||null;
+    clipCurrentTime=Math.max(0,Math.min(clipTotalDuration(),snap.time||0));
+    clipRenderTimeline();
+    clipLoadInspector();
+    clipUpdatePlayhead();
+    try{clipDrawAt(clipCurrentTime,false)}catch(_){}
     try{
-      var a=JSON.parse(localStorage.getItem(ORDER_KEY)||'null');
-      if(Array.isArray(a)&&a.length)return a;
+      var total=Math.max(.1,clipTotalDuration());
+      if($('clipSeek'))$('clipSeek').value=Math.round(clipCurrentTime/total*1000);
+      if($('clipTime'))$('clipTime').textContent=clipFmt(clipCurrentTime)+' / '+clipFmt(total);
+      if($('clipTlTime'))$('clipTlTime').textContent=clipFmt(clipCurrentTime)
     }catch(_){}
-    return DEFAULT_ORDER.slice();
+    toast('↶ Đã hoàn tác: '+snap.reason);
+    return true
   }
-  function currentOrder(){
-    return rows().map(rowTrack).filter(Boolean);
+
+  function evalEase(mode,p){
+    if(mode==='easein')return p*p*p;
+    if(mode==='easeout')return 1-Math.pow(1-p,3);
+    if(mode==='easeinout')return p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
+    return p
   }
-  function saveOrder(){
-    if(applyingOrder)return;
-    try{localStorage.setItem(ORDER_KEY,JSON.stringify(currentOrder()))}catch(_){}
-  }
-  function applyOrder(order){
-    var sc=$('clipScroll');if(!sc)return;
-    applyingOrder=true;
-    try{
-      var map={};
-      rows().forEach(function(r){var k=rowTrack(r);if(k)map[k]=r});
-      (order||DEFAULT_ORDER).forEach(function(k){if(map[k])sc.appendChild(map[k])});
-      /* Append any future/new track types not in the stored list. */
-      rows().forEach(function(r){if(r.parentNode===sc&&!(order||[]).includes(rowTrack(r)))sc.appendChild(r)});
-    }finally{
-      applyingOrder=false;
+  function evalKeyState(it,projectTime){
+    var base={
+      x:Number(it.x)||0,y:Number(it.y)||0,scale:Number(it.scale)||100,
+      rotation:Number(it.rotation)||0,opacity:it.opacity==null?100:Number(it.opacity),
+      size:Number(it.size)||54
+    };
+    var ks=cloneKeyframes(it.keyframes).sort(function(a,b){return a.at-b.at});
+    if(!ks.length)return base;
+    var at=Math.max(0,Math.min(Number(it.duration)||0,projectTime-(Number(it.start)||0)));
+    function merged(k){return Object.assign({},base,k&&k.props||{})}
+    if(at<=ks[0].at)return merged(ks[0]);
+    if(at>=ks[ks.length-1].at)return merged(ks[ks.length-1]);
+    var a=ks[0],b=ks[1];
+    for(var i=0;i<ks.length-1;i++){
+      if(at>=ks[i].at&&at<=ks[i+1].at){a=ks[i];b=ks[i+1];break}
     }
-    saveOrder();
+    var p=evalEase(it.keyframeEase||'easeinout',(at-a.at)/Math.max(.0001,b.at-a.at));
+    var A=merged(a),B=merged(b),o={};
+    ['x','y','scale','rotation','opacity','size'].forEach(function(k){
+      o[k]=Number(A[k])+(Number(B[k])-Number(A[k]))*p
+    });
+    return o
   }
 
-  function audioNextToVideo(){
-    var sc=$('clipScroll'),video=document.querySelector('#clipScroll .clip-lane[data-track="visual"]'),
-        audio=document.querySelector('#clipScroll .clip-lane[data-track="audio"]');
-    if(!sc||!video||!audio)return;
-    var vr=video.closest('.clip-track'),ar=audio.closest('.clip-track');
-    if(!vr||!ar)return;
-    sc.insertBefore(ar,vr.nextSibling);
-    saveOrder();
-    ar.classList.remove('v35-track-flash');
-    requestAnimationFrame(function(){ar.classList.add('v35-track-flash')});
-    setTimeout(function(){ar.classList.remove('v35-track-flash')},850);
-    try{ar.scrollIntoView({block:'nearest',behavior:'smooth'})}catch(_){}
-    toast('🎵 AUDIO đã được đưa sát ngay dưới VIDEO');
+  function cloneMediaForRight(it){
+    var out={};
+    if(it.type==='video'&&it.url){
+      var v=document.createElement('video');
+      v.preload='auto';v.playsInline=true;v.muted=true;
+      v.setAttribute('playsinline','');v.setAttribute('webkit-playsinline','');
+      v.src=it.url;
+      v.style.cssText='position:absolute;width:1px;height:1px;opacity:0;pointer-events:none';
+      var bin=$('clipMediaBin');if(bin)bin.appendChild(v);
+      try{v.load()}catch(_){}
+      out.video=v
+    }else if((it.type==='audio'||it.type==='sfx')&&it.url){
+      var a=document.createElement('audio');
+      a.preload='auto';a.src=it.url;a.setAttribute('playsinline','');
+      a.style.cssText='position:absolute;width:1px;height:1px;opacity:0;pointer-events:none';
+      var bin2=$('clipMediaBin');if(bin2)bin2.appendChild(a);
+      try{a.load()}catch(_){}
+      out.audio=a
+    }
+    return out
   }
 
-  function enhanceTracks(){
-    rows().forEach(function(row){
-      var k=rowTrack(row),lab=row.querySelector('.clip-track-label'),drag=row.querySelector('.clip-track-drag');
-      if(k)row.dataset.v35Track=k;
-      if(drag){
-        drag.title='Giữ và kéo cả track lên / xuống';
-        drag.setAttribute('aria-label','Kéo track '+(k||''));
-      }
-      if(lab&&!lab.dataset.v35Hint){
-        lab.dataset.v35Hint='1';
-        var main=lab.querySelector('.clip-track-label-main');
-        if(main){
-          var sm=main.querySelector('small');
-          if(sm){
-            if(k==='visual')sm.textContent='Hình chính · có thể kéo track';
-            else if(k==='audio')sm.textContent='Nhạc nền · kéo sát VIDEO để canh';
-            else if(k==='sfx')sm.textContent='Âm thanh FX · có thể đổi vị trí track';
-          }
+  function findCutTarget(t){
+    var selected=clipFind(clipSelectedId);
+    if(selected&&['video','image','audio','sfx'].indexOf(selected.it.type)>=0 &&
+       t>selected.it.start+.02 && t<clipEnd(selected.it)-.02) return selected;
+
+    /* Ưu tiên VIDEO tại playhead, đúng theo thao tác dựng hình. */
+    var vis=clipTracks.visual||[];
+    for(var i=vis.length-1;i>=0;i--){
+      if(t>vis[i].start+.02&&t<clipEnd(vis[i])-.02)
+        return {track:'visual',arr:vis,i:i,it:vis[i]}
+    }
+
+    /* Nếu không có video, mới cắt audio/sfx tại playhead. */
+    ['audio','sfx'].some(function(tr){
+      var a=clipTracks[tr]||[];
+      for(var j=a.length-1;j>=0;j--){
+        if(t>a[j].start+.02&&t<clipEnd(a[j])-.02){
+          selected={track:tr,arr:a,i:j,it:a[j]};return true
         }
       }
+      return false
     });
+    return selected&&selected.it?selected:null
   }
 
-  function installToolbar(){
-    var bar=document.querySelector('.clip-tl-toolbar');if(!bar)return;
-    if(!$('v35AudioNearVideo')){
-      var btn=document.createElement('button');
-      btn.id='v35AudioNearVideo';btn.type='button';btn.className='v35-audio-near';
-      btn.textContent='🎵 AUDIO SÁT VIDEO';
-      btn.title='Đưa track AUDIO ngay dưới VIDEO để canh hình và tiếng';
-      btn.onclick=audioNextToVideo;
-      var spacer=bar.querySelector('.spacer');
-      if(spacer)bar.insertBefore(btn,spacer);else bar.appendChild(btn);
-    }
-    if(!$('v35TrackTip')){
-      var tip=document.createElement('span');tip.id='v35TrackTip';tip.className='v35-track-tip';
-      tip.innerHTML='↕ Kéo tay nắm bên trái để đổi thứ tự track';
-      var btn=$('v35AudioNearVideo');
-      if(btn)btn.insertAdjacentElement('afterend',tip);else bar.appendChild(tip);
-    }
-  }
-
-  function setSideHidden(hidden){
-    document.body.classList.toggle('v35-side-hidden',!!hidden);
-    var b=$('v35MenuToggle');
-    if(b){
-      b.classList.toggle('on',!!hidden);
-      b.textContent=hidden?'☰ HIỆN MENU':'▸ ẨN MENU';
-      b.title=hidden?'Mở lại bảng Công cụ / Thuộc tính / Hiệu ứng':'Ẩn bảng bên phải để mở rộng vùng dựng';
-    }
-    try{localStorage.setItem(SIDE_KEY,hidden?'1':'0')}catch(_){}
-    /* Let browser recalculate preview/timeline dimensions without touching preview state. */
-    setTimeout(function(){
-      try{clipRenderRuler();clipUpdatePlayhead()}catch(_){}
-    },50);
-  }
-
-  function installMenuToggle(){
-    var head=document.querySelector('.clip-head');if(!head||$('v35MenuToggle'))return;
-    var badge=head.querySelector('.clip-badge');
-    var wrap=document.createElement('div');wrap.className='v35-head-actions';
-    var b=document.createElement('button');b.type='button';b.id='v35MenuToggle';b.className='v35-menu-toggle';
-    b.onclick=function(){setSideHidden(!document.body.classList.contains('v35-side-hidden'))};
-    wrap.appendChild(b);
-    if(badge){
-      wrap.appendChild(badge);
-      head.appendChild(wrap);
-    }else head.appendChild(wrap);
-    var hidden=false;
-    try{hidden=localStorage.getItem(SIDE_KEY)==='1'}catch(_){}
-    setSideHidden(hidden);
-  }
-
-  /* Observe actual DOM track moves, including the existing ▲ / ▼ and drag handle. */
-  var observer=null;
-  function watchOrder(){
-    var sc=$('clipScroll');if(!sc||observer)return;
-    observer=new MutationObserver(function(muts){
-      var moved=muts.some(function(m){return m.type==='childList'});
-      if(moved){
-        clearTimeout(watchOrder._t);
-        watchOrder._t=setTimeout(function(){enhanceTracks();saveOrder()},40);
+  function splitKeyframes(left,right,cutRel,projectCut){
+    if(!left.keyframes||!left.keyframes.length)return;
+    var state=evalKeyState(left,projectCut);
+    var old=cloneKeyframes(left.keyframes),lk=[],rk=[],eps=.002;
+    old.forEach(function(k){
+      if(k.at<cutRel-eps)lk.push(k);
+      else if(k.at>cutRel+eps){
+        var z=Object.assign({},k);z.at=Math.max(0,k.at-cutRel);rk.push(z)
       }
     });
-    observer.observe(sc,{childList:true});
+    lk.push({id:'kf_'+Date.now().toString(36)+'L',at:cutRel,props:Object.assign({},state)});
+    rk.unshift({id:'kf_'+Date.now().toString(36)+'R',at:0,props:Object.assign({},state)});
+    left.keyframes=lk;right.keyframes=rk;
+    right.keyframeEase=left.keyframeEase||'easeinout'
   }
 
-  /* Preserve the order after timeline rerenders. This wrapper does not touch preview. */
-  var renderBase=clipRenderTimeline;
+  function stopPreviewIfPlaying(){
+    /* V32's real player is private; clicking its reset Play button is the safest public stop. */
+    if(document.body.classList.contains('v32-playing')){
+      var b=$('clipPreviewBtn');
+      if(b)try{b.click()}catch(_){}
+    }
+    clipPlaying=false;clipStopFlag=true
+  }
+
+  function immediateCut(){
+    stopPreviewIfPlaying();
+
+    var cut=snap(clipCurrentTime);
+    var f=findCutTarget(cut);
+    if(!f){
+      toast('Đặt vạch thời gian vào giữa VIDEO rồi bấm CẮT',true);
+      return false
+    }
+    var it=f.it;
+    if(cut<=it.start+.02||cut>=clipEnd(it)-.02){
+      toast('Vạch cắt đang quá sát đầu hoặc cuối clip',true);
+      return false
+    }
+
+    snapshot('Cắt clip tại '+clipFmt(cut));
+
+    var leftDur=cut-it.start;
+    var rightDur=it.duration-leftDur;
+    var right=Object.assign({},it,{
+      id:clipUid(),
+      start:cut,
+      duration:rightDur
+    });
+
+    if(it.sourceDuration)right.trimStart=(Number(it.trimStart)||0)+leftDur;
+
+    /* Independent media instance for the right half. */
+    var media=cloneMediaForRight(it);
+    if(media.video)right.video=media.video;
+    if(media.audio)right.audio=media.audio;
+
+    /* Preserve keyframe motion continuously across the cut. */
+    if(it.keyframes&&it.keyframes.length)splitKeyframes(it,right,leftDur,cut);
+
+    it.duration=leftDur;
+    f.arr.splice(f.i+1,0,right);
+    clipSelectedId=right.id;
+    clipLastSelectedId=right.id;
+    clipCurrentTime=cut;
+
+    /*
+      IMPORTANT: no clipSetCurrentTime(), no seekExact(), no wait for seeked.
+      Cut happens synchronously at the playhead.
+    */
+    clipRenderTimeline();
+    clipLoadInspector();
+    clipUpdatePlayhead();
+    try{clipDrawAt(cut,false)}catch(_){}
+
+    var surf=$('clipPreviewSurface');
+    if(surf){
+      surf.classList.remove('v36-cut-flash');
+      void surf.offsetWidth;
+      surf.classList.add('v36-cut-flash')
+    }
+    toast('✂ Đã cắt ngay tại '+clipFmt(cut)+' · Ctrl+Z để hoàn tác');
+    return true
+  }
+
+  /* Replace DOM nodes so ALL previous async cut listeners disappear. */
+  function replaceButton(id){
+    var old=$(id);if(!old)return null;
+    var neo=old.cloneNode(true);
+    old.parentNode.replaceChild(neo,old);
+    return neo
+  }
+  ['clipSplit','clipQuickSplit','v23CutNow'].forEach(function(id){
+    var b=replaceButton(id);
+    if(b)b.addEventListener('click',function(e){
+      e.preventDefault();e.stopPropagation();immediateCut()
+    })
+  });
+  clipSplitAtPlayhead=immediateCut;
+
+  /* Ctrl+Z and S are captured before legacy keyboard handlers. */
+  window.addEventListener('keydown',function(e){
+    if(!document.body.classList.contains('clip-mode')||isTyping(e.target))return;
+
+    if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&String(e.key).toLowerCase()==='z'){
+      e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+      restoreSnapshot();return
+    }
+    if(!e.ctrlKey&&!e.metaKey&&!e.altKey&&String(e.key).toLowerCase()==='s'){
+      e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+      immediateCut();return
+    }
+  },true);
+
+  /* ---------- Workspace UI, no localStorage / no persistence ---------- */
+  function audioNearVideo(){
+    var sc=$('clipScroll');
+    var vl=document.querySelector('#clipScroll .clip-lane[data-track="visual"]');
+    var al=document.querySelector('#clipScroll .clip-lane[data-track="audio"]');
+    if(!sc||!vl||!al)return;
+    var vr=vl.closest('.clip-track'),ar=al.closest('.clip-track');
+    if(vr&&ar){sc.insertBefore(ar,vr.nextSibling);toast('🎵 AUDIO đã được đưa sát VIDEO')}
+  }
+  function enhanceTracks(){
+    document.querySelectorAll('#clipScroll .clip-track').forEach(function(row){
+      var drag=row.querySelector('.clip-track-drag');
+      if(drag){
+        drag.title='Giữ và kéo track lên / xuống';
+        drag.setAttribute('aria-label','Kéo track lên xuống')
+      }
+    })
+  }
+  function installToolbar(){
+    var bar=document.querySelector('.clip-tl-toolbar');if(!bar)return;
+    if(!$('v36AudioNear')){
+      var b=document.createElement('button');b.id='v36AudioNear';b.type='button';
+      b.className='v36-audio-near';b.textContent='🎵 AUDIO SÁT VIDEO';b.onclick=audioNearVideo;
+      var sp=bar.querySelector('.spacer');if(sp)bar.insertBefore(b,sp);else bar.appendChild(b)
+    }
+    if(!$('v36UndoNote')){
+      var n=document.createElement('span');n.id='v36UndoNote';n.className='v36-undo-note';
+      n.textContent='Ctrl+Z = hoàn tác cắt';
+      var b=$('v36AudioNear');if(b)b.insertAdjacentElement('afterend',n)
+    }
+  }
+  function setSide(hidden){
+    sideHidden=!!hidden;
+    document.body.classList.toggle('v36-side-hidden',sideHidden);
+    var b=$('v36MenuToggle');
+    if(b){
+      b.classList.toggle('on',sideHidden);
+      b.textContent=sideHidden?'☰ HIỆN MENU':'▸ ẨN MENU'
+    }
+    setTimeout(function(){
+      try{clipRenderRuler();clipUpdatePlayhead()}catch(_){}
+    },30)
+  }
+  function installMenu(){
+    var head=document.querySelector('.clip-head');if(!head||$('v36MenuToggle'))return;
+    var wrap=document.createElement('div');wrap.className='v36-head-actions';
+    var b=document.createElement('button');b.id='v36MenuToggle';b.type='button';b.className='v36-menu-toggle';
+    b.textContent='▸ ẨN MENU';b.onclick=function(){setSide(!sideHidden)};
+    wrap.appendChild(b);head.appendChild(wrap)
+  }
+
+  /* Default view: put AUDIO immediately below VIDEO, no saved browser state. */
+  function initLayout(){
+    installMenu();installToolbar();enhanceTracks();audioNearVideo()
+  }
+
+  var oldRender=clipRenderTimeline;
   clipRenderTimeline=function(){
-    var r=renderBase();
+    var r=oldRender();
     enhanceTracks();
-    applyOrder(savedOrder());
     installToolbar();
-    return r;
+    return r
   };
 
-  installMenuToggle();
-  installToolbar();
-  enhanceTracks();
-  applyOrder(savedOrder());
-  watchOrder();
-
-  /* First-time V35 layout: AUDIO directly under VIDEO. */
-  try{
-    if(!localStorage.getItem(ORDER_KEY)){
-      applyOrder(DEFAULT_ORDER);
-      localStorage.setItem(ORDER_KEY,JSON.stringify(DEFAULT_ORDER));
-    }
-  }catch(_){applyOrder(DEFAULT_ORDER)}
-
-  toast('V35: kéo track lên/xuống · AUDIO sát VIDEO · có nút ẨN MENU');
+  initLayout();
+  toast('V36: cắt ngay tại playhead · Ctrl+Z hoàn tác · giữ core V32 trực tiếp');
 })();
 
 
