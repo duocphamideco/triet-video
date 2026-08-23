@@ -1062,6 +1062,157 @@ body.v42-exporting .clip-exportbar:after{
   border:1px solid #315f45;border-radius:999px;padding:3px 6px
 }
 
+/* ================= V44 TURBO EXPORT ================= */
+.v44-speed{
+  display:inline-flex;align-items:center;gap:4px;padding:3px 6px;
+  border:1px solid #3d4654;border-radius:7px;background:#1b1f25
+}
+.v44-speed label{font-size:7px;font-weight:900;color:#8992a0}
+.v44-speed select{
+  border:0;background:#242a32;color:#e7ebf0;border-radius:5px;
+  font-size:8px;font-weight:900;padding:4px 6px;outline:none;cursor:pointer
+}
+.v44-speed select option{background:#20242b;color:#fff}
+.v44-turbo-badge{
+  display:inline-flex;align-items:center;padding:3px 6px;border-radius:999px;
+  border:1px solid #765d2f;background:#2c2415;color:#ffd16e;
+  font-size:7px;font-weight:900;white-space:nowrap
+}
+
+/* ================= V45 SAFE EXPORT TOP BAR ================= */
+.v45-export-topbar{
+  display:flex;align-items:center;gap:7px;flex-wrap:wrap;
+  padding:7px 10px;background:#15181d;border-bottom:1px solid #2b3038;
+  position:sticky;top:0;z-index:40;box-shadow:0 3px 12px rgba(0,0,0,.18)
+}
+.v45-export-topbar .v45-label{
+  font-size:8px;font-weight:900;color:#8e96a3;letter-spacing:.06em
+}
+.v45-top-export{
+  border:0;border-radius:8px;background:#e24d3b;color:#fff;
+  font-size:9px;font-weight:900;padding:8px 12px;cursor:pointer;
+  box-shadow:0 3px 12px rgba(226,77,59,.22)
+}
+.v45-top-export:hover{filter:brightness(1.07)}
+.v45-top-export:disabled{opacity:.48;cursor:not-allowed;filter:none}
+.v45-top-cancel{
+  display:none;border:1px solid #974940;border-radius:8px;background:#3a1e1b;color:#ff9b8f;
+  font-size:9px;font-weight:900;padding:7px 10px;cursor:pointer
+}
+.v45-top-cancel.show{display:inline-flex}
+.v45-top-cancel:hover{background:#4a2521;color:#fff}
+.v45-top-progress{
+  flex:1 1 260px;min-width:180px;max-width:680px;
+  font-size:9px;font-weight:800;color:#ffbd67;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+.v45-lock-note{
+  display:none;border:1px solid #3b6049;background:#1a2920;color:#93e6ac;
+  border-radius:999px;padding:4px 7px;font-size:7px;font-weight:900
+}
+body.v45-export-lock .v45-lock-note{display:inline-flex}
+body.v45-export-lock #clipPreviewBtn{
+  opacity:.35!important;cursor:not-allowed!important;filter:grayscale(1)
+}
+body.v45-export-lock .clip-playbar,
+body.v45-export-lock .clip-toptools,
+body.v45-export-lock .clip-timeline-wrap,
+body.v45-export-lock #clipInspector{
+  pointer-events:none!important
+}
+body.v45-export-lock .clip-timeline-wrap,
+body.v45-export-lock #clipInspector{
+  opacity:.76
+}
+body.v45-export-lock .v45-export-topbar{
+  pointer-events:auto!important;opacity:1!important
+}
+body.v45-export-lock .v45-export-topbar *{
+  pointer-events:auto!important
+}
+body.v45-export-lock #clipExport{
+  opacity:.35!important;pointer-events:none!important
+}
+@media(max-width:820px){
+  .v45-export-topbar{padding:6px}
+  .v45-top-progress{order:5;flex-basis:100%;max-width:none}
+}
+
+/* ================= V46 CAPCUT-LIKE EXPORT DIALOG ================= */
+.v46-export-modal{
+  position:fixed;inset:0;z-index:2147483300;display:none;
+  align-items:center;justify-content:center;padding:18px;
+  background:rgba(0,0,0,.74);backdrop-filter:blur(5px)
+}
+.v46-export-modal.show{display:flex}
+.v46-export-card{
+  width:min(760px,96vw);max-height:min(780px,92vh);overflow:auto;
+  background:#1b1d21;border:1px solid #343943;border-radius:14px;
+  box-shadow:0 24px 80px rgba(0,0,0,.55);color:#eef1f5
+}
+.v46-export-head{
+  position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:8px;
+  padding:14px 16px;background:#1b1d21;border-bottom:1px solid #30343d
+}
+.v46-export-head h3{margin:0;font-size:15px;font-weight:900;flex:1}
+.v46-export-x{
+  width:30px;height:30px;border:1px solid #3b4049;background:#24272d;color:#b8bec8;
+  border-radius:7px;font-size:16px;cursor:pointer
+}
+.v46-export-body{padding:14px 16px}
+.v46-grid{
+  display:grid;grid-template-columns:150px minmax(0,1fr);gap:10px 12px;align-items:center
+}
+.v46-grid label{font-size:9px;font-weight:850;color:#abb2bd}
+.v46-field,.v46-select{
+  width:100%;box-sizing:border-box;border:1px solid #353a44;background:#272a30;color:#eef1f5;
+  border-radius:7px;padding:8px 10px;font-size:10px;outline:none
+}
+.v46-field:focus,.v46-select:focus{border-color:#00c3d8}
+.v46-inline{display:grid;grid-template-columns:1fr 112px;gap:8px}
+.v46-unit{
+  display:flex;align-items:center;justify-content:center;border:1px solid #353a44;
+  background:#21242a;color:#aeb5bf;border-radius:7px;font-size:9px;font-weight:800
+}
+.v46-checkrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.v46-radio{
+  display:inline-flex;align-items:center;gap:5px;padding:6px 8px;border:1px solid #353a44;
+  border-radius:7px;background:#22252b;color:#c7cdd6;font-size:9px;font-weight:800;cursor:pointer
+}
+.v46-radio input{accent-color:#00c5d7}
+.v46-section{
+  margin-top:14px;padding-top:13px;border-top:1px solid #30343d
+}
+.v46-section-title{font-size:9px;font-weight:950;color:#7fdde8;letter-spacing:.06em;margin-bottom:10px}
+.v46-estimate{
+  margin-top:16px;padding:12px 14px;border:1px solid #375166;border-radius:10px;
+  background:#16232b;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px
+}
+.v46-stat{min-width:0}
+.v46-stat small{display:block;font-size:7px;font-weight:850;color:#7f98a9;margin-bottom:3px}
+.v46-stat strong{display:block;font-size:13px;font-weight:950;color:#e9faff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v46-estimate-note{margin-top:8px;font-size:8px;line-height:1.45;color:#7f8792}
+.v46-export-foot{
+  position:sticky;bottom:0;display:flex;align-items:center;justify-content:flex-end;gap:8px;
+  padding:12px 16px;background:#1b1d21;border-top:1px solid #30343d
+}
+.v46-btn{
+  border:1px solid #40454e;background:#2a2d33;color:#dce1e8;border-radius:8px;
+  padding:8px 16px;font-size:10px;font-weight:900;cursor:pointer
+}
+.v46-btn.primary{border-color:#00bdcd;background:#00b7c7;color:#071518}
+.v46-btn.primary:hover{filter:brightness(1.08)}
+.v46-btn:hover{border-color:#6a717d}
+.v46-save-info{
+  margin-top:9px;padding:8px 10px;border-radius:7px;background:#22252a;color:#8f97a3;
+  font-size:8px;line-height:1.45
+}
+body.v45-export-lock .v46-export-modal{pointer-events:none!important}
+@media(max-width:650px){
+  .v46-grid{grid-template-columns:1fr}
+  .v46-estimate{grid-template-columns:1fr}
+}
+
 </style>
 </head>
 <body>
@@ -1438,8 +1589,16 @@ body.v42-exporting .clip-exportbar:after{
   <div id="tabClip" style="display:none">
     <div class="clip-head">
       <button class="clip-exit" id="clipExit">← Thoát CLIP</button>
-      <div><b>✂ CLIP · Timeline Editor V42 FRAME-BY-FRAME MP4</b><small>CORE V41 · XUẤT MP4 TỪNG FRAME · H.264 + AAC · KHÔNG MEDIARECORDER</small></div>
+      <div><b>✂ CLIP · Timeline Editor V46 CAPCUT EXPORT</b><small>CORE V45 · HỘP XUẤT CAPCUT · ƯỚC TÍNH MB · BITRATE/FPS/CODEC</small></div>
       <span class="clip-badge">CAPCUT STYLE</span>
+    </div>
+
+    <div class="v45-export-topbar" id="v45ExportTopbar">
+      <span class="v45-label">XUẤT VIDEO</span>
+      <button class="v45-top-export" id="v45TopExport">⬇ XUẤT VIDEO</button>
+      <button class="v45-top-cancel" id="v45TopCancel">⏹ HỦY XUẤT</button>
+      <span class="v45-lock-note">🔒 PREVIEW & TIMELINE ĐANG KHÓA</span>
+      <span class="v45-top-progress" id="v45TopProgress">Sẵn sàng xuất video</span>
     </div>
 
     <div class="clip-layout">
@@ -8205,6 +8364,99 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
   var exportDraw=clipDrawAt;
   var muxerPromise=null;
   var cancelExport=false;
+  var v45ExportBusy=false;
+
+  function v45SetLock(busy){
+    v45ExportBusy=!!busy;
+    document.body.classList.toggle('v45-export-lock',v45ExportBusy);
+
+    var play=$('clipPreviewBtn');
+    if(play){
+      play.disabled=v45ExportBusy;
+      play.title=v45ExportBusy
+        ?'Đang xuất video — dùng nút HỦY XUẤT nếu muốn dừng'
+        :'Phát / dừng Preview'
+    }
+
+    var top=$('v45TopExport');
+    if(top)top.disabled=v45ExportBusy;
+
+    var cancel=$('v45TopCancel');
+    if(cancel)cancel.classList.toggle('show',v45ExportBusy);
+
+    var bottom=$('clipExport');
+    if(bottom)bottom.disabled=v45ExportBusy
+  }
+
+  function v45MirrorProgress(){
+    var src=$('clipProgress'),dst=$('v45TopProgress');
+    if(!dst)return;
+    var text=src&&src.textContent?src.textContent.trim():'';
+    dst.textContent=text||(
+      v45ExportBusy?'Đang chuẩn bị xuất video...':'Sẵn sàng xuất video'
+    )
+  }
+
+  function v45StopPreviewBeforeExport(){
+    /*
+      Dừng Preview có chủ đích TRƯỚC khi khóa nút.
+      Sau thời điểm này Play không còn quyền can thiệp vào export.
+    */
+    try{
+      if(clipPlaying||document.body.classList.contains('v32-playing')){
+        var pb=$('clipPreviewBtn');
+        if(pb&&!pb.disabled)pb.click()
+      }
+    }catch(_){}
+    try{clipNativePause()}catch(_){}
+    clipPlaying=false
+  }
+
+  function v44Mode(){
+    var modal=$('v46RenderMode');
+    if(modal)return modal.value||'turbo';
+    var el=$('v44ExportMode');
+    return el?el.value:'turbo'
+  }
+
+  function v46SelectedFps(){
+    return Math.max(1,Number($('v46Fps')&&$('v46Fps').value)||30)
+  }
+
+  function v46BitrateMbps(){
+    var res=String(($('v46Resolution')&&$('v46Resolution').value)||($('clipRes')&&$('clipRes').value)||'1080');
+    var preset=String(($('v46BitratePreset')&&$('v46BitratePreset').value)||'recommended');
+    var table={
+      '720': {auto:4.5,economy:2.5,recommended:5.5,high:8},
+      '1080':{auto:8,economy:4,recommended:10,high:16},
+      '1440':{auto:14,economy:8,recommended:18,high:28}
+    };
+    if(preset==='custom'){
+      return Math.max(.5,Math.min(60,Number($('v46CustomMbps')&&$('v46CustomMbps').value)||10))
+    }
+    return (table[res]&&table[res][preset])||10
+  }
+
+  function v46BitrateBps(){
+    return Math.round(v46BitrateMbps()*1000000)
+  }
+
+  function v46BitrateMode(){
+    var r=document.querySelector('input[name="v46BitrateMode"]:checked');
+    return r?r.value:'variable'
+  }
+
+  function v46VideoCodecPref(){
+    return ($('v46VideoCodec')&&$('v46VideoCodec').value)||'auto'
+  }
+
+  function v46AudioCodecPref(){
+    return ($('v46AudioCodec')&&$('v46AudioCodec').value)||'auto'
+  }
+
+  function v46AudioBitrate(){
+    return Math.max(64000,Number($('v46AudioBitrate')&&$('v46AudioBitrate').value)||192000)
+  }
 
   function sleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
 
@@ -8365,75 +8617,144 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     try{ctx.dock.remove()}catch(_){}
   }
 
-  async function seekExact(v,target){
+  async function seekExact(v,target,strict){
     if(v.readyState<2){
       try{v.load()}catch(_){}
-      await waitEvent(v,'loadeddata',1600)
+      await waitEvent(v,'loadeddata',1200)
     }
 
     target=Math.max(0,Number(target)||0);
+    var delta=Math.abs((Number(v.currentTime)||0)-target);
 
-    if(Math.abs((Number(v.currentTime)||0)-target)>.003){
-      var p=waitEvent(v,'seeked',1200);
+    if(delta>.0025){
+      var p=waitEvent(v,'seeked',850);
       try{v.currentTime=target}catch(_){}
       await p
     }
 
-    await waitFrame(v,320)
+    /*
+      TURBO: seeked đã xác nhận media time mới; không chờ thêm
+      requestVideoFrameCallback cho MỌI frame.
+      CHÍNH XÁC hoặc đầu segment: chờ presentation frame thêm một nhịp.
+    */
+    if(strict||v44Mode()==='safe'){
+      await waitFrame(v,180)
+    }
   }
 
   async function renderFrameAt(t,decoderCtx){
     var it=activeVisual(t);
+    var segmentChanged=(decoderCtx._v44LastVisualId!==(it&&it.id||null));
 
     if(it&&it.type==='video'){
       var v=decoderCtx.map.get(it.url);
       if(!v)throw new Error('Thiếu decoder video nguồn');
 
       var target=sourceTarget(it,t,v);
-      await seekExact(v,target);
+      await seekExact(v,target,segmentChanged);
 
       it.video=v
     }
 
-    /*
-      Export renderer cũ đã biết cách vẽ:
-      video/image + keyframe + overlay + text + FX.
-      Vì decoder đã đứng đúng frame, gọi live=true để nó không seek lại.
-    */
     exportDraw(t,true);
 
-    await new Promise(function(r){
-      requestAnimationFrame(function(){requestAnimationFrame(r)})
-    })
+    /*
+      V43 chờ 2 requestAnimationFrame ở MỌI frame (~33ms/frame).
+      V44 Turbo bỏ hoàn toàn khoảng chờ đó.
+      Chế độ Chính xác vẫn giữ 1 frame trình duyệt.
+    */
+    if(v44Mode()==='safe'){
+      await new Promise(function(r){requestAnimationFrame(r)})
+    }
+
+    decoderCtx._v44LastVisualId=it&&it.id||null
   }
 
   async function chooseVideoConfig(w,h,bitrate){
-    var level=(Math.max(w,h)>=2200||w*h>2500000)?'32':'2a';
-    var candidates=[
-      'avc1.4200'+level,
-      'avc1.4d00'+level,
-      'avc1.6400'+level
-    ];
+    var pref=v46VideoCodecPref();
+    var bitrateMode=v46BitrateMode();
 
-    for(var i=0;i<candidates.length;i++){
-      var cfg={
-        codec:candidates[i],
-        width:w,
-        height:h,
-        bitrate:bitrate,
-        framerate:FPS,
-        hardwareAcceleration:'prefer-hardware',
-        latencyMode:'quality',
-        avc:{format:'avc'}
-      };
-      try{
-        var r=await VideoEncoder.isConfigSupported(cfg);
-        if(r&&r.supported)return r.config||cfg
-      }catch(_){}
+    var h264Codecs=[];
+    if(Math.max(w,h)<=1280){
+      h264Codecs=['avc1.42E01F','avc1.42001F','avc1.4D401F','avc1.64001F']
+    }else if(Math.max(w,h)<=1920){
+      h264Codecs=['avc1.42E028','avc1.4D4028','avc1.640028','avc1.64002A']
+    }else{
+      h264Codecs=['avc1.640032','avc1.4D4032','avc1.640033']
+    }
+
+    if(pref==='auto'||pref==='avc'){
+      var hwModes=['no-preference','prefer-hardware','prefer-software'];
+
+      for(var hwi=0;hwi<hwModes.length;hwi++){
+        for(var i=0;i<h264Codecs.length;i++){
+          var cfg={
+            codec:h264Codecs[i],
+            width:w,
+            height:h,
+            bitrate:bitrate,
+            bitrateMode:bitrateMode,
+            framerate:FPS,
+            hardwareAcceleration:hwModes[hwi],
+            avc:{format:'avc'}
+          };
+          try{
+            var r=await VideoEncoder.isConfigSupported(cfg);
+            if(r&&r.supported){
+              return {
+                encoderConfig:r.config||cfg,
+                muxerCodec:'avc',
+                label:'H.264/AVC',
+                fileExt:'mp4'
+              }
+            }
+          }catch(_){}
+        }
+      }
+
+      if(pref==='avc'){
+        throw new Error('Máy/Chrome hiện không hỗ trợ mã hóa H.264 ở thông số đã chọn. Hãy chọn Tự động hoặc VP9.')
+      }
+    }
+
+    if(pref==='auto'||pref==='vp9'){
+      var vp9Candidates=[
+        'vp09.00.10.08',
+        'vp09.00.20.08',
+        'vp09.00.41.08',
+        'vp09.00.50.08'
+      ];
+
+      for(var j=0;j<vp9Candidates.length;j++){
+        var vcfg={
+          codec:vp9Candidates[j],
+          width:w,
+          height:h,
+          bitrate:Math.max(1800000,bitrate),
+          bitrateMode:bitrateMode,
+          framerate:FPS,
+          hardwareAcceleration:'no-preference'
+        };
+        try{
+          var vr=await VideoEncoder.isConfigSupported(vcfg);
+          if(vr&&vr.supported){
+            return {
+              encoderConfig:vr.config||vcfg,
+              muxerCodec:'vp9',
+              label:'VP9',
+              fileExt:'mp4'
+            }
+          }
+        }catch(_){}
+      }
+
+      if(pref==='vp9'){
+        throw new Error('Máy/Chrome hiện không hỗ trợ mã hóa VP9 ở thông số đã chọn.')
+      }
     }
 
     throw new Error(
-      'Máy/Chrome không hỗ trợ mã hóa H.264 ở độ phân giải này. Hãy thử HD 720p hoặc Full HD.'
+      'Chrome trên máy này không hỗ trợ codec video với thông số đang chọn. Hãy thử 720p / 30fps / Tự động.'
     )
   }
 
@@ -8523,32 +8844,69 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
   }
 
   async function chooseAudioConfig(sampleRate,channels){
-    var cfg={
-      codec:'mp4a.40.2',
-      sampleRate:sampleRate,
-      numberOfChannels:channels,
-      bitrate:192000
-    };
+    var pref=v46AudioCodecPref();
+    var audioBitrate=v46AudioBitrate();
 
-    try{
-      var r=await AudioEncoder.isConfigSupported(cfg);
-      if(r&&r.supported)return r.config||cfg
-    }catch(_){}
+    if(pref==='auto'||pref==='aac'){
+      var aac={
+        codec:'mp4a.40.2',
+        sampleRate:sampleRate,
+        numberOfChannels:channels,
+        bitrate:audioBitrate
+      };
 
-    throw new Error(
-      'Chrome trên máy này không hỗ trợ AudioEncoder AAC. Hãy cập nhật Chrome/Edge mới.'
-    )
+      try{
+        var ar=await AudioEncoder.isConfigSupported(aac);
+        if(ar&&ar.supported){
+          return {
+            encoderConfig:ar.config||aac,
+            muxerCodec:'aac',
+            label:'AAC'
+          }
+        }
+      }catch(_){}
+
+      if(pref==='aac'){
+        throw new Error('Chrome trên máy này không hỗ trợ AudioEncoder AAC.')
+      }
+    }
+
+    if(pref==='auto'||pref==='opus'){
+      var opus={
+        codec:'opus',
+        sampleRate:48000,
+        numberOfChannels:channels,
+        bitrate:audioBitrate
+      };
+
+      try{
+        var or=await AudioEncoder.isConfigSupported(opus);
+        if(or&&or.supported){
+          return {
+            encoderConfig:or.config||opus,
+            muxerCodec:'opus',
+            label:'Opus'
+          }
+        }
+      }catch(_){}
+
+      if(pref==='opus'){
+        throw new Error('Chrome trên máy này không hỗ trợ AudioEncoder Opus.')
+      }
+    }
+
+    throw new Error('Chrome trên máy này không hỗ trợ codec âm thanh đã chọn.')
   }
 
-  async function encodeAudio(buffer,muxer){
+  async function encodeAudio(buffer,muxer,audioChoice){
     var sr=buffer.sampleRate;
     var ch=Math.min(2,buffer.numberOfChannels||1);
-    var cfg=await chooseAudioConfig(sr,ch);
+    var cfg=audioChoice.encoderConfig;
 
     var encoderError=null;
     var enc=new AudioEncoder({
       output:function(chunk,meta){muxer.addAudioChunk(chunk,meta)},
-      error:function(e){encoderError=e;console.error('[V42 AudioEncoder]',e)}
+      error:function(e){encoderError=e;console.error('[V43 AudioEncoder]',e)}
     });
     enc.configure(cfg);
 
@@ -8602,6 +8960,8 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     document.body.classList.add('v42-exporting');
     cancelExport=false;
     clipStopFlag=false;
+    v45SetLock(true);
+    v45MirrorProgress();
 
     var oldRecording=clipIsRecording;
     var oldPlaying=clipPlaying;
@@ -8625,25 +8985,33 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
         canvas.width=w;canvas.height=h
       }
 
+      FPS=v46SelectedFps();
       var total=Math.max(.001,clipTotalDuration());
       var frameCount=Math.max(1,Math.ceil(total*FPS));
-      var bitrate=$('clipRes').value==='1440'?18000000:
-        ($('clipRes').value==='1080'?10000000:5500000);
+      var bitrate=v46BitrateBps();
 
       $('clipProgress').textContent=
         'Khởi tạo MP4 frame-by-frame...';
+
+      var videoChoice=await chooseVideoConfig(w,h,bitrate);
+
+      $('clipProgress').textContent=
+        'Codec video: '+videoChoice.label+' · đang chuẩn bị audio...';
+
+      /* Chọn audio codec trước để muxer được tạo đúng track ngay từ đầu. */
+      var audioChoice=await chooseAudioConfig(48000,2);
 
       var target=new Mp4.ArrayBufferTarget();
       var muxer=new Mp4.Muxer({
         target:target,
         video:{
-          codec:'avc',
+          codec:videoChoice.muxerCodec,
           width:w,
           height:h,
           frameRate:FPS
         },
         audio:{
-          codec:'aac',
+          codec:audioChoice.muxerCodec,
           numberOfChannels:2,
           sampleRate:48000
         },
@@ -8651,16 +9019,24 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
         firstTimestampBehavior:'offset'
       });
 
-      var videoCfg=await chooseVideoConfig(w,h,bitrate);
       var videoError=null;
 
       videoEncoder=new VideoEncoder({
         output:function(chunk,meta){muxer.addVideoChunk(chunk,meta)},
-        error:function(e){videoError=e;console.error('[V42 VideoEncoder]',e)}
+        error:function(e){videoError=e;console.error('[V43 VideoEncoder]',e)}
       });
-      videoEncoder.configure(videoCfg);
+      videoEncoder.configure(videoChoice.encoderConfig);
 
       decoderCtx=await prepareDecoders();
+
+      /*
+        V44: bắt đầu chuẩn bị/mix audio song song với vòng render video.
+        Không cần chờ video xong mới bắt đầu audio.
+      */
+      var audioPromise=renderOfflineAudio(total).catch(function(e){
+        console.warn('[V44 audio parallel]',e);
+        throw e
+      });
 
       /*
         VIDEO: mỗi frame timeline được lấy độc lập.
@@ -8686,15 +9062,20 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
         });
         vf.close();
 
-        if(videoEncoder.encodeQueueSize>6){
-          await sleep(3)
+        /*
+          V44: cho encoder làm việc song song sâu hơn.
+          Chỉ nhường main thread khi queue thật sự cao.
+        */
+        if(videoEncoder.encodeQueueSize>18){
+          await sleep(1)
         }
 
-        if(i%3===0||i===frameCount-1){
+        if(i%10===0||i===frameCount-1){
           var pct=Math.round((i+1)/frameCount*78);
           $('clipProgress').textContent=
-            '🎞 Render frame '+(i+1)+'/'+frameCount+
-            ' · '+pct+'% · không realtime';
+            (v44Mode()==='turbo'?'⚡ TURBO ':'🛡 CHÍNH XÁC ')+
+            videoChoice.label+' · Frame '+(i+1)+'/'+frameCount+
+            ' · '+pct+'%';
           $('clipSeek').value=Math.round(t/total*1000);
           $('clipTime').textContent=clipFmt(t)+' / '+clipFmt(total);
           $('clipTlTime').textContent=clipFmt(t);
@@ -8711,17 +9092,17 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
       if(videoError)throw videoError;
 
       /*
-        AUDIO: mix toàn timeline bằng OfflineAudioContext,
-        sau đó AAC encode với timestamp tuyệt đối.
+        AUDIO đã được chuẩn bị song song trong khi video render.
       */
-      var audioBuffer=await renderOfflineAudio(total);
+      $('clipProgress').textContent='🔊 Đang nhận audio đã mix song song...';
+      var audioBuffer=await audioPromise;
 
       $('clipProgress').textContent=
-        '🔊 Đang mã hóa AAC...';
-      await encodeAudio(audioBuffer,muxer);
+        '🔊 Đang mã hóa '+audioChoice.label+'...';
+      await encodeAudio(audioBuffer,muxer,audioChoice);
 
       $('clipProgress').textContent=
-        '📦 Đang đóng gói MP4 Fast Start...';
+        '📦 Đang đóng gói MP4 · '+videoChoice.label+' + '+audioChoice.label+'...';
 
       muxer.finalize();
 
@@ -8729,12 +9110,15 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
       if(!blob.size)throw new Error('MP4 xuất ra bị rỗng');
 
       $('clipProgress').textContent=
-        '✅ MP4 FRAME-BY-FRAME · '+(blob.size/1048576).toFixed(1)+' MB';
+        '✅ MP4 '+videoChoice.label+' + '+audioChoice.label+
+        ' · '+(blob.size/1048576).toFixed(1)+' MB';
 
       return {
         blob:blob,
         ext:'mp4',
-        deterministic:true
+        deterministic:true,
+        videoCodec:videoChoice.label,
+        audioCodec:audioChoice.label
       }
     }
     finally{
@@ -8747,6 +9131,8 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
       clipPlaying=oldPlaying;
       clipStopFlag=false;
       document.body.classList.remove('v42-exporting');
+      v45SetLock(false);
+      v45MirrorProgress();
 
       try{
         clipSetCurrentTime(Math.min(clipCurrentTime,clipTotalDuration()))
@@ -8767,15 +9153,299 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     var n=document.createElement('span');
     n.id='v42ExportNote';
     n.className='v42-export-note';
-    n.textContent='✓ MP4 FRAME-BY-FRAME';
+    n.textContent='✓ MP4 AUTO CODEC · TURBO';
     bar.insertBefore(n,$('clipExport'))
   }
 
   if($('clipExport')){
-    $('clipExport').textContent='⬇ XUẤT MP4 CHUẨN'
+    $('clipExport').textContent='⬇ THIẾT LẬP XUẤT'
   }
 
-  toast('V42: Xuất MP4 không còn dùng MediaRecorder · render từng frame H.264 + AAC');
+  var expBar=document.querySelector('.clip-exportbar');
+  if(expBar&&!$('v44ExportMode')){
+    var box=document.createElement('span');
+    box.className='v44-speed';
+    box.innerHTML='<label>TỐC ĐỘ</label>'+
+      '<select id="v44ExportMode">'+
+      '<option value="turbo">⚡ TURBO</option>'+
+      '<option value="safe">🛡 CHÍNH XÁC</option>'+
+      '</select>';
+    var ex=$('clipExport');
+    if(ex)expBar.insertBefore(box,ex);else expBar.appendChild(box);
+
+    var badge=document.createElement('span');
+    badge.className='v44-turbo-badge';
+    badge.textContent='TURBO = bỏ chờ frame dư';
+    box.insertAdjacentElement('afterend',badge)
+  }
+
+  /* ================= V45 SAFE EXPORT CONTROLS ================= */
+
+  /* Mirror progress lên thanh trên cùng. */
+  var progressEl=$('clipProgress');
+  if(progressEl&&window.MutationObserver){
+    new MutationObserver(function(){v45MirrorProgress()})
+      .observe(progressEl,{childList:true,subtree:true,characterData:true})
+  }
+
+  function v45CancelExport(){
+    if(!v45ExportBusy)return;
+    cancelExport=true;
+    clipStopFlag=true;
+    var p=$('clipProgress');
+    if(p)p.textContent='⏹ Đang hủy xuất an toàn...';
+    v45MirrorProgress();
+
+    var c=$('v45TopCancel');
+    if(c){
+      c.disabled=true;
+      c.textContent='ĐANG HỦY...'
+    }
+  }
+
+  async function v45StartExport(){
+    if(v45ExportBusy){
+      toast('Video đang được xuất. Nếu muốn dừng, hãy bấm HỦY XUẤT.',true);
+      return
+    }
+    if(!clipTracks.visual.length){
+      toast('VIDEO track chưa có nội dung',true);
+      return
+    }
+
+    v45StopPreviewBeforeExport();
+
+    /*
+      Đặt playhead về đầu trước khi lock.
+      Sau đó timeline/Preview bị khóa hoàn toàn.
+    */
+    clipApplyCanvasSize();
+    clipSetCurrentTime(0);
+
+    v45SetLock(true);
+
+    var cancelBtn=$('v45TopCancel');
+    if(cancelBtn){
+      cancelBtn.disabled=false;
+      cancelBtn.textContent='⏹ HỦY XUẤT'
+    }
+
+    var p=$('clipProgress');
+    if(p)p.textContent='🔒 Đang khóa Preview · chuẩn bị render...';
+    v45MirrorProgress();
+
+    try{
+      var result=await clipRunProject(true);
+      if(!result)return;
+
+      var url=URL.createObjectURL(result.blob);
+      var a=document.createElement('a');
+      a.href=url;
+      var baseName=v46SafeName($('v46FileName')&&$('v46FileName').value);
+      a.download=baseName+'.'+result.ext;
+
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      if(p)p.textContent=
+        '✅ HOÀN TẤT · '+(result.blob.size/1048576).toFixed(1)+
+        ' MB · '+(result.videoCodec||'video')+' + '+(result.audioCodec||'audio');
+
+      setTimeout(function(){URL.revokeObjectURL(url)},30000)
+    }
+    catch(e){
+      var msg=(e&&e.message)||'Lỗi xuất video';
+      if(/hủy xuất/i.test(msg)){
+        if(p)p.textContent='⏹ Đã hủy xuất · có thể chỉnh sửa và xuất lại';
+        toast('Đã hủy xuất video. Bạn có thể chỉnh sửa rồi xuất lại.')
+      }else{
+        if(p)p.textContent='❌ '+msg;
+        toast(msg,true)
+      }
+    }
+    finally{
+      /*
+        exportFrameByFrame cũng unlock trong finally.
+        Gọi lại ở đây để bảo đảm UI luôn trở về trạng thái dựng,
+        kể cả lỗi xảy ra trước khi encoder khởi tạo.
+      */
+      v45SetLock(false);
+
+      if(cancelBtn){
+        cancelBtn.disabled=false;
+        cancelBtn.textContent='⏹ HỦY XUẤT'
+      }
+      v45MirrorProgress()
+    }
+  }
+
+  /* ================= V46 EXPORT DIALOG ================= */
+  function v46FmtDuration(sec){
+    sec=Math.max(0,Math.round(Number(sec)||0));
+    var h=Math.floor(sec/3600);
+    var m=Math.floor((sec%3600)/60);
+    var x=sec%60;
+    function z(n){return String(n).padStart(2,'0')}
+    return h?z(h)+':'+z(m)+':'+z(x):z(m)+':'+z(x)
+  }
+
+  function v46SafeName(name){
+    var x=String(name||'IDECO_CLIP')
+      .replace(/[\\/:*?"<>|]+/g,'_')
+      .replace(/\s+/g,' ')
+      .trim();
+    return x||'IDECO_CLIP'
+  }
+
+  function v46UpdateEstimate(){
+    var dur=Math.max(0,clipTotalDuration());
+    var fps=v46SelectedFps();
+    var vb=v46BitrateBps();
+    var ab=v46AudioBitrate();
+    var mb=((vb+ab)*dur/8/1000000)*1.03;
+
+    if($('v46Duration'))$('v46Duration').textContent=v46FmtDuration(dur);
+    if($('v46EstimateMB'))$('v46EstimateMB').textContent='~'+(
+      mb<10?mb.toFixed(1):Math.round(mb)
+    )+' MB';
+    if($('v46FrameCount'))$('v46FrameCount').textContent=
+      Math.ceil(dur*fps).toLocaleString('vi-VN')+' frame';
+    if($('v46BitrateReadout'))$('v46BitrateReadout').textContent=
+      v46BitrateMbps().toFixed(1)+' Mbps';
+
+    var custom=$('v46CustomMbps');
+    if(custom){
+      custom.disabled=(($('v46BitratePreset')&&$('v46BitratePreset').value)!=='custom')
+    }
+  }
+
+  function v46OpenDialog(){
+    if(v45ExportBusy){
+      toast('Video đang được xuất. Nếu muốn dừng, hãy bấm HỦY XUẤT.',true);
+      return
+    }
+    if(!clipTracks.visual.length){
+      toast('VIDEO track chưa có nội dung',true);
+      return
+    }
+
+    var res=$('clipRes')?$('clipRes').value:'1080';
+    if($('v46Resolution'))$('v46Resolution').value=res;
+
+    var mode=$('v44ExportMode')?$('v44ExportMode').value:'turbo';
+    if($('v46RenderMode'))$('v46RenderMode').value=mode;
+
+    if($('v46FileName')&&!$('v46FileName').value.trim()){
+      $('v46FileName').value='IDECO_CLIP'
+    }
+
+    v46UpdateEstimate();
+
+    var m=$('v46ExportModal');
+    if(m){
+      m.classList.add('show');
+      m.setAttribute('aria-hidden','false')
+    }
+  }
+
+  function v46CloseDialog(){
+    var m=$('v46ExportModal');
+    if(m){
+      m.classList.remove('show');
+      m.setAttribute('aria-hidden','true')
+    }
+  }
+
+  async function v46ConfirmExport(){
+    if(v45ExportBusy)return;
+
+    if($('clipRes')&&$('v46Resolution')){
+      $('clipRes').value=$('v46Resolution').value;
+      clipApplyCanvasSize()
+    }
+
+    if($('v44ExportMode')&&$('v46RenderMode')){
+      $('v44ExportMode').value=$('v46RenderMode').value
+    }
+
+    v46CloseDialog();
+    await v45StartExport()
+  }
+
+  [
+    'v46Resolution','v46Fps','v46BitratePreset','v46CustomMbps',
+    'v46VideoCodec','v46AudioCodec','v46AudioBitrate','v46RenderMode'
+  ].forEach(function(id){
+    var el=$(id);
+    if(!el)return;
+    el.addEventListener('input',v46UpdateEstimate);
+    el.addEventListener('change',v46UpdateEstimate)
+  });
+
+  document.querySelectorAll('input[name="v46BitrateMode"]').forEach(function(el){
+    el.addEventListener('change',v46UpdateEstimate)
+  });
+
+  if($('v46ExportClose'))$('v46ExportClose').onclick=v46CloseDialog;
+  if($('v46DialogCancel'))$('v46DialogCancel').onclick=v46CloseDialog;
+  if($('v46DialogExport'))$('v46DialogExport').onclick=v46ConfirmExport;
+
+  if($('v46ExportModal')){
+    $('v46ExportModal').addEventListener('mousedown',function(e){
+      if(e.target===this)v46CloseDialog()
+    })
+  }
+
+  window.addEventListener('keydown',function(e){
+    if(e.key==='Escape'&&$('v46ExportModal')&&$('v46ExportModal').classList.contains('show')&&!v45ExportBusy){
+      e.preventDefault();
+      v46CloseDialog()
+    }
+  },true);
+
+  /*
+    Nút XUẤT trên đầu và dưới giao diện chỉ MỞ hộp thiết lập.
+    Chỉ nút "Xuất" trong dialog mới bắt đầu render.
+  */
+  if($('v45TopExport'))$('v45TopExport').onclick=v46OpenDialog;
+  if($('v45TopCancel'))$('v45TopCancel').onclick=v45CancelExport;
+  if($('clipExport'))$('clipExport').onclick=v46OpenDialog;
+
+  /*
+    Chặn các phím Play trong lúc export.
+    Không dùng Play/Space làm Stop export nữa.
+  */
+  window.addEventListener('keydown',function(e){
+    if(!v45ExportBusy)return;
+    var k=String(e.key||'').toLowerCase();
+    if(k===' '||k==='k'||k==='enter'){
+      if(e.target&&(
+        e.target.tagName==='INPUT'||
+        e.target.tagName==='TEXTAREA'||
+        e.target.tagName==='SELECT'
+      ))return;
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation()
+    }
+  },true);
+
+  /* Nếu code cũ cố kích hoạt Play bằng click khi export, chặn ở capture phase. */
+  document.addEventListener('click',function(e){
+    if(!v45ExportBusy)return;
+    var t=e.target&&e.target.closest?e.target.closest('#clipPreviewBtn'):null;
+    if(t){
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      toast('Preview đang khóa để bảo vệ quá trình xuất. Muốn dừng hãy bấm HỦY XUẤT.')
+    }
+  },true);
+
+  v45MirrorProgress();
+
+  toast('V46: hộp Xuất kiểu CapCut · ước tính MB · FPS/Bitrate/Codec · vẫn khóa Preview khi render');
 })();
 
 
@@ -8801,5 +9471,132 @@ refreshCacheBar('vid');
 renderGallery();
 if(sessionStorage.getItem(LOGIN_SESSION_KEY) === '1' || localStorage.getItem(LOGIN_REMEMBER_KEY) === '1') refreshCredits();
 </script>
+
+<div class="v46-export-modal" id="v46ExportModal" aria-hidden="true">
+  <div class="v46-export-card" role="dialog" aria-modal="true" aria-labelledby="v46ExportTitle">
+    <div class="v46-export-head">
+      <h3 id="v46ExportTitle">Xuất video</h3>
+      <button class="v46-export-x" id="v46ExportClose" type="button">×</button>
+    </div>
+
+    <div class="v46-export-body">
+      <div class="v46-grid">
+        <label for="v46FileName">Tên file</label>
+        <input class="v46-field" id="v46FileName" value="IDECO_CLIP">
+
+        <label for="v46Resolution">Độ phân giải</label>
+        <select class="v46-select" id="v46Resolution">
+          <option value="720">720P · HD</option>
+          <option value="1080" selected>1080P · Full HD</option>
+          <option value="1440">1440P · 2K</option>
+        </select>
+
+        <label for="v46Fps">Tỷ lệ khung hình</label>
+        <select class="v46-select" id="v46Fps">
+          <option value="24">24 fps</option>
+          <option value="25">25 fps</option>
+          <option value="30" selected>30 fps</option>
+          <option value="50">50 fps</option>
+          <option value="60">60 fps</option>
+        </select>
+
+        <label for="v46BitratePreset">Tốc độ bit video</label>
+        <div class="v46-inline">
+          <select class="v46-select" id="v46BitratePreset">
+            <option value="auto">Tự động</option>
+            <option value="economy">Tiết kiệm</option>
+            <option value="recommended" selected>Khuyến nghị</option>
+            <option value="high">Cao</option>
+            <option value="custom">Tùy chỉnh</option>
+          </select>
+          <div class="v46-unit"><span id="v46BitrateReadout">10.0 Mbps</span></div>
+        </div>
+
+        <label for="v46CustomMbps">Bitrate tùy chỉnh</label>
+        <div class="v46-inline">
+          <input class="v46-field" id="v46CustomMbps" type="number" min="0.5" max="60" step="0.5" value="10">
+          <div class="v46-unit">Mbps</div>
+        </div>
+
+        <label>Chế độ bitrate</label>
+        <div class="v46-checkrow">
+          <label class="v46-radio"><input type="radio" name="v46BitrateMode" value="variable" checked> VBR</label>
+          <label class="v46-radio"><input type="radio" name="v46BitrateMode" value="constant"> CBR</label>
+        </div>
+      </div>
+
+      <div class="v46-section">
+        <div class="v46-section-title">VIDEO</div>
+        <div class="v46-grid">
+          <label for="v46VideoCodec">Bộ mã hóa</label>
+          <select class="v46-select" id="v46VideoCodec">
+            <option value="auto" selected>Tự động · ưu tiên H.264</option>
+            <option value="avc">H.264 / AVC</option>
+            <option value="vp9">VP9</option>
+          </select>
+
+          <label for="v46Format">Định dạng</label>
+          <select class="v46-select" id="v46Format" disabled>
+            <option value="mp4" selected>MP4</option>
+          </select>
+
+          <label for="v46RenderMode">Chế độ render</label>
+          <select class="v46-select" id="v46RenderMode">
+            <option value="turbo" selected>⚡ Turbo</option>
+            <option value="safe">🛡 Chính xác</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="v46-section">
+        <div class="v46-section-title">ÂM THANH</div>
+        <div class="v46-grid">
+          <label for="v46AudioCodec">Codec âm thanh</label>
+          <select class="v46-select" id="v46AudioCodec">
+            <option value="auto" selected>Tự động · ưu tiên AAC</option>
+            <option value="aac">AAC</option>
+            <option value="opus">Opus</option>
+          </select>
+
+          <label for="v46AudioBitrate">Bitrate âm thanh</label>
+          <select class="v46-select" id="v46AudioBitrate">
+            <option value="128000">128 Kbps</option>
+            <option value="192000" selected>192 Kbps</option>
+            <option value="256000">256 Kbps</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="v46-estimate">
+        <div class="v46-stat">
+          <small>THỜI LƯỢNG</small>
+          <strong id="v46Duration">00:00</strong>
+        </div>
+        <div class="v46-stat">
+          <small>KÍCH THƯỚC ƯỚC TÍNH</small>
+          <strong id="v46EstimateMB">~0 MB</strong>
+        </div>
+        <div class="v46-stat">
+          <small>SỐ FRAME RENDER</small>
+          <strong id="v46FrameCount">0 frame</strong>
+        </div>
+      </div>
+
+      <div class="v46-estimate-note">
+        Kích thước là ước tính theo bitrate video + audio, có cộng khoảng 3% overhead MP4.
+        File thực tế có thể chênh lệch tùy codec và nội dung hình ảnh.
+      </div>
+      <div class="v46-save-info">
+        📁 File sẽ được tải theo thư mục Download do Chrome đang thiết lập.
+      </div>
+    </div>
+
+    <div class="v46-export-foot">
+      <button class="v46-btn" id="v46DialogCancel" type="button">Hủy</button>
+      <button class="v46-btn primary" id="v46DialogExport" type="button">Xuất</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
