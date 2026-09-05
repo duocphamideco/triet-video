@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2212%22%20fill%3D%22%23ee3a23%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2243%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%20font-size%3D%2231%22%20font-weight%3D%22800%22%20fill%3D%22white%22%3EI%3C%2Ftext%3E%3C%2Fsvg%3E">
-<title>IDECO · Studio Tạo Ảnh & Dựng Video AI · V58 AI Script Ideas + Compact Grok Prompt</title>
+<title>IDECO · Studio Tạo Ảnh & Dựng Video AI · V59 Full Workspace + AI Image Script Ideas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
@@ -300,6 +300,86 @@ select{width:100%;border:1px solid var(--line);border-radius:12px;background:#fd
 .sc-idea-result.show{display:block}.sc-idea-result b{color:#ffb257}.sc-idea-result .idea-story{white-space:pre-wrap;margin-top:6px}
 .sc-prompt-limit-note{margin-top:7px;padding:7px 9px;border-radius:9px;background:#f3f7ff;color:#536078;font-size:10.8px;line-height:1.45}
 @media(max-width:520px){.sc-idea-grid{grid-template-columns:1fr}.sc-idea-actions{flex-direction:column}}
+
+
+/* ===== V59: FULL-WIDTH WORKSPACE + AI IMAGE-DRIVEN SCRIPT IDEAS ===== */
+body.workspace-wide #app{
+  max-width:none!important;width:100%!important;margin:0!important;
+  padding-left:clamp(12px,1.5vw,28px)!important;
+  padding-right:clamp(12px,1.5vw,28px)!important;
+}
+body.workspace-wide header,body.workspace-wide .tabs{width:100%}
+body.workspace-wide .gobar{max-width:none!important;padding-left:clamp(12px,1.5vw,28px);padding-right:clamp(12px,1.5vw,28px)}
+
+/* KỊCH BẢN: 2 cột desktop, ảnh tham chiếu nằm cạnh vùng AI gợi ý */
+body.script-workspace #tabScript{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.18fr) minmax(360px,.82fr);
+  gap:12px;align-items:start;
+}
+body.script-workspace #tabScript>*{min-width:0}
+body.script-workspace #tabScript>.sec{margin-bottom:0}
+body.script-workspace #tabScript>.sc-block-idea{grid-column:1;grid-row:1}
+body.script-workspace #tabScript>.sc-idea-ai{grid-column:1;grid-row:2}
+body.script-workspace #tabScript>.sc-block-refs{grid-column:2;grid-row:1 / span 2}
+body.script-workspace #tabScript>.sc-block-duration{grid-column:1}
+body.script-workspace #tabScript>.sc-block-director{grid-column:2}
+body.script-workspace #tabScript>.sc-block-cast{grid-column:1}
+body.script-workspace #tabScript>.sc-block-style{grid-column:2}
+body.script-workspace #tabScript>.sc-block-model,
+body.script-workspace #tabScript>#scJob,
+body.script-workspace #tabScript>#scResult,
+body.script-workspace #tabScript>#scRefineBox{grid-column:1 / -1}
+body.script-workspace #scPrompt{min-height:128px}
+body.script-workspace #scRefs{grid-template-columns:repeat(5,minmax(70px,1fr));gap:10px}
+body.script-workspace #scRefs .slot{min-height:128px}
+body.script-workspace #scResult .scene-card{padding:16px 18px}
+
+/* DỰNG VIDEO: prompt/model bên trái, ảnh/thông số bên phải */
+body.video-workspace #tabVid{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.2fr) minmax(380px,.8fr);
+  gap:12px;align-items:start;
+}
+body.video-workspace #tabVid>*{min-width:0}
+body.video-workspace #tabVid>.sec{margin-bottom:0}
+body.video-workspace #tabVid>.vid-block-prompt{grid-column:1;grid-row:1}
+body.video-workspace #tabVid>.vid-block-refs{grid-column:2;grid-row:1}
+body.video-workspace #tabVid>.vid-block-model{grid-column:1;grid-row:2}
+body.video-workspace #tabVid>.vid-block-options{grid-column:2;grid-row:2}
+body.video-workspace #tabVid>.ref-hint,
+body.video-workspace #tabVid>#vJob,
+body.video-workspace #tabVid>.gal-head,
+body.video-workspace #tabVid>.cachebar,
+body.video-workspace #tabVid>#vGallery,
+body.video-workspace #tabVid>#vEmpty{grid-column:1 / -1}
+body.video-workspace #vPrompt{min-height:150px}
+body.video-workspace #vRefs{grid-template-columns:repeat(5,minmax(70px,1fr));gap:10px}
+body.video-workspace #vRefs .slot{min-height:136px}
+body.video-workspace #vGallery{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(min-width:1500px){body.video-workspace #vGallery{grid-template-columns:repeat(5,minmax(0,1fr))}}
+
+/* AI gợi ý bằng ảnh */
+.sc-idea-refbar{display:flex;align-items:center;gap:9px;margin-top:9px;padding:9px 10px;border:1px dashed #b9c7ee;border-radius:11px;background:#f4f7ff}
+.sc-idea-refbar button{flex:0 0 auto;border:1px solid #91a5df;background:#fff;color:#3453b8;border-radius:9px;padding:8px 10px;font-size:11px;font-weight:800}
+.sc-idea-refbar span{font-size:11px;color:#66718c;line-height:1.4}
+.sc-idea-refbar span.has-ref{color:#147a42;font-weight:700}
+.sc-idea-refbar span.busy{color:#b46a00;font-weight:700}
+.sc-idea-ai.using-refs{box-shadow:inset 0 0 0 1px rgba(79,111,255,.14)}
+
+@media(max-width:980px){
+  body.script-workspace #tabScript,body.video-workspace #tabVid{grid-template-columns:1fr!important}
+  body.script-workspace #tabScript>*,body.video-workspace #tabVid>*{grid-column:1!important;grid-row:auto!important}
+  body.script-workspace #scRefs,body.video-workspace #vRefs{grid-template-columns:repeat(5,1fr)}
+  body.video-workspace #vGallery{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:620px){
+  body.workspace-wide #app{padding-left:10px!important;padding-right:10px!important}
+  body.script-workspace #scRefs,body.video-workspace #vRefs{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+  body.script-workspace #scRefs .slot,body.video-workspace #vRefs .slot{min-height:0}
+  body.video-workspace #vGallery{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .sc-idea-refbar{align-items:stretch;flex-direction:column}.sc-idea-refbar button{width:100%}
+}
 .sc-refine-actions{display:flex;gap:8px;margin-top:9px}
 .sc-refine-actions button{flex:1;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:11px 10px;font-size:12.5px;font-weight:800}
 .sc-refine-actions .regen{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 5px 14px rgba(238,58,35,.2)}
@@ -1402,7 +1482,7 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
 
   <!-- ===== TAB DỰNG VIDEO ===== -->
   <div id="tabVid" style="display:none">
-    <div class="sec">
+    <div class="sec vid-block-prompt">
       <label class="lbl">Mô tả video cần tạo</label>
       <textarea id="vPrompt" placeholder="VD: Nhân vật trong ảnh mỉm cười, quay nhẹ đầu, ánh sáng studio, camera zoom chậm vào sản phẩm..."></textarea>
       <div class="chips" id="vChips">
@@ -1414,7 +1494,7 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
       </div>
     </div>
 
-    <div class="sec">
+    <div class="sec vid-block-refs">
       <label class="lbl">Ảnh tham chiếu (tối đa 5 — thứ tự @image1 → @image5)</label>
       <div class="refs5" id="vRefs">
         <div class="slot" data-i="0"><span class="num">1</span><button class="x">✕</button><span class="plus">＋</span><span>Ảnh 1</span></div>
@@ -1427,7 +1507,7 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
       <input type="file" id="vFileInput" accept="image/*">
     </div>
 
-    <div class="sec">
+    <div class="sec vid-block-model">
       <label class="lbl">Model dựng video</label>
       <select id="vModel">
         <option value="grok" selected>⚡ Grok Imagine 1.5 — #1 image-to-video, có tiếng</option>
@@ -1438,7 +1518,7 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
       </select>
     </div>
 
-    <div class="sec optrow" style="grid-template-columns:1fr 1fr 1fr;display:grid;gap:10px">
+    <div class="sec optrow vid-block-options" style="grid-template-columns:1fr 1fr 1fr;display:grid;gap:10px">
       <div>
         <label class="lbl">Thời lượng</label>
         <select id="vDur">
@@ -1502,7 +1582,7 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
 
   <!-- ===== TAB KỊCH BẢN VIDEO ===== -->
   <div id="tabScript" style="display:none">
-    <div class="sec">
+    <div class="sec sc-block-idea">
       <label class="lbl">Ý tưởng / yêu cầu kịch bản</label>
       <textarea id="scPrompt" placeholder="VD: Nhân viên dược sĩ giới thiệu sản phẩm mới, giọng thân thiện, nhấn mạnh công dụng và lời kêu gọi mua hàng ở cuối..."></textarea>
       <div class="chips" id="scChips">
@@ -1532,15 +1612,19 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
         </div>
         <button type="button" class="primary" id="scIdeaGenerate">✨ AI ĐỀ XUẤT</button>
       </div>
+      <div class="sc-idea-refbar" id="scIdeaRefBar">
+        <button type="button" id="scIdeaAddRef">📎 THÊM ẢNH THAM CHIẾU</button>
+        <span id="scIdeaRefState">Chưa có ảnh · AI sẽ tự nghĩ theo thể loại đã chọn.</span>
+      </div>
       <div class="sc-idea-result" id="scIdeaResult"></div>
       <div class="sc-idea-actions" id="scIdeaActions" style="display:none">
         <button type="button" class="primary" id="scIdeaUse">✓ DÙNG GỢI Ý NÀY</button>
         <button type="button" id="scIdeaAgain">🔁 TẠO LẠI GỢI Ý</button>
       </div>
-      <div class="ref-hint">Không cần tự viết ý tưởng. Chọn thể loại, AI sẽ tự nghĩ hook, tình huống, diễn biến và kết thúc. Nếu chưa thích, bấm <b>Tạo lại gợi ý</b> để nhận phương án khác.</div>
+      <div class="ref-hint">Không cần tự viết ý tưởng. Chọn thể loại, AI sẽ tự nghĩ hook, tình huống, diễn biến và kết thúc. <b>Nếu đính kèm ảnh, AI sẽ quan sát ảnh và lấy chính sản phẩm / nhân vật / bối cảnh trong ảnh làm cơ sở gợi ý.</b> Nếu chưa thích, bấm <b>Tạo lại gợi ý</b> để nhận phương án khác.</div>
     </div>
 
-    <div class="sec">
+    <div class="sec sc-block-refs">
       <label class="lbl">Ảnh tham chiếu (tùy chọn · tối đa 5)</label>
       <div class="refs5" id="scRefs">
         <div class="slot" data-i="0"><span class="num">1</span><button class="x">✕</button><span class="plus">＋</span><span>Ảnh 1</span></div>
@@ -1558,7 +1642,7 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
       <label class="emplock"><input type="checkbox" id="scEmpLock"> 🔒 Khóa người thật thủ công — AI sẽ tự bật khi phát hiện ảnh có nhân vật; Anh vẫn có thể bật/tắt để ghi đè.</label>
     </div>
 
-    <div class="sec">
+    <div class="sec sc-block-duration">
       <label class="lbl">Độ dài video</label>
       <div class="durpick" id="scDurPick">
         <button data-d="10" data-seg="10" class="on"><b>10s</b>1 cảnh ×10s</button>
@@ -1571,7 +1655,7 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
       <div class="ref-hint"><b>Wan 3.0:</b> có thể chọn <b>30s · 1 cảnh ×30s</b> để AI viết một prompt liền mạch cho cả video. Grok / Seedance vẫn nên dùng tối đa 15s mỗi phân cảnh; hai lựa chọn 30s còn lại sẽ tự chia 2×15s hoặc 3×10s.</div>
     </div>
 
-    <div class="sec">
+    <div class="sec sc-block-director">
       <label class="lbl">Định hướng đạo diễn AI · tự kết hợp với các lựa chọn bên dưới</label>
       <div class="sc-director-grid">
         <div><label>Thể loại kịch bản</label><select id="scGenre">
@@ -1617,7 +1701,7 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
       <div class="sc-prompt-limit-note">✂ <b>Prompt Grok tự động rút gọn:</b> mỗi phân cảnh khi Copy/Gửi Dựng Video được giới hạn khoảng <b>1.800 ký tự</b>, ưu tiên khóa ảnh gốc, sản phẩm nhỏ đúng tỷ lệ, hành động, camera, ánh sáng và thoại; mô tả lặp/phụ sẽ bị lược bỏ.</div>
     </div>
 
-    <div class="sec">
+    <div class="sec sc-block-cast">
       <label class="lbl">Nhân vật &amp; lời thoại</label>
       <div class="castpick" id="scCastPick">
         <button data-c="0" class="on">Không thoại (chỉ lời bình)</button>
@@ -1683,7 +1767,7 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
       </div>
     </div>
 
-    <div class="sec">
+    <div class="sec sc-block-style">
       <label class="lbl">Phong cách &amp; góc quay</label>
       <select id="scStyle" style="margin-bottom:10px">
         <option value="cinematic" selected>🎞 Cinematic điện ảnh (anamorphic, ánh sáng tạo khối, màu teal-orange)</option>
@@ -1716,7 +1800,7 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
       <div class="ref-hint">Chọn các góc máy muốn dùng — AI sẽ phân bổ hợp lý cho từng phân cảnh. Không chọn gì thì AI tự quyết định theo phong cách cinematic.</div>
     </div>
 
-    <div class="sec">
+    <div class="sec sc-block-model">
       <label class="lbl">Model viết kịch bản (B.AI)</label>
       <select id="scModel">
         <option value="qwen3.8-flash" selected>⚡ Qwen3.8-Flash · B.AI</option>
@@ -2641,6 +2725,9 @@ function switchTab(tab){
   $('tabBtnClip').classList.toggle('on', tab === 'clip');
   $('mergeBar').classList.toggle('show', tab === 'vid' && mergeSel.length > 0);
   document.body.classList.toggle('clip-mode', tab === 'clip');
+  document.body.classList.toggle('workspace-wide', tab === 'vid' || tab === 'script');
+  document.body.classList.toggle('video-workspace', tab === 'vid');
+  document.body.classList.toggle('script-workspace', tab === 'script');
   window.scrollTo({ top: 0 });
 }
 $('tabBtnImg').onclick = function(){ switchTab('img'); };
@@ -3869,6 +3956,23 @@ $('scFileInput').addEventListener('change', function(){
     scheduleRefAnalysis();
   });
 });
+function updateScIdeaRefState(mode){
+  var st=$('scIdeaRefState'),bar=$('scIdeaRefBar'),box=document.querySelector('.sc-idea-ai');
+  if(!st)return;
+  var n=scRefsArr.filter(function(r){return r&&r.dataUrl;}).length;
+  st.className='';
+  if(mode==='busy'){
+    st.className='busy';
+    st.textContent='🧠 Đang phân tích '+n+' ảnh trước khi AI nghĩ kịch bản...';
+  }else if(n){
+    st.className='has-ref';
+    st.textContent='✓ Đang dùng '+n+' ảnh tham chiếu để AI gợi ý kịch bản sát hình gốc.';
+  }else{
+    st.textContent='Chưa có ảnh · AI sẽ tự nghĩ theo thể loại đã chọn.';
+  }
+  if(box)box.classList.toggle('using-refs',n>0);
+  if(bar)bar.title=n?'Ảnh ở khung bên phải sẽ được gửi trực tiếp cho AI khi đề xuất kịch bản.':'Có thể thêm ảnh sản phẩm, nhân vật hoặc bối cảnh.';
+}
 function renderScSlots(){
   Array.prototype.forEach.call(document.querySelectorAll('#scRefs .slot'), function(slot){
     var i = Number(slot.getAttribute('data-i'));
@@ -3883,7 +3987,16 @@ function renderScSlots(){
       slot.classList.remove('filled');
     }
   });
+  updateScIdeaRefState();
 }
+if($('scIdeaAddRef'))$('scIdeaAddRef').onclick=function(){
+  var idx=-1;
+  for(var i=0;i<scRefsArr.length;i++){if(!scRefsArr[i]){idx=i;break;}}
+  if(idx<0){toast('Đã đủ 5 ảnh tham chiếu · xóa một ảnh nếu muốn thay',true);return;}
+  scPickSlot=idx;
+  $('scFileInput').value='';
+  $('scFileInput').click();
+};
 
 
 /* ---------- V55 AI REFERENCE DETECTION ---------- */
@@ -4233,7 +4346,7 @@ function buildScriptSystemPrompt(idea, nScenes, seg, hasEmployee, voices, cams, 
     + '}]}';
 }
 
-/* ===== V58: AI tự nghĩ gợi ý kịch bản theo thể loại ===== */
+/* ===== V59: AI tự nghĩ gợi ý kịch bản theo thể loại + đọc ảnh tham chiếu ===== */
 function scIdeaGenreInfo(v){
   var map={
     'drama':{label:'Chính kịch',dir:'Tạo một câu chuyện chính kịch ngắn có xung đột rõ, cao trào vừa đủ và kết thúc đọng lại.',scGenre:'drama'},
@@ -4263,29 +4376,66 @@ function scIdeaToPrompt(obj){
   var s=(obj.title?('Kịch bản "'+obj.title+'". '):'')+(obj.hook?('Hook: '+obj.hook+'. '):'')+(obj.story||'')+(obj.ending?(' Kết: '+obj.ending):'');
   return String(s).replace(/\s+/g,' ').trim().slice(0,1000);
 }
-function generateAiIdea(forceNew){
+function generateAiIdea(forceNew, refsPrepared){
   if(scIdeaBusy)return;
   var val=$('scIdeaGenre')?$('scIdeaGenre').value:'';
   var info=scIdeaGenreInfo(val);
   if(!info){toast('Chọn một kiểu kịch bản để AI đề xuất',true);return;}
   if(!BAI_API_KEY||BAI_API_KEY.indexOf('PASTE_')===0){toast('Chưa cấu hình BAI_API_KEY trong code',true);return;}
+
+  var hasRefs=scRefsArr.some(function(r){return r&&r.dataUrl;});
+  var refsNeedAnalysis=hasRefs && (!scRefAnalysis.ready || scRefAnalysis.fingerprint!==scRefsFingerprint());
+  /* V59: khi có ảnh, luôn cố phân tích ảnh trước để gợi ý bám đúng sản phẩm/nhân vật/bối cảnh. */
+  if(refsNeedAnalysis && !refsPrepared){
+    scIdeaBusy=true;
+    var pb1=$('scIdeaGenerate'),pb2=$('scIdeaAgain');
+    if(pb1){pb1.disabled=true;pb1.textContent='🧠 ĐANG ĐỌC ẢNH...';}
+    if(pb2){pb2.disabled=true;pb2.textContent='🧠 ĐANG ĐỌC ẢNH...';}
+    updateScIdeaRefState('busy');
+    analyzeScriptRefs(true).catch(function(){ return null; }).then(function(){
+      scIdeaBusy=false;
+      generateAiIdea(forceNew,true); // nếu phân tích lỗi vẫn gửi trực tiếp image_url cho AI
+    });
+    return;
+  }
+
   scIdeaBusy=true;
   var b1=$('scIdeaGenerate'),b2=$('scIdeaAgain');
   if(b1){b1.disabled=true;b1.textContent='AI ĐANG NGHĨ...';}
   if(b2){b2.disabled=true;b2.textContent='ĐANG TẠO LẠI...';}
+  updateScIdeaRefState();
   var director=scDirectorBrief();
   var refSummary=(scRefAnalysis&&scRefAnalysis.ready&&scRefAnalysis.summary)?scRefAnalysis.summary:'';
+  var refProfiles='';
+  if(scRefAnalysis&&scRefAnalysis.ready&&Array.isArray(scRefAnalysis.profiles)){
+    refProfiles=scRefAnalysis.profiles.map(function(p){
+      var bits=[p.id||'',refTypeLabel(p.type)];
+      if(p.name)bits.push(p.name);
+      if(p.description)bits.push(p.description);
+      return bits.filter(Boolean).join(' · ');
+    }).join(' | ').slice(0,900);
+  }
   var prior=(forceNew&&scIdeaLast)?(' Tránh lặp ý tưởng trước: '+scIdeaToPrompt(scIdeaLast).slice(0,650)+'.') : '';
+  var imageInstruction=hasRefs
+    ? 'QUAN TRỌNG: các ảnh image_url đính kèm là NGUỒN THAM CHIẾU TRỰC TIẾP. Hãy quan sát nội dung nhìn thấy trong ảnh và lấy đúng sản phẩm, nhân vật, trang phục, đạo cụ hoặc bối cảnh phù hợp làm chất liệu cốt truyện; không coi ảnh là minh họa phụ. Nếu ảnh có sản phẩm, sản phẩm phải xuất hiện tự nhiên trong ý tưởng và giữ đúng ảnh gốc, kích thước nhỏ đúng tỷ lệ thật. '
+    : '';
   var userText='Hãy tự nghĩ MỘT kịch bản gợi ý mới thuộc thể loại "'+info.label+'" cho video '+scDur+' giây. '+info.dir+' '
+    +imageInstruction
     +'Tông video: '+director.colorToneText+' Mục tiêu: '+director.goalText+' Vai trò sản phẩm: '+director.productText+'. '
-    +(refSummary?('Ảnh tham chiếu đã được AI nhận diện: '+refSummary+'. '):'')
+    +(refSummary?('Tóm tắt AI về ảnh: '+refSummary+'. '):'')
+    +(refProfiles?('Hồ sơ tham chiếu: '+refProfiles+'. '):'')
     +'Kịch bản gợi ý phải NGẮN GỌN, dễ hiểu và quay được: title tối đa 8 từ; hook tối đa 18 từ; story tối đa 90 từ; ending tối đa 25 từ. '
-    +'Nếu có sản phẩm tham chiếu: giữ đúng sản phẩm gốc, luôn là sản phẩm nhỏ đúng tỷ lệ thật, không oversized; không bịa công dụng/claim không có dữ kiện.'+prior
+    +'Nếu có sản phẩm tham chiếu: không redesign bao bì, không thay logo/màu/nhãn, luôn là sản phẩm nhỏ đúng tỷ lệ thật, không oversized; không bịa công dụng/claim không có dữ kiện.'+prior
     +' Trả JSON duy nhất: {"title":"","hook":"","story":"","ending":""}.';
   var content=[{type:'text',text:userText}];
-  scRefsArr.forEach(function(r){if(r&&r.dataUrl)content.push({type:'image_url',image_url:{url:r.dataUrl}});});
+  scRefsArr.forEach(function(r,i){
+    if(r&&r.dataUrl){
+      content.push({type:'text',text:'ẢNH THAM CHIẾU #'+(i+1)+' — dùng trực tiếp để nghĩ nội dung kịch bản.'});
+      content.push({type:'image_url',image_url:{url:r.dataUrl}});
+    }
+  });
   var body={model:($('scModel')&&$('scModel').value)||'qwen3.8-flash',messages:[
-    {role:'system',content:'Bạn là biên kịch quảng cáo và phim ngắn. Hãy đưa ra ý tưởng mới, ngắn, quay được, không lan man. Chỉ JSON hợp lệ.'},
+    {role:'system',content:'Bạn là biên kịch quảng cáo và phim ngắn multimodal. Khi có ảnh tham chiếu, phải quan sát ảnh và để nội dung nhìn thấy trong ảnh chi phối ý tưởng; không bịa thông tin sản phẩm. Ý tưởng phải mới, ngắn, quay được, không lan man. Chỉ JSON hợp lệ.'},
     {role:'user',content:content}
   ],stream:false,temperature:forceNew?0.95:0.82,max_tokens:900,response_format:{type:'json_object'}};
   baiScriptRequest(body,0).then(function(data){
@@ -4296,11 +4446,12 @@ function generateAiIdea(forceNew){
     if(!obj)throw new Error('AI không trả gợi ý hợp lệ');
     scIdeaLast={title:String(obj.title||info.label),hook:String(obj.hook||''),story:String(obj.story||''),ending:String(obj.ending||''),genre:val};
     scRenderIdeaSuggestion(scIdeaLast);
-    toast(forceNew?'🔁 AI đã nghĩ một gợi ý khác':'✨ AI đã tạo kịch bản gợi ý');
+    toast(forceNew?'🔁 AI đã nghĩ một gợi ý khác':(hasRefs?'✨ AI đã tạo gợi ý dựa trên ảnh tham chiếu':'✨ AI đã tạo kịch bản gợi ý'));
   }).catch(function(err){toast((err&&err.message)||'Không tạo được gợi ý AI',true);}).finally(function(){
     scIdeaBusy=false;
     if(b1){b1.disabled=false;b1.textContent='✨ AI ĐỀ XUẤT';}
     if(b2){b2.disabled=false;b2.textContent='🔁 TẠO LẠI GỢI Ý';}
+    updateScIdeaRefState();
   });
 }
 if($('scIdeaGenerate'))$('scIdeaGenerate').onclick=function(){generateAiIdea(false);};
