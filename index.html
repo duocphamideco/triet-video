@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2212%22%20fill%3D%22%23ee3a23%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2243%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%20font-size%3D%2231%22%20font-weight%3D%22800%22%20fill%3D%22white%22%3EI%3C%2Ftext%3E%3C%2Fsvg%3E">
-<title>IDECO · Studio Tạo Ảnh & Dựng Video AI · V53</title>
+<title>IDECO · Studio Tạo Ảnh & Dựng Video AI · V55 AI Reference Lock</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
@@ -269,6 +269,22 @@ select{width:100%;border:1px solid var(--line);border-radius:12px;background:#fd
 .scene-card .detailbox{background:#292b32;border-radius:9px;padding:7px 9px;color:#d5d7dd;font-size:11.2px;line-height:1.45}
 .scene-card .detailbox b{display:block;color:#9ca1ad;font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
 @media(max-width:560px){.sc-director-grid,.scene-card .detailgrid{grid-template-columns:1fr}}
+
+
+/* ===== V55: AI REFERENCE DETECTION + IDENTITY / PRODUCT LOCK ===== */
+.sc-ref-ai{margin-top:10px;border:1px solid var(--line);border-radius:12px;background:#fdfcfa;overflow:hidden}
+.sc-ref-ai-head{display:flex;align-items:center;gap:8px;padding:10px 11px;border-bottom:1px solid var(--line)}
+.sc-ref-ai-head b{font-size:12px;flex:1}.sc-ref-ai-head span{font-size:10.5px;color:var(--muted)}
+.sc-ref-ai-head button{border:1px solid var(--line);background:#fff;color:var(--red-dark);border-radius:8px;padding:7px 9px;font-size:10.5px;font-weight:800}
+.sc-ref-status{padding:9px 11px;font-size:11.5px;color:#6f6a62;line-height:1.5}
+.sc-ref-status.busy{color:#b46a00}.sc-ref-status.ok{color:#147a42}.sc-ref-status.err{color:var(--red-dark)}
+.sc-ref-profiles{display:flex;flex-direction:column;gap:6px;padding:0 9px 9px}
+.sc-ref-profile{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 9px;font-size:10.8px;line-height:1.45;color:#5f5a53}
+.sc-ref-profile .rid{display:inline-block;background:#24262d;color:#fff;border-radius:999px;padding:2px 7px;font:800 9.5px ui-monospace,monospace;margin-right:5px}
+.sc-ref-profile .rtype{font-weight:800;color:var(--red-dark)}
+.sc-ref-profile .rname{font-weight:800;color:var(--ink)}
+.sc-lock-card{background:#17251d;border:1px solid #285f3f;border-radius:12px;padding:11px 13px;margin-bottom:11px;color:#cfe9d9;font-size:11.5px;line-height:1.55}
+.sc-lock-card b{color:#76e0a6}.sc-lock-card code{font-family:ui-monospace,monospace;color:#a7f3c4;font-size:10.5px}
 
 /* ---- chip góc quay ---- */
 .camchips{display:flex;flex-wrap:wrap;gap:7px}
@@ -1468,7 +1484,12 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
         <div class="slot" data-i="4"><span class="num">5</span><button class="x">✕</button><span class="plus">＋</span><span>Ảnh 5</span></div>
       </div>
       <input type="file" id="scFileInput" accept="image/*">
-      <label class="emplock"><input type="checkbox" id="scEmpLock"> 🔒 Ảnh tham chiếu là nhân viên / người thật — khóa chặt nhận diện khuôn mặt gốc, không đổi đặc điểm khuôn mặt trong toàn bộ kịch bản</label>
+      <div class="sc-ref-ai" id="scRefAiPanel">
+        <div class="sc-ref-ai-head"><b>🧠 AI tự nhận diện ảnh tham chiếu</b><span id="scRefAiMini">chưa có ảnh</span><button type="button" id="scAnalyzeRefs">Phân tích lại</button></div>
+        <div class="sc-ref-status" id="scRefAiStatus">Đính kèm ảnh, AI sẽ tự phát hiện nhân vật / sản phẩm / logo / bối cảnh và tạo mã khóa xuyên suốt kịch bản.</div>
+        <div class="sc-ref-profiles" id="scRefProfiles"></div>
+      </div>
+      <label class="emplock"><input type="checkbox" id="scEmpLock"> 🔒 Khóa người thật thủ công — AI sẽ tự bật khi phát hiện ảnh có nhân vật; Anh vẫn có thể bật/tắt để ghi đè.</label>
     </div>
 
     <div class="sec">
@@ -1487,6 +1508,16 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
     <div class="sec">
       <label class="lbl">Định hướng đạo diễn AI · tự kết hợp với các lựa chọn bên dưới</label>
       <div class="sc-director-grid">
+        <div><label>Thể loại kịch bản</label><select id="scGenre">
+          <option value="auto" selected>🤖 AI tự chọn theo ý tưởng</option>
+          <option value="advertising">📣 Phim quảng cáo / TVC</option>
+          <option value="comedy">😂 Phim hài · setup → bất ngờ → punchline</option>
+          <option value="drama">🎭 Phim drama · xung đột → cao trào → payoff</option>
+          <option value="action">💥 Phim hành động · nhịp mạnh, chuyển động rõ</option>
+          <option value="horror">👻 Phim kinh dị · hồi hộp, ám ảnh, không gore</option>
+          <option value="fun">🥳 Phim vui nhộn / viral · tươi sáng, dễ chia sẻ</option>
+          <option value="emotional">❤️ Phim cảm xúc · ấm áp, chạm cảm xúc</option>
+        </select></div>
         <div><label>Mục tiêu video</label><select id="scGoal">
           <option value="direct-response" selected>🎯 Bán hàng / chuyển đổi · hook mạnh + CTA rõ</option>
           <option value="brand">🏆 Nhận diện thương hiệu · premium, đáng nhớ</option>
@@ -3637,7 +3668,11 @@ $('fpExtBtn').onclick = function(){
 renderVGallery();
 
 /* ================= TAB KỊCH BẢN CINEMATIC (B.AI QWEN3.8-FLASH) ================= */
-var scRefsArr = [null, null, null, null, null]; // {dataUrl}
+var scRefsArr = [null, null, null, null, null]; // {dataUrl, analysis?}
+var scRefAnalysis = { ready:false, busy:false, profiles:[], summary:'', lockText:'', fingerprint:'' };
+var scRefAnalysisVersion = 0;
+var scRefAnalysisPromise = null;
+var scRefAnalyzeTimer = null;
 var scPickSlot = 0;
 var scDur = 10;      // tổng thời lượng: 10 | 15 | 20 | 30
 var scSeg = 10;      // độ dài mỗi phân cảnh: 10 | 15 | 30 (30 = Wan 3.0 một cảnh liền mạch)
@@ -3704,7 +3739,9 @@ Array.prototype.forEach.call(document.querySelectorAll('#scRefs .slot'), functio
     if(e.target.classList.contains('x')){
       e.stopPropagation();
       scRefsArr[i] = null;
+      invalidateRefAnalysis();
       renderScSlots();
+      scheduleRefAnalysis();
       return;
     }
     scPickSlot = i;
@@ -3717,9 +3754,10 @@ $('scFileInput').addEventListener('change', function(){
   if(!file) return;
   compressImage(file, 1280, 0.82, function(dataUrl){
     if(!dataUrl){ toast('Không đọc được ảnh này', true); return; }
-    scRefsArr[scPickSlot] = { dataUrl: dataUrl };
+    scRefsArr[scPickSlot] = { dataUrl: dataUrl, analysis: null };
+    invalidateRefAnalysis();
     renderScSlots();
-    if(!$('scEmpLock').checked) $('scEmpLock').checked = true; // có ảnh -> mặc định bật khóa khuôn mặt, bỏ tick nếu không phải ảnh người
+    scheduleRefAnalysis();
   });
 });
 function renderScSlots(){
@@ -3737,6 +3775,184 @@ function renderScSlots(){
     }
   });
 }
+
+
+/* ---------- V55 AI REFERENCE DETECTION ---------- */
+function scRefsFingerprint(){
+  return scRefsArr.map(function(r,i){
+    if(!r || !r.dataUrl) return i+':-';
+    var d=String(r.dataUrl); return i+':'+d.length+':'+d.slice(-72);
+  }).join('|');
+}
+function invalidateRefAnalysis(){
+  scRefAnalysisVersion++;
+  scRefAnalysis.ready=false; scRefAnalysis.profiles=[]; scRefAnalysis.summary=''; scRefAnalysis.lockText='';
+  scRefAnalysis.fingerprint=scRefsFingerprint();
+  if(!scRefsArr.some(function(r){return r&&r.dataUrl;}) && $('scEmpLock') && $('scEmpLock').getAttribute('data-ai-auto')==='1'){ $('scEmpLock').checked=false; $('scEmpLock').removeAttribute('data-ai-auto'); }
+  renderRefAnalysis();
+}
+function refTypeLabel(t){
+  return ({person:'NHÂN VẬT',product:'SẢN PHẨM',logo:'LOGO',context:'BỐI CẢNH',mixed:'HỖN HỢP',other:'KHÁC'})[t]||String(t||'KHÁC').toUpperCase();
+}
+function refTypeHasPerson(p){ return p && (p.type==='person' || (p.contains_person===true) || (p.person && p.person.present)); }
+function refTypeHasProduct(p){ return p && (p.type==='product' || (p.contains_product===true) || (p.product && p.product.present)); }
+function compactRefText(v,max){ v=String(v||'').replace(/\s+/g,' ').trim(); return v.length>(max||320)?v.slice(0,(max||320)-1)+'…':v; }
+function normalizeRefProfiles(parsed, refs){
+  var arr = parsed && Array.isArray(parsed.references) ? parsed.references : [];
+  var peopleN=0, productN=0, logoN=0, contextN=0, otherN=0, out=[];
+  refs.forEach(function(refObj, j){
+    var idx=refObj.index, raw=arr.filter(function(x){return Number(x&&x.index)===idx;})[0] || arr[j] || {};
+    var t=String(raw.type||'other').toLowerCase();
+    if(['person','product','logo','context','mixed','other'].indexOf(t)<0)t='other';
+    var person=raw.person||{}, product=raw.product||{};
+    var hasP = t==='person' || raw.contains_person===true || person.present===true;
+    var hasProd = t==='product' || raw.contains_product===true || product.present===true;
+    var common={
+      index:idx, same_entity_as:Number(raw.same_entity_as)||0,
+      description:compactRefText(raw.description || '',220)
+    };
+    if(hasP){
+      out.push({
+        index:common.index, same_entity_as:common.same_entity_as, description:common.description,
+        id:(function(){var prev=out.filter(function(q){return q.index===common.same_entity_as&&q.type==='person';})[0];return prev?prev.id:'REF-PERSON-'+(++peopleN);})(), type:'person', contains_person:true, contains_product:false,
+        name:compactRefText(person.role_hint || '',80),
+        person:{present:true,signature:compactRefText(person.identity_signature || raw.person_signature || '',300),wardrobe:compactRefText(person.wardrobe || '',180),immutable:compactRefText(person.immutable_features || '',220)},
+        product:{present:false,name:'',signature:'',visible_text:[],immutable:''}
+      });
+    }
+    if(hasProd){
+      out.push({
+        index:common.index, same_entity_as:common.same_entity_as, description:common.description,
+        id:(function(){var prev=out.filter(function(q){return q.index===common.same_entity_as&&q.type==='product';})[0];return prev?prev.id:'REF-PRODUCT-'+(++productN);})(), type:'product', contains_person:false, contains_product:true,
+        name:compactRefText(product.name_if_legible || raw.name_if_legible || '',100),
+        person:{present:false,signature:'',wardrobe:'',immutable:''},
+        product:{present:true,name:compactRefText(product.name_if_legible || raw.name_if_legible || '',100),signature:compactRefText(product.packaging_signature || raw.product_signature || '',360),visible_text:Array.isArray(product.visible_text)?product.visible_text.slice(0,8).map(function(x){return compactRefText(x,80);}):[],immutable:compactRefText(product.immutable_features || '',240)}
+      });
+    }
+    if(!hasP && !hasProd){
+      var id=t==='logo'?'REF-LOGO-'+(++logoN):(t==='context'?'REF-SCENE-'+(++contextN):'REF-OTHER-'+(++otherN));
+      out.push({
+        index:common.index, same_entity_as:common.same_entity_as, description:common.description,
+        id:id, type:t, contains_person:false, contains_product:false,
+        name:compactRefText(raw.name_if_legible || '',80),
+        person:{present:false,signature:'',wardrobe:'',immutable:''},
+        product:{present:false,name:'',signature:'',visible_text:[],immutable:''}
+      });
+    }
+  });
+  return out;
+}
+function buildReferenceLockBlock(profiles){
+  profiles=profiles || scRefAnalysis.profiles || [];
+  if(!profiles.length) return '';
+  var out='[REFERENCE IDENTITY LOCK — BẮT BUỘC GIỮ ỔN ĐỊNH XUYÊN SUỐT] ';
+  profiles.forEach(function(p){
+    out+='['+p.id+' | Ảnh '+p.index+' | '+refTypeLabel(p.type)+(p.same_entity_as?' | cùng thực thể với Ảnh '+p.same_entity_as:'')+'] ';
+    if(p.person && p.person.present){
+      out+='Đây là cùng MỘT nhân vật ở mọi cảnh. Giữ nguyên khuôn mặt, tỷ lệ nét mặt, kiểu tóc, vóc dáng và các dấu hiệu nhìn thấy trong ảnh; không thay diễn viên, không face morph, không beauty-retouch làm đổi nhận diện. ';
+      if(p.person.signature) out+='Dấu neo nhận diện: '+p.person.signature+'. ';
+      if(p.person.wardrobe) out+='Trang phục tham chiếu: '+p.person.wardrobe+'; giữ nguyên trừ khi ý tưởng người dùng yêu cầu đổi. ';
+    }
+    if(p.product && p.product.present){
+      out+='Đây là cùng MỘT sản phẩm/bao bì ở mọi cảnh. Giữ nguyên hình dáng, tỷ lệ, màu chủ đạo, nắp/tuýp/hộp/chai, logo và bố cục nhãn nhìn thấy; không đổi thành bao bì khác, không bịa chữ/claim. ';
+      if(p.product.name) out+='Tên đọc được: "'+p.product.name+'". ';
+      if(p.product.signature) out+='Dấu neo bao bì: '+p.product.signature+'. ';
+      if(p.product.visible_text.length) out+='Chữ nhìn rõ được phép giữ nguyên: '+p.product.visible_text.map(function(x){return '"'+x+'"';}).join(', ')+'. ';
+    }
+    if(p.type==='logo') out+='Giữ nguyên hình học, màu và tỷ lệ logo; không viết lại logo bằng font khác. ';
+    if(p.type==='context' && p.description) out+='Bối cảnh neo: '+p.description+'. ';
+  });
+  out+='Khi một chi tiết không nhìn rõ từ ảnh, KHÔNG tự suy đoán. Các mã REF ở trên phải được nhắc lại trong mô tả cảnh/beat khi thực thể tương ứng xuất hiện. ';
+  return out.replace(/\s+/g,' ').trim();
+}
+function renderRefAnalysis(){
+  var refs=scRefsArr.map(function(r,i){return r?i+1:null;}).filter(Boolean);
+  var st=$('scRefAiStatus'), mini=$('scRefAiMini'), box=$('scRefProfiles');
+  if(!st||!mini||!box)return;
+  box.innerHTML='';
+  if(!refs.length){ mini.textContent='chưa có ảnh'; st.className='sc-ref-status'; st.textContent='Đính kèm ảnh, AI sẽ tự phát hiện nhân vật / sản phẩm / logo / bối cảnh và tạo mã khóa xuyên suốt kịch bản.'; return; }
+  if(scRefAnalysis.busy){ mini.textContent='đang phân tích'; st.className='sc-ref-status busy'; st.textContent='AI đang đọc '+refs.length+' ảnh để tạo hồ sơ nhận diện và khóa continuity…'; return; }
+  if(!scRefAnalysis.ready){ mini.textContent=refs.length+' ảnh · chưa khóa'; st.className='sc-ref-status'; st.textContent='Ảnh đã sẵn sàng. AI sẽ tự phân tích trước khi viết kịch bản; có thể bấm “Phân tích lại” để chạy ngay.'; return; }
+  var people=scRefAnalysis.profiles.filter(refTypeHasPerson).length, products=scRefAnalysis.profiles.filter(refTypeHasProduct).length;
+  mini.textContent='✓ '+scRefAnalysis.profiles.length+' hồ sơ'; st.className='sc-ref-status ok';
+  st.textContent='Đã khóa '+people+' nhân vật · '+products+' sản phẩm/bao bì. '+(scRefAnalysis.summary||'Hồ sơ này sẽ được nhúng vào mọi phân cảnh.');
+  scRefAnalysis.profiles.forEach(function(p){
+    var d=document.createElement('div'); d.className='sc-ref-profile';
+    var name=p.name || (p.product&&p.product.name) || '';
+    var detail=(p.person&&p.person.signature)||(p.product&&p.product.signature)||p.description||'Đã tạo khóa nhận diện từ ảnh.';
+    d.innerHTML='<span class="rid">'+escHtml(p.id)+'</span><span class="rtype">'+escHtml(refTypeLabel(p.type))+'</span>'+(name?' · <span class="rname">'+escHtml(name)+'</span>':'')+'<br>'+escHtml(detail);
+    box.appendChild(d);
+  });
+}
+function scheduleRefAnalysis(){
+  clearTimeout(scRefAnalyzeTimer);
+  if(!scRefsArr.some(function(r){return r&&r.dataUrl;})){ renderRefAnalysis(); return; }
+  scRefAnalyzeTimer=setTimeout(function(){ analyzeScriptRefs(true); },650);
+}
+function analyzeScriptRefs(silent){
+  var currentFp=scRefsFingerprint();
+  if(scRefAnalysis.busy && scRefAnalysis.fingerprint===currentFp && scRefAnalysisPromise) return scRefAnalysisPromise;
+  var refs=[]; scRefsArr.forEach(function(r,i){if(r&&r.dataUrl)refs.push({index:i+1,dataUrl:r.dataUrl});});
+  if(!refs.length){ invalidateRefAnalysis(); renderRefAnalysis(); return Promise.resolve(scRefAnalysis); }
+  var fp=currentFp;
+  if(scRefAnalysis.ready && scRefAnalysis.fingerprint===fp) return Promise.resolve(scRefAnalysis);
+  if(!BAI_API_KEY || BAI_API_KEY.indexOf('PASTE_')===0){
+    if(!silent) toast('Chưa cấu hình BAI_API_KEY để AI phân tích ảnh',true);
+    return Promise.reject(new Error('Chưa cấu hình BAI_API_KEY'));
+  }
+  var myVersion=++scRefAnalysisVersion;
+  scRefAnalysis.busy=true; scRefAnalysis.fingerprint=fp; renderRefAnalysis();
+  var content=[{type:'text',text:
+    'Phân tích các ảnh tham chiếu cho hệ thống dựng video. Mỗi ảnh phải được phân loại: person, product, logo, context, mixed hoặc other. '+
+    'Mục tiêu là tạo dấu neo nhận diện NGẮN GỌN nhưng đủ mạnh để giữ đúng cùng nhân vật/sản phẩm xuyên nhiều phân cảnh. '+
+    'Chỉ mô tả đặc điểm NHÌN THẤY; không suy đoán danh tính thật, dân tộc, bệnh lý hay thuộc tính nhạy cảm. '+
+    'Với người: ghi identity_signature (tỷ lệ khuôn mặt/nét nổi bật nhìn thấy/kiểu tóc/vóc dáng), wardrobe và immutable_features. '+
+    'Với sản phẩm: chỉ đọc tên/chữ nếu thật sự nhìn rõ; ghi packaging_signature gồm hình dạng, tỷ lệ, màu, nắp/hộp/tuýp/chai, logo, bố cục nhãn; tuyệt đối không bịa claim/công dụng/chữ nhỏ. '+
+    'Nếu nhiều ảnh là cùng một thực thể, dùng same_entity_as là số ảnh trước đó; nếu không chắc để 0. '+
+    'TRẢ JSON DUY NHẤT: {"summary":"1 câu","references":[{"index":1,"type":"person|product|logo|context|mixed|other","contains_person":false,"contains_product":false,"name_if_legible":"","description":"","same_entity_as":0,"person":{"present":false,"role_hint":"","identity_signature":"","wardrobe":"","immutable_features":""},"product":{"present":false,"name_if_legible":"","packaging_signature":"","visible_text":[],"immutable_features":""}}]}. '
+  }];
+  refs.forEach(function(r){
+    content.push({type:'text',text:'ẢNH THAM CHIẾU #'+r.index+' — hãy phân tích đúng ảnh này.'});
+    content.push({type:'image_url',image_url:{url:r.dataUrl}});
+  });
+  var body={
+    model:($('scModel')&&$('scModel').value)||'qwen3.8-flash',
+    messages:[{role:'system',content:'Bạn là Visual Continuity Supervisor cho phim quảng cáo AI. Nhiệm vụ: phân tích ảnh tham chiếu thành hồ sơ khóa nhận diện có thể tái sử dụng. Không markdown, chỉ JSON hợp lệ.'},{role:'user',content:content}],
+    stream:false, temperature:0.15, max_tokens:3500, response_format:{type:'json_object'}
+  };
+  var req=baiScriptRequest(body,0).then(function(data){
+    if(myVersion!==scRefAnalysisVersion || fp!==scRefsFingerprint()) return scRefAnalysis;
+    var msg=data&&data.choices&&data.choices[0]&&data.choices[0].message, txt=msg&&msg.content;
+    if(Array.isArray(txt))txt=txt.map(function(x){return (x&&(x.text||x.content))||'';}).join('');
+    txt=String(txt||'').trim().replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
+    var parsed; try{parsed=JSON.parse(txt);}catch(e){var a=txt.indexOf('{'),b=txt.lastIndexOf('}');if(a>=0&&b>a)parsed=JSON.parse(txt.slice(a,b+1));}
+    if(!parsed)throw new Error('AI không trả hồ sơ ảnh hợp lệ');
+    var profiles=normalizeRefProfiles(parsed,refs);
+    scRefAnalysis.profiles=profiles; scRefAnalysis.summary=compactRefText(parsed.summary||'',260); scRefAnalysis.lockText=buildReferenceLockBlock(profiles); scRefAnalysis.ready=true; scRefAnalysis.fingerprint=fp;
+    profiles.forEach(function(p){var slot=scRefsArr[p.index-1];if(slot)slot.analysis=p;});
+    var anyPerson=profiles.some(refTypeHasPerson), emp=$('scEmpLock');
+    if(emp){
+      if(anyPerson){ if(!emp.checked){emp.checked=true;emp.setAttribute('data-ai-auto','1');} }
+      else if(emp.getAttribute('data-ai-auto')==='1'){ emp.checked=false;emp.removeAttribute('data-ai-auto'); }
+    }
+    renderRefAnalysis();
+    if(!silent)toast('🧠 Đã phân tích ảnh và tạo khóa nhận diện');
+    return scRefAnalysis;
+  }).catch(function(err){
+    if(myVersion===scRefAnalysisVersion){scRefAnalysis.ready=false;scRefAnalysis.lockText='';}
+    var st=$('scRefAiStatus'); if(st){st.className='sc-ref-status err';st.textContent='Không phân tích được ảnh: '+((err&&err.message)||'lỗi không xác định')+'. Khi tạo kịch bản, app vẫn dùng khóa tham chiếu cơ bản.';}
+    if(!silent)toast((err&&err.message)||'Không phân tích được ảnh',true);
+    throw err;
+  }).finally(function(){
+    if(myVersion===scRefAnalysisVersion){scRefAnalysis.busy=false;renderRefAnalysis();}
+    if(scRefAnalysisPromise===req) scRefAnalysisPromise=null;
+  });
+  scRefAnalysisPromise=req;
+  return req;
+}
+if($('scAnalyzeRefs')) $('scAnalyzeRefs').onclick=function(){ invalidateRefAnalysis(); analyzeScriptRefs(false).catch(function(){}); };
+if($('scEmpLock')) $('scEmpLock').addEventListener('change',function(){ this.removeAttribute('data-ai-auto'); });
+renderRefAnalysis();
 
 /* ---------- HỒ SƠ GIỌNG NÓI (khóa đồng nhất toàn kịch bản) ---------- */
 function buildVoices(){
@@ -3784,6 +4000,16 @@ function styleClause(){
 
 /* -- gọi B.AI Qwen3.8-Flash để soạn kịch bản -- */
 function scDirectorBrief(){
+  var genreMap={
+    'auto':'Tự suy luận thể loại phù hợp nhất từ ý tưởng người dùng; không ép một công thức cố định.',
+    'advertising':'PHIM QUẢNG CÁO/TVC: cấu trúc hook → vấn đề/nhu cầu → giải pháp/sản phẩm → bằng chứng hình ảnh hợp lệ → hero/CTA; sản phẩm là trung tâm nhưng câu chuyện phải tự nhiên.',
+    'comedy':'PHIM HÀI: có setup rõ, nhịp phản ứng, misdirection/bất ngờ và punchline; gây cười bằng tình huống/diễn xuất, không biến sản phẩm thành đạo cụ vô nghĩa.',
+    'drama':'PHIM DRAMA: có mâu thuẫn hoặc nhu cầu cảm xúc, escalation ngắn, cao trào và payoff; ưu tiên diễn xuất/ánh mắt/nhịp im lặng, tránh bi lụy quá mức.',
+    'action':'PHIM HÀNH ĐỘNG: chuyển động mạnh nhưng dễ theo dõi, geography rõ, camera động có mục đích, setup → escalation → payoff; không lạm dụng rung máy/cắt rối.',
+    'horror':'PHIM KINH DỊ: xây suspense bằng âm thanh, ánh sáng, khoảng trống và reveal; ưu tiên ám ảnh/tò mò, không gore mặc định; nếu có sản phẩm phải tích hợp logic vào câu chuyện.',
+    'fun':'PHIM VUI NHỘN/VIRAL: tươi sáng, nhịp nhanh, biểu cảm rõ, một gimmick dễ nhớ/chia sẻ, payoff tích cực; tránh gây cười quá lố làm mất thương hiệu.',
+    'emotional':'PHIM CẢM XÚC: khoảnh khắc đời thường, diễn xuất tinh tế, hình ảnh ấm, cao trào nhẹ và payoff chạm cảm xúc; thương hiệu/sản phẩm xuất hiện chân thành.'
+  };
   var goalMap={
     'direct-response':'Bán hàng/chuyển đổi: hook phải gây chú ý ngay, lợi ích/giải pháp rõ, CTA cụ thể và tự nhiên.',
     'brand':'Nhận diện thương hiệu: ưu tiên hình ảnh premium, motif thị giác dễ nhớ, cảm giác tin cậy và nhất quán thương hiệu.',
@@ -3807,12 +4033,14 @@ function scDirectorBrief(){
     'throughout':'Sản phẩm/bao bì hiện diện xuyên suốt ở nhiều beat nhưng không che nhân vật hay gây gượng ép.',
     'hero-end':'Dồn khoảnh khắc hero/reveal sản phẩm đẹp ở cuối, kèm packshot hoặc CTA rõ.'
   };
+  var genre=$('scGenre')?$('scGenre').value:'auto';
   var goal=$('scGoal')?$('scGoal').value:'direct-response';
   var pace=$('scPace')?$('scPace').value:'balanced';
   var creative=$('scCreative')?$('scCreative').value:'pro';
   var product=$('scProductRole')?$('scProductRole').value:'natural';
   return {
-    goal:goal, pace:pace, creative:creative, product:product,
+    genre:genre, goal:goal, pace:pace, creative:creative, product:product,
+    genreText:genreMap[genre]||genreMap['auto'],
     goalText:goalMap[goal]||goalMap['direct-response'],
     paceText:paceMap[pace]||paceMap['balanced'],
     creativeText:creativeMap[creative]||creativeMap['pro'],
@@ -3826,11 +4054,12 @@ function buildScriptSystemPrompt(idea, nScenes, seg, hasEmployee, voices, cams, 
   var beatCount = seg >= 30 ? 6 : (seg >= 15 ? 4 : 3);
   var beatSpan = Math.max(1, Math.round(seg / beatCount));
   var lockTxt = hasEmployee
-    ? 'NHẬN DIỆN BẮT BUỘC: ảnh tham chiếu có người thật/nhân viên. Giữ nguyên 100% khuôn mặt, tuổi cảm nhận, giới tính, kiểu tóc, vóc dáng và đặc điểm nhận dạng xuyên suốt; không thay người, không beauty-retouch quá mức, không làm mất mặt nhân vật chính. '
+    ? 'NHẬN DIỆN BẮT BUỘC: ảnh tham chiếu có người thật/nhân viên. Giữ nguyên 100% khuôn mặt, tuổi cảm nhận, kiểu tóc, vóc dáng và đặc điểm nhận dạng nhìn thấy xuyên suốt; không thay người, không face morph, không beauty-retouch quá mức. '
     : '';
 
+  var refLock = scRefAnalysis.ready ? scRefAnalysis.lockText : '';
   var refTxt = scRefsArr.some(function(r){return r;})
-    ? 'ẢNH THAM CHIẾU: hãy quan sát ảnh theo thứ tự đính kèm để nhận biết nhân vật, sản phẩm/bao bì và bối cảnh. Nếu có sản phẩm, giữ đúng hình dáng, màu sắc, tỷ lệ, logo/nhãn có thể nhìn thấy; tuyệt đối không tự bịa chữ nhỏ hoặc claim không đọc được. '
+    ? (refLock ? (refLock + ' ') : 'ẢNH THAM CHIẾU: hãy quan sát ảnh theo thứ tự đính kèm để nhận biết nhân vật, sản phẩm/bao bì và bối cảnh. Nếu có sản phẩm, giữ đúng hình dáng, màu sắc, tỷ lệ, logo/nhãn có thể nhìn thấy; tuyệt đối không tự bịa chữ nhỏ hoặc claim không đọc được. ')
     : '';
 
   var castTxt;
@@ -3849,13 +4078,13 @@ function buildScriptSystemPrompt(idea, nScenes, seg, hasEmployee, voices, cams, 
   return 'VAI TRÒ: Bạn là Creative Director + TVC Director + Copywriter quảng cáo cao cấp, chuyên chuyển brief thành video ngắn có thể dựng ngay bằng AI image-to-video cho IDECO. '
     + 'NHIỆM VỤ: tạo ĐÚNG ' + nScenes + ' phân cảnh × ' + seg + ' giây = ' + (nScenes*seg) + ' giây. Mỗi cảnh phải có cấu trúc vi mô theo timeline và nối continuity rõ sang cảnh kế tiếp. '
     + 'NGUYÊN TẮC ƯU TIÊN: (1) ý tưởng/yêu cầu người dùng là luật cao nhất; (2) các lựa chọn giao diện phải được KẾT HỢP, không xử lý rời rạc; (3) hình phải quay/dựng được; (4) sáng tạo nhưng không làm sai thông tin sản phẩm. '
-    + 'CREATIVE BRIEF TỪ GIAO DIỆN: Mục tiêu=' + director.goalText + ' Nhịp dựng=' + director.paceText + ' Mức sáng tạo=' + director.creativeText + ' Vai trò sản phẩm=' + director.productText + ' '
+    + 'CREATIVE BRIEF TỪ GIAO DIỆN: Thể loại=' + director.genreText + ' Mục tiêu=' + director.goalText + ' Nhịp dựng=' + director.paceText + ' Mức sáng tạo=' + director.creativeText + ' Vai trò sản phẩm=' + director.productText + ' '
     + lockTxt + refTxt + castTxt + camTxt + styleClause()
     + 'CHUẨN KỊCH BẢN CHUYÊN NGHIỆP: mở bằng hook thị giác/hành động trong 1–2 giây đầu; mỗi beat phải làm ít nhất một việc (gây tò mò, nêu vấn đề, chứng minh, tạo cảm xúc, giới thiệu sản phẩm, payoff hoặc CTA). Không viết cảnh chỉ để "đẹp" mà không phục vụ câu chuyện. '
     + 'Nếu là quảng cáo sản phẩm dược/mỹ phẩm, KHÔNG tự bịa công dụng, chỉ định, con số, chứng nhận hay cam kết điều trị mà người dùng/ảnh không cung cấp. Khi thiếu dữ kiện, dùng mô tả trung tính như "sản phẩm", "giải pháp", "hỗ trợ chăm sóc" thay vì tạo claim mới. '
     + 'MỖI phân cảnh dài ' + seg + ' giây phải có khoảng ' + beatCount + ' shot-beat liên tiếp (xấp xỉ ' + beatSpan + ' giây/beat; có thể co giãn theo nhịp). Riêng 30s Wan 3.0/1 cảnh: bắt buộc chia nội bộ thành 5–7 beat để video liền mạch nhưng không đơn điệu. '
     + 'LỜI THOẠI: tổng số từ trong "lines[].text" của MỘT cảnh tối đa ' + budget + ' từ; ưu tiên ít câu nhưng đắt giá, nói được trong thời lượng, không lặp lại text on screen. '
-    + 'CONTINUITY: khóa nhân vật, trang phục, đạo cụ, hướng nhìn, vị trí sản phẩm, ánh sáng và không gian giữa các beat/cảnh trừ khi kịch bản chủ động chuyển bối cảnh. Kết thúc mỗi cảnh phải tạo điểm nối hợp lý sang cảnh sau. '
+    + 'CONTINUITY: khóa nhân vật, trang phục, đạo cụ, hướng nhìn, vị trí sản phẩm, ánh sáng và không gian giữa các beat/cảnh trừ khi kịch bản chủ động chuyển bối cảnh. Nếu có mã REF, mỗi beat/cảnh có thực thể đó PHẢI gọi đúng mã REF và tuân thủ khóa. Kết thúc mỗi cảnh phải tạo điểm nối hợp lý sang cảnh sau. '
     + 'ÂM THANH: ghi rõ ambience/SFX/music cue phục vụ nhịp; không dùng âm thanh chỉ để trang trí. TEXT ON SCREEN: ngắn, tối đa 3–8 từ/lần, chỉ khi cần; không chép nguyên lời thoại. '
     + 'Ý TƯỞNG NGƯỜI DÙNG: "' + idea + '". '
     + 'TRẢ JSON HỢP LỆ DUY NHẤT, không markdown. Schema bắt buộc: '
@@ -3948,6 +4177,24 @@ function generateScript(){
   if(scBusy) return;
   var idea = $('scPrompt').value.trim();
   if(!idea){ toast('Nhập ý tưởng kịch bản đã nhé', true); return; }
+  if(!BAI_API_KEY || BAI_API_KEY.indexOf('PASTE_') === 0){ toast('Chưa cấu hình BAI_API_KEY trong code', true); return; }
+  var hasRefs=scRefsArr.some(function(r){return r&&r.dataUrl;});
+  if(hasRefs && (!scRefAnalysis.ready || scRefAnalysis.fingerprint!==scRefsFingerprint())){
+    $('scJob').classList.add('show'); updateScJob('🧠 AI đang phân tích ảnh để khóa nhân vật / sản phẩm trước khi viết kịch bản…', 6);
+    $('btnGoScript').disabled=true; $('btnGoScript').textContent='ĐANG PHÂN TÍCH ẢNH...';
+    analyzeScriptRefs(true).catch(function(){ return null; }).then(function(){
+      $('btnGoScript').disabled=false; $('btnGoScript').textContent='📝 TẠO KỊCH BẢN';
+      generateScriptCore();
+    });
+    return;
+  }
+  generateScriptCore();
+}
+
+function generateScriptCore(){
+  if(scBusy) return;
+  var idea = $('scPrompt').value.trim();
+  if(!idea){ toast('Nhập ý tưởng kịch bản đã nhé', true); return; }
   if(!BAI_API_KEY || BAI_API_KEY.indexOf('PASTE_') === 0){
     toast('Chưa cấu hình BAI_API_KEY trong code', true);
     return;
@@ -3987,7 +4234,7 @@ function generateScript(){
     messages: [
       {
         role: 'system',
-        content: 'Bạn là Creative Director và đạo diễn TVC cao cấp. Hãy tổng hợp mọi lựa chọn giao diện thành một brief thống nhất, ưu tiên ý tưởng người dùng, tạo kịch bản chi tiết có timeline/shot-beat, continuity, diễn xuất, sản phẩm, camera, ánh sáng, âm thanh, text và CTA. Tuân thủ tuyệt đối schema JSON; không markdown.'
+        content: 'Bạn là Creative Director và đạo diễn TVC cao cấp. Hãy tổng hợp mọi lựa chọn giao diện thành một brief thống nhất, ưu tiên ý tưởng người dùng, tạo kịch bản chi tiết có timeline/shot-beat, continuity, diễn xuất, sản phẩm, camera, ánh sáng, âm thanh, text và CTA. Nếu brief có các mã REF-PERSON / REF-PRODUCT / REF-LOGO thì đó là khóa nhận diện bắt buộc: dùng đúng mã khi thực thể xuất hiện và không thay đổi nhận diện/bao bì giữa các cảnh. Tuân thủ tuyệt đối schema JSON; không markdown.'
       },
       { role: 'user', content: userContent }
     ],
@@ -4073,7 +4320,8 @@ function generateScript(){
         audio:String(raw.audio||'').trim(),
         transition:String(raw.transition||'').trim(),
         text_on_screen:tos,
-        lines:t.lines
+        lines:t.lines,
+        reference_lock: scRefAnalysis.ready ? scRefAnalysis.lockText : ''
       });
     }
 
@@ -4082,7 +4330,11 @@ function generateScript(){
     scLastMeta = {
       title: parsed.title || 'Kịch bản video', seg: seg, nScenes: nScenes, hasEmployee: hasEmployee,
       concept:String(parsed.concept||'').trim(), hook:String(parsed.hook||'').trim(), cta:String(parsed.cta||'').trim(),
-      director:director
+      director:director,
+      refSummary: scRefAnalysis.ready ? scRefAnalysis.summary : '',
+      referenceLock: scRefAnalysis.ready ? scRefAnalysis.lockText : '',
+      refProfiles: scRefAnalysis.ready ? scRefAnalysis.profiles.slice() : [],
+      refImages: scRefsArr.filter(function(r){return r&&r.dataUrl;}).map(function(r){return {dataUrl:r.dataUrl};})
     };
     updateScJob('✅ Hoàn tất · Qwen3.8-Flash · AI Director', 100);
     setTimeout(function(){ $('scJob').classList.remove('show'); }, 900);
@@ -4130,6 +4382,7 @@ function buildScenePrompt(scene, voices, seg){
   if(scene.audio) parts.push('Âm thanh: '+scene.audio+'.');
   if(scene.transition) parts.push('Chuyển cảnh/điểm nối: '+scene.transition+'.');
   if(scene.text_on_screen&&scene.text_on_screen.length) parts.push('TEXT ON SCREEN: '+scene.text_on_screen.map(function(x){return '"'+x+'"';}).join(' | ')+'.');
+  if(scene.reference_lock) parts.push(scene.reference_lock);
   parts.push(styleClause());
   parts.push('Thời lượng chính xác '+seg+' giây; hành động phải hoàn thành tự nhiên trong khung thời gian, không tua nhanh vô lý.');
   var lock=buildVoiceLockBlock(voices);if(lock)parts.push(lock);
@@ -4152,6 +4405,12 @@ function renderScResult(title, scenes, overflow, hasEmployee, voices, seg, meta)
     if(meta.hook)html += '<b>HOOK:</b> '+escHtml(meta.hook)+'<br>';
     if(meta.cta)html += '<b>CTA:</b> '+escHtml(meta.cta);
     html += '</div>';
+  }
+
+  if(meta.referenceLock){
+    html += '<div class="sc-lock-card">🧬 <b>Khóa nhận diện AI xuyên suốt</b><br>'
+      + escHtml(meta.refSummary||'AI đã phân tích ảnh tham chiếu và tạo hồ sơ khóa nhân vật/sản phẩm.')
+      + '<br><span style="opacity:.82">Mã khóa: '+escHtml((meta.refProfiles||[]).map(function(p){return p.id;}).join(' · '))+'</span></div>';
   }
 
   if(voices && voices.length){
@@ -4223,7 +4482,7 @@ function renderScResult(title, scenes, overflow, hasEmployee, voices, seg, meta)
     var s=scLastScenes[Number(b.getAttribute('data-si'))];
     $('vPrompt').value=buildScenePrompt(s,scLastVoices,scLastMeta.seg);
     $('vDur').value=String(scLastMeta.seg);
-    var imgs=scRefsArr.filter(function(r){return r;});vRefs=[null,null,null,null,null];imgs.forEach(function(r,idx){if(idx<5)vRefs[idx]={dataUrl:r.dataUrl,uploadedUrl:null}});renderVSlots();switchTab('vid');$('vPrompt').scrollIntoView({behavior:'smooth',block:'center'});toast('Đã gửi prompt đạo diễn chi tiết ('+scLastMeta.seg+'s) sang Dựng Video');
+    var imgs=(scLastMeta.refImages&&scLastMeta.refImages.length)?scLastMeta.refImages:scRefsArr.filter(function(r){return r;});vRefs=[null,null,null,null,null];imgs.forEach(function(r,idx){if(idx<5)vRefs[idx]={dataUrl:r.dataUrl,uploadedUrl:null}});renderVSlots();switchTab('vid');$('vPrompt').scrollIntoView({behavior:'smooth',block:'center'});toast('Đã gửi prompt đạo diễn chi tiết ('+scLastMeta.seg+'s) sang Dựng Video');
   }});
 }
 
