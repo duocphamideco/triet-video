@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2212%22%20fill%3D%22%23ee3a23%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2243%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%20font-size%3D%2231%22%20font-weight%3D%22800%22%20fill%3D%22white%22%3EI%3C%2Ftext%3E%3C%2Fsvg%3E">
-<title>IDECO · Studio Tạo Ảnh & Dựng Video AI · V56 Lightroom + Speed</title>
+<title>IDECO · Studio Tạo Ảnh & Dựng Video AI · V58 AI Script Ideas + Compact Grok Prompt</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
@@ -289,6 +289,17 @@ select{width:100%;border:1px solid var(--line);border-radius:12px;background:#fd
 /* ===== V57: absolute original product lock + iterative script refinement ===== */
 .sc-refine-box{border-color:#ead7a7!important;background:#fffdf7!important}
 .sc-refine-box textarea{min-height:88px}
+
+/* ===== V58: AI tự nghĩ kịch bản + prompt gọn cho Grok ===== */
+.sc-idea-ai{border-color:#d9e1f2!important;background:#fbfcff!important}
+.sc-idea-grid{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end}
+.sc-idea-grid button,.sc-idea-actions button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 12px;font-size:12px;font-weight:800;color:var(--ink)}
+.sc-idea-grid button.primary,.sc-idea-actions button.primary{background:#4f6fff;border-color:#4f6fff;color:#fff}
+.sc-idea-actions{display:flex;gap:8px;margin-top:9px}
+.sc-idea-result{display:none;margin-top:10px;background:#17181e;border:1px solid #30333c;border-radius:12px;padding:11px 13px;color:#d9dce3;font-size:12px;line-height:1.55}
+.sc-idea-result.show{display:block}.sc-idea-result b{color:#ffb257}.sc-idea-result .idea-story{white-space:pre-wrap;margin-top:6px}
+.sc-prompt-limit-note{margin-top:7px;padding:7px 9px;border-radius:9px;background:#f3f7ff;color:#536078;font-size:10.8px;line-height:1.45}
+@media(max-width:520px){.sc-idea-grid{grid-template-columns:1fr}.sc-idea-actions{flex-direction:column}}
 .sc-refine-actions{display:flex;gap:8px;margin-top:9px}
 .sc-refine-actions button{flex:1;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:11px 10px;font-size:12.5px;font-weight:800}
 .sc-refine-actions .regen{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 5px 14px rgba(238,58,35,.2)}
@@ -1502,6 +1513,33 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
       </div>
     </div>
 
+    <div class="sec sc-idea-ai">
+      <label class="lbl">✨ AI tự nghĩ &amp; đề xuất kịch bản</label>
+      <div class="sc-idea-grid">
+        <div>
+          <label style="display:block;font-size:10.5px;color:var(--muted);font-weight:700;margin-bottom:5px">Chọn kiểu kịch bản</label>
+          <select id="scIdeaGenre">
+            <option value="">— Chọn để AI tự nghĩ kịch bản —</option>
+            <option value="drama">🎭 Chính kịch</option>
+            <option value="emotional">❤️ Tình cảm</option>
+            <option value="comedy">😂 Hài hước</option>
+            <option value="self-intro">👋 Tự giới thiệu</option>
+            <option value="confessional-ad">💬 Tâm sự quảng cáo</option>
+            <option value="standup">🎤 Hài độc thoại</option>
+            <option value="romantic">🌹 Lãng mạn</option>
+            <option value="advertising">📣 Quảng cáo sáng tạo</option>
+          </select>
+        </div>
+        <button type="button" class="primary" id="scIdeaGenerate">✨ AI ĐỀ XUẤT</button>
+      </div>
+      <div class="sc-idea-result" id="scIdeaResult"></div>
+      <div class="sc-idea-actions" id="scIdeaActions" style="display:none">
+        <button type="button" class="primary" id="scIdeaUse">✓ DÙNG GỢI Ý NÀY</button>
+        <button type="button" id="scIdeaAgain">🔁 TẠO LẠI GỢI Ý</button>
+      </div>
+      <div class="ref-hint">Không cần tự viết ý tưởng. Chọn thể loại, AI sẽ tự nghĩ hook, tình huống, diễn biến và kết thúc. Nếu chưa thích, bấm <b>Tạo lại gợi ý</b> để nhận phương án khác.</div>
+    </div>
+
     <div class="sec">
       <label class="lbl">Ảnh tham chiếu (tùy chọn · tối đa 5)</label>
       <div class="refs5" id="scRefs">
@@ -1576,6 +1614,7 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
         </select></div>
       </div>
       <div class="ref-hint">AI sẽ ưu tiên <b>ý tưởng bạn nhập</b>, sau đó phối hợp mục tiêu, nhịp dựng, mức sáng tạo, vai trò sản phẩm, thời lượng, nhân vật, giọng nói, phong cách, góc máy và ảnh tham chiếu thành một creative brief thống nhất.</div>
+      <div class="sc-prompt-limit-note">✂ <b>Prompt Grok tự động rút gọn:</b> mỗi phân cảnh khi Copy/Gửi Dựng Video được giới hạn khoảng <b>1.800 ký tự</b>, ưu tiên khóa ảnh gốc, sản phẩm nhỏ đúng tỷ lệ, hành động, camera, ánh sáng và thoại; mô tả lặp/phụ sẽ bị lược bỏ.</div>
     </div>
 
     <div class="sec">
@@ -3745,10 +3784,13 @@ var scDur = 10;      // tổng thời lượng: 10 | 15 | 20 | 30
 var scSeg = 10;      // độ dài mỗi phân cảnh: 10 | 15 | 30 (30 = Wan 3.0 một cảnh liền mạch)
 var scCast = 0;      // 0 = chỉ lời bình, 1 = 1 nhân vật, 2 = đối thoại
 var scBusy = false;
+var scIdeaBusy = false;
+var scIdeaLast = null;
 var scLastScenes = null;   // [{visual, camera, lines:[{who,text}]}]
 var scLastVoices = null;   // [{id,name,desc}]
 var scLastMeta = null;     // {title, seg, nScenes, hasEmployee}
 var SC_WPS = 2.4;          // số từ tiếng Việt nói vừa khít 1 giây
+var SC_GROK_PROMPT_MAX = 1800; // V58: giữ prompt image-to-video gọn để tránh vượt giới hạn
 
 function scWordBudget(){ return Math.round(scSeg * SC_WPS); }
 
@@ -4180,6 +4222,7 @@ function buildScriptSystemPrompt(idea, nScenes, seg, hasEmployee, voices, cams, 
     + 'LỜI THOẠI: tổng số từ trong "lines[].text" của MỘT cảnh tối đa ' + budget + ' từ; ưu tiên ít câu nhưng đắt giá, nói được trong thời lượng, không lặp lại text on screen. '
     + 'CONTINUITY: khóa nhân vật, trang phục, đạo cụ, hướng nhìn, vị trí sản phẩm, ánh sáng và không gian giữa các beat/cảnh trừ khi kịch bản chủ động chuyển bối cảnh. Nếu có mã REF, mỗi beat/cảnh có thực thể đó PHẢI gọi đúng mã REF và tuân thủ khóa. Với REF-PRODUCT, mọi mô tả visual/beat/product phải giữ nguyên nguyên tắc "sản phẩm nhỏ (small product), đúng tỷ lệ thật, không oversized". Kết thúc mỗi cảnh phải tạo điểm nối hợp lý sang cảnh sau. '
     + 'ÂM THANH: ghi rõ ambience/SFX/music cue phục vụ nhịp; không dùng âm thanh chỉ để trang trí. TEXT ON SCREEN: ngắn, tối đa 3–8 từ/lần, chỉ khi cần; không chép nguyên lời thoại. '
+    + 'QUY TẮC PROMPT GỌN CHO IMAGE-TO-VIDEO: không viết văn dài. Mỗi scene.visual tối đa khoảng 45 từ; mỗi beat action + visual_detail + camera tối đa khoảng 20 từ; product tối đa 25 từ; camera tối đa 20 từ; lighting tối đa 18 từ; audio tối đa 15 từ; transition tối đa 12 từ. Không lặp lại cùng một thông tin ở nhiều trường. Ưu tiên từ khóa quay được và các khóa nhận diện bắt buộc. '
     + 'Ý TƯỞNG NGƯỜI DÙNG: "' + idea + '". '
     + 'TRẢ JSON HỢP LỆ DUY NHẤT, không markdown. Schema bắt buộc: '
     + '{"title":"tên kịch bản","concept":"big idea 1-2 câu","hook":"hook 1-2 giây đầu","cta":"CTA cuối","scenes":[{' 
@@ -4189,6 +4232,87 @@ function buildScriptSystemPrompt(idea, nScenes, seg, hasEmployee, voices, cams, 
     + '"lines":[{"who":"tên nhân vật hoặc VO","text":"câu thoại"}]' 
     + '}]}';
 }
+
+/* ===== V58: AI tự nghĩ gợi ý kịch bản theo thể loại ===== */
+function scIdeaGenreInfo(v){
+  var map={
+    'drama':{label:'Chính kịch',dir:'Tạo một câu chuyện chính kịch ngắn có xung đột rõ, cao trào vừa đủ và kết thúc đọng lại.',scGenre:'drama'},
+    'emotional':{label:'Tình cảm',dir:'Tạo một câu chuyện tình cảm chân thật, tinh tế, gần gũi, có khoảnh khắc chạm cảm xúc.',scGenre:'emotional'},
+    'comedy':{label:'Hài hước',dir:'Tạo tình huống hài có setup, bất ngờ và punchline rõ; vui nhưng không lố.',scGenre:'comedy'},
+    'self-intro':{label:'Tự giới thiệu',dir:'Tạo kịch bản nhân vật tự giới thiệu tự nhiên, có cá tính, không đọc như hồ sơ; nếu có sản phẩm thì lồng ghép mềm.',scGenre:'advertising'},
+    'confessional-ad':{label:'Tâm sự quảng cáo',dir:'Tạo dạng tâm sự trực diện với camera như kể trải nghiệm/câu chuyện đời thường rồi dẫn tự nhiên đến sản phẩm; không bịa claim.',scGenre:'emotional'},
+    'standup':{label:'Hài độc thoại',dir:'Tạo một đoạn hài độc thoại ngắn, quan sát đời thường, câu chữ duyên và có punchline; sản phẩm nếu có phải vào như một phần câu chuyện.',scGenre:'comedy'},
+    'romantic':{label:'Lãng mạn',dir:'Tạo câu chuyện lãng mạn điện ảnh, nhẹ nhàng, có chemistry và một khoảnh khắc đáng nhớ.',scGenre:'emotional'},
+    'advertising':{label:'Quảng cáo sáng tạo',dir:'Tạo một ý tưởng quảng cáo ngắn có hook thị giác mạnh, cách đưa sản phẩm tự nhiên và CTA gọn.',scGenre:'advertising'}
+  };
+  return map[v]||null;
+}
+function scRenderIdeaSuggestion(obj){
+  var box=$('scIdeaResult'),acts=$('scIdeaActions');
+  if(!box||!acts)return;
+  if(!obj){box.classList.remove('show');box.innerHTML='';acts.style.display='none';return;}
+  var lines=[];
+  if(obj.hook)lines.push('<b>HOOK:</b> '+escHtml(obj.hook));
+  if(obj.story)lines.push('<div class="idea-story"><b>GỢI Ý:</b> '+escHtml(obj.story)+'</div>');
+  if(obj.ending)lines.push('<div class="idea-story"><b>KẾT:</b> '+escHtml(obj.ending)+'</div>');
+  box.innerHTML='<b>🎬 '+escHtml(obj.title||'Kịch bản gợi ý')+'</b><br>'+lines.join('<br>');
+  box.classList.add('show');acts.style.display='flex';
+}
+function scIdeaToPrompt(obj){
+  if(!obj)return '';
+  var s=(obj.title?('Kịch bản "'+obj.title+'". '):'')+(obj.hook?('Hook: '+obj.hook+'. '):'')+(obj.story||'')+(obj.ending?(' Kết: '+obj.ending):'');
+  return String(s).replace(/\s+/g,' ').trim().slice(0,1000);
+}
+function generateAiIdea(forceNew){
+  if(scIdeaBusy)return;
+  var val=$('scIdeaGenre')?$('scIdeaGenre').value:'';
+  var info=scIdeaGenreInfo(val);
+  if(!info){toast('Chọn một kiểu kịch bản để AI đề xuất',true);return;}
+  if(!BAI_API_KEY||BAI_API_KEY.indexOf('PASTE_')===0){toast('Chưa cấu hình BAI_API_KEY trong code',true);return;}
+  scIdeaBusy=true;
+  var b1=$('scIdeaGenerate'),b2=$('scIdeaAgain');
+  if(b1){b1.disabled=true;b1.textContent='AI ĐANG NGHĨ...';}
+  if(b2){b2.disabled=true;b2.textContent='ĐANG TẠO LẠI...';}
+  var director=scDirectorBrief();
+  var refSummary=(scRefAnalysis&&scRefAnalysis.ready&&scRefAnalysis.summary)?scRefAnalysis.summary:'';
+  var prior=(forceNew&&scIdeaLast)?(' Tránh lặp ý tưởng trước: '+scIdeaToPrompt(scIdeaLast).slice(0,650)+'.') : '';
+  var userText='Hãy tự nghĩ MỘT kịch bản gợi ý mới thuộc thể loại "'+info.label+'" cho video '+scDur+' giây. '+info.dir+' '
+    +'Tông video: '+director.colorToneText+' Mục tiêu: '+director.goalText+' Vai trò sản phẩm: '+director.productText+'. '
+    +(refSummary?('Ảnh tham chiếu đã được AI nhận diện: '+refSummary+'. '):'')
+    +'Kịch bản gợi ý phải NGẮN GỌN, dễ hiểu và quay được: title tối đa 8 từ; hook tối đa 18 từ; story tối đa 90 từ; ending tối đa 25 từ. '
+    +'Nếu có sản phẩm tham chiếu: giữ đúng sản phẩm gốc, luôn là sản phẩm nhỏ đúng tỷ lệ thật, không oversized; không bịa công dụng/claim không có dữ kiện.'+prior
+    +' Trả JSON duy nhất: {"title":"","hook":"","story":"","ending":""}.';
+  var content=[{type:'text',text:userText}];
+  scRefsArr.forEach(function(r){if(r&&r.dataUrl)content.push({type:'image_url',image_url:{url:r.dataUrl}});});
+  var body={model:($('scModel')&&$('scModel').value)||'qwen3.8-flash',messages:[
+    {role:'system',content:'Bạn là biên kịch quảng cáo và phim ngắn. Hãy đưa ra ý tưởng mới, ngắn, quay được, không lan man. Chỉ JSON hợp lệ.'},
+    {role:'user',content:content}
+  ],stream:false,temperature:forceNew?0.95:0.82,max_tokens:900,response_format:{type:'json_object'}};
+  baiScriptRequest(body,0).then(function(data){
+    var msg=data&&data.choices&&data.choices[0]&&data.choices[0].message,raw=msg&&msg.content;
+    if(Array.isArray(raw))raw=raw.map(function(x){return (x&&(x.text||x.content))||'';}).join('');
+    raw=String(raw||'').trim().replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
+    var obj;try{obj=JSON.parse(raw);}catch(e){var a=raw.indexOf('{'),z=raw.lastIndexOf('}');if(a>=0&&z>a)obj=JSON.parse(raw.slice(a,z+1));}
+    if(!obj)throw new Error('AI không trả gợi ý hợp lệ');
+    scIdeaLast={title:String(obj.title||info.label),hook:String(obj.hook||''),story:String(obj.story||''),ending:String(obj.ending||''),genre:val};
+    scRenderIdeaSuggestion(scIdeaLast);
+    toast(forceNew?'🔁 AI đã nghĩ một gợi ý khác':'✨ AI đã tạo kịch bản gợi ý');
+  }).catch(function(err){toast((err&&err.message)||'Không tạo được gợi ý AI',true);}).finally(function(){
+    scIdeaBusy=false;
+    if(b1){b1.disabled=false;b1.textContent='✨ AI ĐỀ XUẤT';}
+    if(b2){b2.disabled=false;b2.textContent='🔁 TẠO LẠI GỢI Ý';}
+  });
+}
+if($('scIdeaGenerate'))$('scIdeaGenerate').onclick=function(){generateAiIdea(false);};
+if($('scIdeaAgain'))$('scIdeaAgain').onclick=function(){generateAiIdea(true);};
+if($('scIdeaUse'))$('scIdeaUse').onclick=function(){
+  if(!scIdeaLast)return;
+  $('scPrompt').value=scIdeaToPrompt(scIdeaLast);
+  var info=scIdeaGenreInfo(scIdeaLast.genre);if(info&&$('scGenre'))$('scGenre').value=info.scGenre;
+  $('scPrompt').focus();$('scPrompt').scrollIntoView({behavior:'smooth',block:'center'});
+  toast('✓ Đã đưa gợi ý AI vào ô Ý tưởng — có thể bấm TẠO KỊCH BẢN');
+};
+if($('scIdeaGenre'))$('scIdeaGenre').addEventListener('change',function(){if(this.value)generateAiIdea(false);else{scIdeaLast=null;scRenderIdeaSuggestion(null);}});
 
 /* Cắt bớt thoại của 1 phân cảnh cho vừa khung thời lượng, giữ nguyên luân phiên nhân vật */
 function trimSceneLines(lines, budget){
@@ -4486,39 +4610,71 @@ function voiceIdOf(name, voices){
 }
 
 /* Prompt hoàn chỉnh gửi sang model dựng video — LUÔN kèm khối khóa giọng */
+function scPromptText(s,max){
+  s=String(s||'').replace(/\s+/g,' ').trim();
+  max=Number(max)||200;
+  if(s.length<=max)return s;
+  var cut=s.slice(0,max-1),p=Math.max(cut.lastIndexOf('. '),cut.lastIndexOf('; '),cut.lastIndexOf(', '),cut.lastIndexOf(' '));
+  if(p>max*.58)cut=cut.slice(0,p);
+  return cut.replace(/[\s,;:.]+$/,'')+'…';
+}
+function scCompactReferenceLock(){
+  var profiles=(scLastMeta&&scLastMeta.refProfiles)||scRefAnalysis.profiles||[],out=[];
+  profiles.forEach(function(p){
+    if(p&&p.person&&p.person.present)out.push((p.id||'REF-PERSON')+': same person as reference; exact face/hair/body identity, no morph.');
+    if(p&&p.product&&p.product.present)out.push((p.id||'REF-PRODUCT')+': exact original product from reference; same package/logo/colors/shape; SMALL real-world scale, never oversized; close-up by moving camera closer, not enlarging product.');
+  });
+  if(!out.length && scRefsArr.some(function(r){return r&&r.dataUrl;})){
+    out.push('REFERENCE IMAGE: preserve the exact attached subject. If it is a product, keep original packaging/logo/colors/shape and SMALL real-world scale; never redesign or oversize it.');
+  }
+  return out.join(' ');
+}
+function scCompactVoiceLock(voices){
+  if(!voices||!voices.length)return '';
+  return voices.map(function(v){return (v.id||'VOICE')+' '+v.name+': '+scPromptText(v.desc,95);}).join(' | ')+'; keep each voice unchanged.';
+}
+function scJoinPromptWithinLimit(parts,max){
+  max=max||SC_GROK_PROMPT_MAX;
+  var out='';
+  parts.forEach(function(p){
+    p=String(p||'').replace(/\s+/g,' ').trim();if(!p)return;
+    var add=(out?' ':'')+p;
+    if((out+add).length<=max){out+=add;return;}
+    var room=max-out.length-(out?1:0);
+    if(room>80)out+=(out?' ':'')+scPromptText(p,room);
+  });
+  return out.slice(0,max).trim();
+}
+/* Prompt GỌN gửi sang model dựng video — ưu tiên khóa nhận diện, hành động, camera, ánh sáng, thoại. */
 function buildScenePrompt(scene, voices, seg){
+  scene=scene||{};
   var parts=[];
-  parts.push(scene.visual||'');
-  if(scene.purpose) parts.push('Mục tiêu phân cảnh: '+scene.purpose+'.');
+  parts.push('SCENE '+seg+'s: '+scPromptText(scene.visual,280));
   if(scene.beats&&scene.beats.length){
-    var beatText='TIMELINE HÀNH ĐỘNG — giữ đúng thứ tự và continuity: ';
-    scene.beats.forEach(function(b,i){
-      beatText += '['+(b.time||('Beat '+(i+1)))+'] ';
-      if(b.action) beatText += b.action+'. ';
-      if(b.visual_detail) beatText += b.visual_detail+'. ';
-      if(b.camera) beatText += 'Camera: '+b.camera+'. ';
-    });
-    parts.push(beatText);
+    var beats=scene.beats.map(function(b,i){
+      var s='['+(b.time||('B'+(i+1)))+'] '+scPromptText(b.action,70);
+      if(b.visual_detail)s+='; '+scPromptText(b.visual_detail,65);
+      if(b.camera)s+='; cam '+scPromptText(b.camera,55);
+      return s;
+    }).join(' | ');
+    parts.push('ACTION: '+scPromptText(beats,390));
   }
-  if(scene.camera) parts.push('Ngôn ngữ camera tổng thể: '+scene.camera+'.');
-  if(scene.product) parts.push('Sản phẩm/đạo cụ: '+scene.product+'.');
-  if(scene.lighting) parts.push('Ánh sáng & màu sắc: '+scene.lighting+'.');
-  if(scene.audio) parts.push('Âm thanh: '+scene.audio+'.');
-  if(scene.transition) parts.push('Chuyển cảnh/điểm nối: '+scene.transition+'.');
-  if(scene.text_on_screen&&scene.text_on_screen.length) parts.push('TEXT ON SCREEN: '+scene.text_on_screen.map(function(x){return '"'+x+'"';}).join(' | ')+'.');
-  if(scene.reference_lock) parts.push(scene.reference_lock);
-  var absProductLock=buildAbsoluteProductSmallLock((scLastMeta&&scLastMeta.refProfiles)||scRefAnalysis.profiles);
-  if(absProductLock) parts.push(absProductLock);
-  parts.push(styleClause());
-  parts.push('Thời lượng chính xác '+seg+' giây; hành động phải hoàn thành tự nhiên trong khung thời gian, không tua nhanh vô lý.');
-  var lock=buildVoiceLockBlock(voices);if(lock)parts.push(lock);
+  var ref=scCompactReferenceLock();if(ref)parts.push('REFERENCE LOCK: '+scPromptText(ref,330));
+  if(scene.product)parts.push('PRODUCT: '+scPromptText(scene.product,170));
+  if(scene.camera)parts.push('CAMERA: '+scPromptText(scene.camera,120));
+  if(scene.lighting)parts.push('LIGHT/COLOR: '+scPromptText(scene.lighting,110));
+  else parts.push('LIGHT/COLOR: '+scPromptText(colorToneClause(),110));
+  parts.push('STYLE: '+scPromptText(styleClause(),150));
+  if(scene.transition)parts.push('TRANSITION: '+scPromptText(scene.transition,80));
+  if(scene.audio)parts.push('AUDIO: '+scPromptText(scene.audio,90));
+  if(scene.text_on_screen&&scene.text_on_screen.length)parts.push('TEXT: '+scPromptText(scene.text_on_screen.join(' | '),90));
+  var vlock=scCompactVoiceLock(voices);if(vlock)parts.push('VOICE LOCK: '+scPromptText(vlock,220));
   if(scene.lines&&scene.lines.length){
-    var q='LỜI THOẠI — đọc đúng nguyên văn, khớp khẩu hình, không thêm bớt: ';
-    scene.lines.forEach(function(l){var vid=voiceIdOf(l.who,voices);q+=(vid?'['+vid+' – '+l.who+']':'[Lời bình]')+' "'+l.text+'" ';});
-    if(voices.length>1)q+='Giữ đúng người nói và thứ tự phản ứng.';
-    parts.push(q);
+    var q=scene.lines.map(function(l){var vid=voiceIdOf(l.who,voices);return '['+(vid||l.who||'VO')+'] "'+String(l.text||'').trim()+'"';}).join(' ');
+    parts.push('DIALOGUE exact: '+scPromptText(q,330));
   }
-  return parts.join(' ').replace(/\s+/g,' ').trim();
+  parts.push('Complete naturally within '+seg+'s; no unrealistic fast-forward.');
+  return scJoinPromptWithinLimit(parts,SC_GROK_PROMPT_MAX);
 }
 
 function renderScResult(title, scenes, overflow, hasEmployee, voices, seg, meta){
@@ -4588,13 +4744,14 @@ function renderScResult(title, scenes, overflow, hasEmployee, voices, seg, meta)
         html += '<div class="dline"><span class="who'+(isB?' c2':'')+'">'+escHtml(l.who)+(vid?' · '+vid:'')+'</span><span class="txt">"'+escHtml(l.text)+'"</span></div>';
       });
     } else html += '<div class="stext">—</div>';
-    html += '<div class="sacts"><button class="scCopy" data-si="'+i+'">📋 Copy prompt chi tiết</button><button class="scSend" data-si="'+i+'">🎬 Gửi Dựng Video</button></div></div>';
+    html += '<div class="sacts"><button class="scCopy" data-si="'+i+'">📋 Copy prompt gọn Grok</button><button class="scSend" data-si="'+i+'">🎬 Gửi Dựng Video</button></div>'
+      + '<div style="font-size:9.5px;color:#7f8490;margin-top:6px">✂ Prompt gửi model được tự rút gọn ≤ '+SC_GROK_PROMPT_MAX+' ký tự.</div></div>';
   });
 
   html += '<div class="sacts" style="display:flex;gap:8px;margin:2px 0 6px"><button id="scCopyAll" style="flex:1;border:1px solid #3a3a42;background:transparent;color:#ffb257;border-radius:10px;padding:12px 0;font-size:12.5px;font-weight:700">📄 Copy toàn bộ kịch bản chuyên nghiệp</button></div>';
   $('scResult').innerHTML=html;
 
-  Array.prototype.forEach.call(document.querySelectorAll('.scCopy'),function(b){b.onclick=function(){var s=scLastScenes[Number(b.getAttribute('data-si'))],text=buildScenePrompt(s,scLastVoices,scLastMeta.seg);if(navigator.clipboard)navigator.clipboard.writeText(text).then(function(){toast('Đã copy prompt phân cảnh chi tiết')})}});
+  Array.prototype.forEach.call(document.querySelectorAll('.scCopy'),function(b){b.onclick=function(){var s=scLastScenes[Number(b.getAttribute('data-si'))],text=buildScenePrompt(s,scLastVoices,scLastMeta.seg);if(navigator.clipboard)navigator.clipboard.writeText(text).then(function(){toast('Đã copy prompt gọn cho Grok (≤ '+SC_GROK_PROMPT_MAX+' ký tự)')})}});
 
   var all=$('scCopyAll');if(all)all.onclick=function(){
     var txt='=== '+scLastMeta.title+' — '+scLastMeta.nScenes+' cảnh × '+scLastMeta.seg+'s ===\n';
@@ -4611,7 +4768,7 @@ function renderScResult(title, scenes, overflow, hasEmployee, voices, seg, meta)
     var s=scLastScenes[Number(b.getAttribute('data-si'))];
     $('vPrompt').value=buildScenePrompt(s,scLastVoices,scLastMeta.seg);
     $('vDur').value=String(scLastMeta.seg);
-    var imgs=(scLastMeta.refImages&&scLastMeta.refImages.length)?scLastMeta.refImages:scRefsArr.filter(function(r){return r;});vRefs=[null,null,null,null,null];imgs.forEach(function(r,idx){if(idx<5)vRefs[idx]={dataUrl:r.dataUrl,uploadedUrl:null}});renderVSlots();switchTab('vid');$('vPrompt').scrollIntoView({behavior:'smooth',block:'center'});toast('Đã gửi prompt đạo diễn chi tiết ('+scLastMeta.seg+'s) sang Dựng Video');
+    var imgs=(scLastMeta.refImages&&scLastMeta.refImages.length)?scLastMeta.refImages:scRefsArr.filter(function(r){return r;});vRefs=[null,null,null,null,null];imgs.forEach(function(r,idx){if(idx<5)vRefs[idx]={dataUrl:r.dataUrl,uploadedUrl:null}});renderVSlots();switchTab('vid');$('vPrompt').scrollIntoView({behavior:'smooth',block:'center'});toast('Đã gửi prompt gọn ('+scLastMeta.seg+'s · ≤ '+SC_GROK_PROMPT_MAX+' ký tự) sang Dựng Video');
   }});
 }
 
