@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2212%22%20fill%3D%22%23ee3a23%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2243%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%20font-size%3D%2231%22%20font-weight%3D%22800%22%20fill%3D%22white%22%3EI%3C%2Ftext%3E%3C%2Fsvg%3E">
-<title>IDECO · Studio Tạo Ảnh & Dựng Video AI · V55 AI Reference Lock</title>
+<title>IDECO · Studio Tạo Ảnh & Dựng Video AI · V56 Lightroom + Speed</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
@@ -1244,6 +1244,26 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
   .v46-estimate{grid-template-columns:1fr}
 }
 
+
+
+/* ===== V56: LIGHTROOM VIDEO + SPEED — CHỈ MỞ RỘNG CLIP INSPECTOR ===== */
+.v56-video-tools{margin-top:10px;border-top:1px solid #32353e;padding-top:10px}
+.v56-tool-title{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#f3f3f6;font-size:11px;font-weight:900;margin:0 0 8px}
+.v56-tool-title small{color:#858a95;font-size:9px;font-weight:600}
+.v56-speed-presets{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin:6px 0 9px}
+.v56-speed-presets button{border:1px solid #373b46;background:#1f2229;color:#d9dce3;border-radius:7px;padding:7px 2px;font-size:9px;font-weight:800}
+.v56-speed-presets button.on{border-color:#ff765f;background:#34231f;color:#ff9a87}
+.v56-lr-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.v56-lr-field{min-width:0}
+.v56-lr-field label{display:flex;justify-content:space-between;gap:5px;color:#9da0aa;font-size:9.5px;margin-bottom:4px}
+.v56-lr-field label b{color:#e5e7ec;font-family:ui-monospace,monospace;font-size:9px}
+.v56-lr-field input[type=range]{width:100%;accent-color:var(--red)}
+.v56-reset-row{display:flex;gap:6px;margin-top:8px}
+.v56-reset-row button{flex:1;border:1px solid #3b3f49;background:#20232a;color:#e6e8ed;border-radius:8px;padding:8px 5px;font-size:9.5px;font-weight:800}
+.v56-note{color:#777c87;font-size:9px;line-height:1.45;margin-top:7px}
+.clip-block[data-v56-speed]:not([data-v56-speed="1.00"]) .bt:after{content:" · " attr(data-v56-speed) "×";color:#ffd06f}
+@media(max-width:720px){.v56-lr-grid{grid-template-columns:1fr}.v56-speed-presets{grid-template-columns:repeat(5,1fr)}}
+
 </style>
 </head>
 <body>
@@ -1731,6 +1751,30 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
             <div class="clip-grid2"><div class="clip-field"><label>Vị trí X</label><input type="range" id="clipPropX" min="-100" max="100" value="0"></div><div class="clip-field"><label>Vị trí Y</label><input type="range" id="clipPropY" min="-100" max="100" value="0"></div></div>
             <div class="clip-smallrow"><button id="clipFitBtn">FIT</button><button id="clipFillBtn">FILL</button><button id="clipResetTransform">RESET</button></div>
             <div class="clip-field" style="margin-top:9px"><label>Hiệu ứng clip</label><select id="clipPropEffect"><option value="none">Không</option><option value="cinematic">Cinematic</option><option value="warmgold">Warm Gold</option><option value="coolblue">Cool Blue</option><option value="dream">Dream</option><option value="punchy">Punchy</option><option value="glow">Glow</option><option value="grayscale">Đen trắng</option><option value="sepia">Vintage</option><option value="contrast">Tương phản</option><option value="bright">Sáng</option><option value="soft">Soft</option><option value="blur">Blur</option></select></div>
+            <div class="v56-video-tools" id="v56VideoTools" style="display:none">
+              <div class="v56-tool-title"><span>⏱ TỐC ĐỘ VIDEO</span><small id="v56SpeedReadout">1.00×</small></div>
+              <div class="clip-field"><label>Nhanh / chậm</label><input type="range" id="v56Speed" min="0.25" max="4" step="0.05" value="1"></div>
+              <div class="v56-speed-presets" id="v56SpeedPresets">
+                <button type="button" data-speed="0.25">0.25×</button><button type="button" data-speed="0.5">0.5×</button><button type="button" data-speed="0.75">0.75×</button><button type="button" data-speed="1">1×</button><button type="button" data-speed="1.5">1.5×</button>
+                <button type="button" data-speed="2">2×</button><button type="button" data-speed="2.5">2.5×</button><button type="button" data-speed="3">3×</button><button type="button" data-speed="4">4×</button><button type="button" data-speed="1.25">1.25×</button>
+              </div>
+
+              <div class="v56-tool-title"><span>🎨 LIGHTROOM VIDEO</span><small>Color grading</small></div>
+              <div class="v56-lr-grid">
+                <div class="v56-lr-field"><label>Exposure <b id="v56ExposureVal">0.00</b></label><input type="range" id="v56Exposure" min="-2" max="2" step="0.05" value="0"></div>
+                <div class="v56-lr-field"><label>Contrast <b id="v56ContrastVal">0</b></label><input type="range" id="v56Contrast" min="-100" max="100" step="1" value="0"></div>
+                <div class="v56-lr-field"><label>Highlights <b id="v56HighlightsVal">0</b></label><input type="range" id="v56Highlights" min="-100" max="100" step="1" value="0"></div>
+                <div class="v56-lr-field"><label>Shadows <b id="v56ShadowsVal">0</b></label><input type="range" id="v56Shadows" min="-100" max="100" step="1" value="0"></div>
+                <div class="v56-lr-field"><label>Temperature <b id="v56TemperatureVal">0</b></label><input type="range" id="v56Temperature" min="-100" max="100" step="1" value="0"></div>
+                <div class="v56-lr-field"><label>Tint <b id="v56TintVal">0</b></label><input type="range" id="v56Tint" min="-100" max="100" step="1" value="0"></div>
+                <div class="v56-lr-field"><label>Saturation <b id="v56SaturationVal">0</b></label><input type="range" id="v56Saturation" min="-100" max="100" step="1" value="0"></div>
+                <div class="v56-lr-field"><label>Vibrance <b id="v56VibranceVal">0</b></label><input type="range" id="v56Vibrance" min="-100" max="100" step="1" value="0"></div>
+                <div class="v56-lr-field"><label>Fade <b id="v56FadeVal">0</b></label><input type="range" id="v56Fade" min="0" max="100" step="1" value="0"></div>
+                <div class="v56-lr-field"><label>Clarity <b id="v56ClarityVal">0</b></label><input type="range" id="v56Clarity" min="-100" max="100" step="1" value="0"></div>
+              </div>
+              <div class="v56-reset-row"><button type="button" id="v56ResetColor">↺ Reset màu</button><button type="button" id="v56ResetSpeed">1× Tốc độ gốc</button></div>
+              <div class="v56-note">Áp dụng trực tiếp vào Preview và file MP4 xuất. Tốc độ thay đổi cả hình và âm thanh gốc của video.</div>
+            </div>
           </div>
           <div id="clipTextProps" style="display:none"><div class="clip-grid2"><div class="clip-field"><label>Cỡ chữ</label><input type="number" id="clipPropFont" min="16" max="180" value="54"></div><div class="clip-field"><label>Màu</label><input type="color" id="clipPropColor" value="#ffffff"></div></div></div>
           <div id="clipAudioProps" style="display:none"><div class="clip-grid2"><div class="clip-field"><label>Âm lượng %</label><input type="range" id="clipPropVol" min="0" max="200" value="100"></div><div class="clip-field"><label>Loop</label><select id="clipPropLoop"><option value="0">Không</option><option value="1">Có</option></select></div></div></div>
@@ -4548,7 +4592,7 @@ function clipAddVideoFile(f){
   var bin=$('clipMediaBin');if(bin)bin.appendChild(v);
 
   var insertAt=clipInsertStart('visual');
-  var it={id:clipUid(),track:'visual',type:'video',name:f.name+' · đang nạp...',url:u,video:v,start:insertAt,duration:5,trimStart:0,sourceDuration:5,scale:100,x:0,y:0,fit:'contain',effect:'none',volume:100,loading:true,error:false};
+  var it={id:clipUid(),track:'visual',type:'video',name:f.name+' · đang nạp...',url:u,video:v,start:insertAt,duration:5,trimStart:0,sourceDuration:5,scale:100,x:0,y:0,fit:'contain',effect:'none',volume:100,speed:1,lr:null,loading:true,error:false};
   clipTracks.visual.push(it);clipSelectedId=it.id;
   clipRenderTimeline();clipLoadInspector();clipSetCurrentTime(insertAt);
   requestAnimationFrame(function(){clipRenderTimeline();var el=document.querySelector('.clip-block[data-id="'+it.id+'"]');if(el){el.scrollIntoView({block:'nearest',inline:'nearest'});}});
@@ -4699,7 +4743,7 @@ function clipBlockPointerDown(e){
   try{b.setPointerCapture&&b.setPointerCapture(e.pointerId)}catch(_){}
   e.preventDefault();e.stopPropagation();
 }
-window.addEventListener('pointermove',function(e){if(!clipDrag)return;var f=clipFind(clipDrag.id);if(!f)return;var dx=(e.clientX-clipDrag.x0)/clipTimelinePx,it=f.it;if(clipDrag.mode==='move'){it.start=Math.max(0,clipDrag.start0+dx)}else if(clipDrag.edge==='r'){it.duration=Math.max(.1,clipDrag.dur0+dx);if(it.sourceDuration&&!it.loop){it.duration=Math.min(it.duration,Math.max(.1,it.sourceDuration-(it.trimStart||0)))}}else{var newStart=Math.max(0,clipDrag.start0+dx),delta=newStart-clipDrag.start0;var nd=Math.max(.1,clipDrag.dur0-delta);if(nd>.1){it.start=newStart;it.duration=nd;if(it.sourceDuration)it.trimStart=Math.max(0,clipDrag.trim0+delta)}}clipRenderTimeline();clipLoadInspector();clipDrawAt(clipCurrentTime)});
+window.addEventListener('pointermove',function(e){if(!clipDrag)return;var f=clipFind(clipDrag.id);if(!f)return;var dx=(e.clientX-clipDrag.x0)/clipTimelinePx,it=f.it;if(clipDrag.mode==='move'){it.start=Math.max(0,clipDrag.start0+dx)}else if(clipDrag.edge==='r'){it.duration=Math.max(.1,clipDrag.dur0+dx);if(it.sourceDuration&&!it.loop){it.duration=Math.min(it.duration,Math.max(.1,(it.sourceDuration-(it.trimStart||0))/clipSpeedValue(it)))}}else{var newStart=Math.max(0,clipDrag.start0+dx),delta=newStart-clipDrag.start0;var nd=Math.max(.1,clipDrag.dur0-delta);if(nd>.1){it.start=newStart;it.duration=nd;if(it.sourceDuration)it.trimStart=Math.max(0,clipDrag.trim0+delta*clipSpeedValue(it))}}clipRenderTimeline();clipLoadInspector();clipDrawAt(clipCurrentTime)});
 window.addEventListener('pointerup',function(){clipDrag=null});
 document.querySelectorAll('.clip-lane').forEach(function(lane){lane.addEventListener('pointerdown',function(e){if(e.target!==lane)return;var r=lane.getBoundingClientRect();clipSetCurrentTime(Math.max(0,(e.clientX-r.left)/clipTimelinePx))});lane.addEventListener('dragover',function(e){e.preventDefault();lane.classList.add('clip-drop-hover')});lane.addEventListener('dragleave',function(){lane.classList.remove('clip-drop-hover')});lane.addEventListener('drop',function(e){e.preventDefault();lane.classList.remove('clip-drop-hover');if(lane.dataset.track!=='effect')return;var fx=e.dataTransfer.getData('text/clip-fx');if(fx){var rect=lane.getBoundingClientRect(),x=e.clientX-rect.left+lane.parentElement.scrollLeft;clipAddEffect(fx,Math.max(0,x/clipTimelinePx))}})});
 document.querySelectorAll('.clip-fx').forEach(function(x){x.setAttribute('role','button');x.setAttribute('tabindex','0');x.addEventListener('dragstart',function(e){try{e.dataTransfer.setData('text/clip-fx',x.dataset.fx);e.dataTransfer.effectAllowed='copy'}catch(_){} });x.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();clipAddEffect(x.dataset.fx,clipCurrentTime)});x.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();clipAddEffect(x.dataset.fx,clipCurrentTime)}})});
@@ -4880,7 +4924,7 @@ document.addEventListener('keydown',function(e){
 },true);
 
 function clipLoadInspector(){var f=clipFind(clipSelectedId),body=$('clipInspectorBody'),empty=$('clipInspectorEmpty');if(!f){body.style.display='none';empty.style.display='block';return}var it=f.it;body.style.display='block';empty.style.display='none';$('clipPropName').value=it.type==='text'?(it.text||''):it.name;$('clipPropStart').value=it.start.toFixed(2);$('clipPropDur').value=it.duration.toFixed(2);var vis=['video','image','overlay'].indexOf(it.type)>=0;$('clipVisualProps').style.display=vis?'block':'none';$('clipTextProps').style.display=it.type==='text'?'block':'none';$('clipAudioProps').style.display=(it.type==='audio'||it.type==='sfx')?'block':'none';if(vis){$('clipPropScale').value=it.scale||100;$('clipScaleVal').textContent=(it.scale||100)+'%';$('clipPropX').value=it.x||0;$('clipPropY').value=it.y||0;$('clipPropFit').value=it.fit||'contain';$('clipPropEffect').value=it.effect||'none'}if(it.type==='text'){$('clipPropFont').value=it.size||54;$('clipPropColor').value=it.color||'#fff'}if(it.type==='audio'||it.type==='sfx'){$('clipPropVol').value=it.volume==null?100:it.volume;$('clipPropLoop').value=it.loop?'1':'0'}}
-function clipSaveProp(){var f=clipFind(clipSelectedId);if(!f)return;var it=f.it;it.start=Math.max(0,Number($('clipPropStart').value)||0);it.duration=Math.max(.05,Number($('clipPropDur').value)||.05);if(it.sourceDuration&&!it.loop)it.duration=Math.min(it.duration,Math.max(.05,it.sourceDuration-(it.trimStart||0)));if(it.type==='text'){it.text=$('clipPropName').value;it.name=it.text||'Text';it.size=Number($('clipPropFont').value)||54;it.color=$('clipPropColor').value}else{it.name=$('clipPropName').value||it.name}if(['video','image','overlay'].indexOf(it.type)>=0){it.scale=Number($('clipPropScale').value)||100;it.x=Number($('clipPropX').value)||0;it.y=Number($('clipPropY').value)||0;it.fit=$('clipPropFit').value;it.effect=$('clipPropEffect').value;$('clipScaleVal').textContent=it.scale+'%'}if(it.type==='audio'||it.type==='sfx'){it.volume=Number($('clipPropVol').value)||0;it.loop=$('clipPropLoop').value==='1'}clipRenderTimeline();clipDrawAt(clipCurrentTime)}
+function clipSaveProp(){var f=clipFind(clipSelectedId);if(!f)return;var it=f.it;it.start=Math.max(0,Number($('clipPropStart').value)||0);it.duration=Math.max(.05,Number($('clipPropDur').value)||.05);if(it.sourceDuration&&!it.loop)it.duration=Math.min(it.duration,Math.max(.05,(it.sourceDuration-(it.trimStart||0))/clipSpeedValue(it)));if(it.type==='text'){it.text=$('clipPropName').value;it.name=it.text||'Text';it.size=Number($('clipPropFont').value)||54;it.color=$('clipPropColor').value}else{it.name=$('clipPropName').value||it.name}if(['video','image','overlay'].indexOf(it.type)>=0){it.scale=Number($('clipPropScale').value)||100;it.x=Number($('clipPropX').value)||0;it.y=Number($('clipPropY').value)||0;it.fit=$('clipPropFit').value;it.effect=$('clipPropEffect').value;$('clipScaleVal').textContent=it.scale+'%'}if(it.type==='audio'||it.type==='sfx'){it.volume=Number($('clipPropVol').value)||0;it.loop=$('clipPropLoop').value==='1'}clipRenderTimeline();clipDrawAt(clipCurrentTime)}
 ['clipPropName','clipPropStart','clipPropDur','clipPropScale','clipPropX','clipPropY','clipPropFit','clipPropEffect','clipPropFont','clipPropColor','clipPropVol','clipPropLoop'].forEach(function(id){$(id).addEventListener(id==='clipPropScale'||id==='clipPropX'||id==='clipPropY'||id==='clipPropVol'?'input':'change',clipSaveProp)});
 $('clipFitBtn').onclick=function(){var f=clipFind(clipSelectedId);if(f){f.it.fit='contain';f.it.scale=100;clipLoadInspector();clipDrawAt(clipCurrentTime)}};$('clipFillBtn').onclick=function(){var f=clipFind(clipSelectedId);if(f){f.it.fit='cover';f.it.scale=100;clipLoadInspector();clipDrawAt(clipCurrentTime)}};$('clipResetTransform').onclick=function(){var f=clipFind(clipSelectedId);if(f){f.it.scale=100;f.it.x=0;f.it.y=0;clipLoadInspector();clipDrawAt(clipCurrentTime)}};
 function clipIsTypingTarget(el){return !!(el&&(el.tagName==='INPUT'||el.tagName==='TEXTAREA'||el.tagName==='SELECT'||el.isContentEditable))}
@@ -4900,7 +4944,7 @@ function clipDeleteSelected(){
   if(clipLastSelectedId===deletedId)clipLastSelectedId=null;
   clipRenderAll();return true;
 }
-function clipSplitAtPlayhead(){var f=clipFind(clipSelectedId);if(!f||['video','image','audio','sfx'].indexOf(f.it.type)<0||clipCurrentTime<=f.it.start+.05||clipCurrentTime>=clipEnd(f.it)-.05)f=clipFindAtPlayhead();if(!f||['video','image','audio','sfx'].indexOf(f.it.type)<0){toast('Đưa vạch cam vào giữa video / ảnh / audio để cắt',true);return false}var it=f.it;if(clipCurrentTime<=it.start+.05||clipCurrentTime>=clipEnd(it)-.05){toast('Vạch cắt đang quá sát đầu hoặc cuối block',true);return false}var leftDur=clipCurrentTime-it.start,rightDur=it.duration-leftDur,copy=Object.assign({},it,{id:clipUid(),start:clipCurrentTime,duration:rightDur});if(it.sourceDuration)copy.trimStart=(it.trimStart||0)+leftDur;it.duration=leftDur;f.arr.splice(f.i+1,0,copy);clipSelectedId=copy.id;clipRenderAll();return true}
+function clipSplitAtPlayhead(){var f=clipFind(clipSelectedId);if(!f||['video','image','audio','sfx'].indexOf(f.it.type)<0||clipCurrentTime<=f.it.start+.05||clipCurrentTime>=clipEnd(f.it)-.05)f=clipFindAtPlayhead();if(!f||['video','image','audio','sfx'].indexOf(f.it.type)<0){toast('Đưa vạch cam vào giữa video / ảnh / audio để cắt',true);return false}var it=f.it;if(clipCurrentTime<=it.start+.05||clipCurrentTime>=clipEnd(it)-.05){toast('Vạch cắt đang quá sát đầu hoặc cuối block',true);return false}var leftDur=clipCurrentTime-it.start,rightDur=it.duration-leftDur,copy=Object.assign({},it,{id:clipUid(),start:clipCurrentTime,duration:rightDur});if(it.sourceDuration)copy.trimStart=(it.trimStart||0)+leftDur*clipSpeedValue(it);it.duration=leftDur;f.arr.splice(f.i+1,0,copy);clipSelectedId=copy.id;clipRenderAll();return true}
 $('clipDelete').onclick=function(){if(!clipDeleteSelected())toast('Không có block tại vị trí đang chọn để xóa',true)};
 $('clipSplit').onclick=clipSplitAtPlayhead;
 $('clipQuickDelete').onclick=function(){if(!clipDeleteSelected())toast('Không có block đang chọn hoặc dưới vạch cam',true)};
@@ -5121,7 +5165,7 @@ function clipNativePreviewAt(t,shouldPlay){
   var nv=$('clipNativeVideo'); if(!nv)return;
   var visuals=clipActive('visual',t),it=visuals.length?visuals[visuals.length-1]:null;
   if(!it||it.type!=='video'||!it.url){try{nv.pause()}catch(_){} nv.style.display='none';clipNativeId=null;return}
-  var local=(it.trimStart||0)+(t-it.start), maxT=Math.max(0,(Number(it.sourceDuration)||Number(it.video&&it.video.duration)||local+.1)-.03);
+  var local=(it.trimStart||0)+(t-it.start)*clipSpeedValue(it), maxT=Math.max(0,(Number(it.sourceDuration)||Number(it.video&&it.video.duration)||local+.1)-.03);
   local=Math.max(0,Math.min(maxT,local));
   var changed=clipNativeId!==it.id;
   if(changed){
@@ -5132,7 +5176,7 @@ function clipNativePreviewAt(t,shouldPlay){
   var sc=Math.max(.2,Math.min(4,(it.scale||100)/100)), tx=(it.x||0)/2, ty=(it.y||0)/2;
   nv.style.transform='translate('+tx+'%,'+ty+'%) scale('+sc+')';
   var fxs=clipActive('effect',t).filter(function(x){return x.effect!=='flash'}),eff=fxs.length?fxs[fxs.length-1].effect:it.effect;
-  nv.style.filter=clipEffectFilter(eff);
+  nv.style.filter=clipFilterForItem(eff,it);
   try{
     var drift=Math.abs((nv.currentTime||0)-local);
     if(shouldPlay){
@@ -5142,7 +5186,7 @@ function clipNativePreviewAt(t,shouldPlay){
     }else if(drift>.012){nv.currentTime=local}
   }catch(_){}
   if(shouldPlay){
-    try{nv.playbackRate=1;var p=nv.play(); if(p&&p.catch)p.catch(function(e){console.warn('Preview play blocked',e)})}catch(_){}
+    try{nv.playbackRate=clipSpeedValue(it);var p=nv.play(); if(p&&p.catch)p.catch(function(e){console.warn('Preview play blocked',e)})}catch(_){}
   }else{try{nv.pause()}catch(_){} }
 }
 function clipNativePause(){var nv=$('clipNativeVideo');if(nv)try{nv.pause()}catch(_){}}
@@ -5174,10 +5218,10 @@ function clipDrawAt(t,live){
   }
   if(!it){finish();return}
   if(previewNative){finish();return}
-  var fxs=clipActive('effect',t).filter(function(x){return x.effect!=='flash'}),eff=fxs.length?fxs[fxs.length-1].effect:it.effect;ctx.filter=clipEffectFilter(eff);
+  var fxs=clipActive('effect',t).filter(function(x){return x.effect!=='flash'}),eff=fxs.length?fxs[fxs.length-1].effect:it.effect;ctx.filter=clipFilterForItem(eff,it);
   if(it.type==='image'){clipDrawMedia(ctx,it,it.img,it.img.naturalWidth,it.img.naturalHeight,c.width,c.height);ctx.filter='none';finish();return}
   var v=it.video;if(!v){ctx.filter='none';finish();return}
-  var target=(it.trimStart||0)+(t-it.start),safeTarget=Math.max(0,Math.min(Math.max(0,(it.sourceDuration||target+.1)-.02),target));
+  var target=(it.trimStart||0)+(t-it.start)*clipSpeedValue(it),safeTarget=Math.max(0,Math.min(Math.max(0,(it.sourceDuration||target+.1)-.02),target));
   if(safeTarget<=0)safeTarget=Math.min(.03,Math.max(.01,(it.sourceDuration||.04)-.02));
   var draw=function(){try{if(v.readyState>=2&&v.videoWidth&&v.videoHeight)clipDrawMedia(ctx,it,v,v.videoWidth,v.videoHeight,c.width,c.height)}catch(_){}ctx.filter='none';finish()};
   if(live){draw();return}
@@ -5869,7 +5913,7 @@ if(clipNv){
     if(cut<=it.start+.033||cut>=clipEnd(it)-.033){toast('Vạch cắt đang quá sát đầu hoặc cuối block',true);return false}
     var leftDur=cut-it.start,rightDur=it.duration-leftDur;
     var copy=Object.assign({},it,{id:clipUid(),start:cut,duration:rightDur});
-    if(it.sourceDuration)copy.trimStart=(it.trimStart||0)+leftDur;
+    if(it.sourceDuration)copy.trimStart=(it.trimStart||0)+leftDur*clipSpeedValue(it);
     var media=proCloneMediaForSplit(it);
     if(media.video)copy.video=media.video;
     if(media.audio)copy.audio=media.audio;
@@ -5935,7 +5979,7 @@ if(clipNv){
     }else if(d.edge==='r'){
       var endRaw=d.start0+d.dur0+dx,se2=proNearest(endRaw,cands,threshold);if(se2!=null){endRaw=se2;snap=se2}
       var nd=Math.max(.05,endRaw-d.start0);
-      if(it.sourceDuration&&!it.loop)nd=Math.min(nd,Math.max(.05,it.sourceDuration-d.trim0));
+      if(it.sourceDuration&&!it.loop)nd=Math.min(nd,Math.max(.05,(it.sourceDuration-d.trim0)/clipSpeedValue(it)));
       it.start=d.start0;it.duration=nd;
     }else{
       var rawStart=Math.max(0,d.start0+dx),sl=proNearest(rawStart,cands,threshold);if(sl!=null){rawStart=sl;snap=sl}
@@ -5945,7 +5989,7 @@ if(clipNv){
         var maxDelta=d.dur0-.05;delta=Math.min(delta,maxDelta);
       }else delta=Math.min(delta,d.dur0-.05);
       it.start=Math.max(0,d.start0+delta);it.duration=Math.max(.05,d.dur0-delta);
-      if(it.sourceDuration)it.trimStart=Math.max(0,d.trim0+delta);
+      if(it.sourceDuration)it.trimStart=Math.max(0,d.trim0+delta*clipSpeedValue(it));
     }
     proGuide(snap);proUpdateBlockDom(it);proUpdateInspectorFast(it);
     if(!clipProDragRAF){clipProDragRAF=requestAnimationFrame(function(){clipProDragRAF=0;if(clipCurrentTime>=it.start-.05&&clipCurrentTime<=clipEnd(it)+.05)clipDrawAt(clipCurrentTime,false)})}
@@ -5986,13 +6030,13 @@ if(clipNv){
     v.classList.add('clip-pro-source-preview');v.style.display='block';v.style.objectFit=it.fit==='cover'?'cover':'contain';
     var sc=Math.max(.2,Math.min(4,(Number(it.scale)||100)/100)),tx=(Number(it.x)||0)/2,ty=(Number(it.y)||0)/2;
     v.style.transform='translate('+tx+'%,'+ty+'%) scale('+sc+')';v.style.transformOrigin='center center';
-    v.style.filter=clipEffectFilter(proFxFor(it,t));v.style.webkitFilter=v.style.filter;
+    v.style.filter=clipFilterForItem(proFxFor(it,t),it);v.style.webkitFilter=v.style.filter;
     v.playsInline=true;if(window.v25SetPreviewMediaGain){window.v25SetPreviewMediaGain(it,v)}else{v.muted=clipPreviewMuted;v.volume=clipPreviewVolume};
-    var local=(Number(it.trimStart)||0)+(t-it.start),maxT=Math.max(0,(Number(it.sourceDuration)||Number(v.duration)||local+.1)-.025);local=Math.max(0,Math.min(maxT,local));
+    var local=(Number(it.trimStart)||0)+(t-it.start)*clipSpeedValue(it),maxT=Math.max(0,(Number(it.sourceDuration)||Number(v.duration)||local+.1)-.025);local=Math.max(0,Math.min(maxT,local));
     try{
       var drift=Math.abs((v.currentTime||0)-local);
       if(changed||(!shouldPlay&&drift>.018)||(shouldPlay&&v.paused&&drift>.035))v.currentTime=local;
-      if(shouldPlay){var p=v.play();if(p&&p.catch)p.catch(function(){})}else v.pause();
+      if(shouldPlay){v.playbackRate=clipSpeedValue(it);var p=v.play();if(p&&p.catch)p.catch(function(){})}else v.pause();
     }catch(_){}
     clipNativeId=it.id;clipProVisibleVideo=v;proWarmNext(t,it);
   };
@@ -7639,7 +7683,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
   function visualAt(t){var a=clipActive('visual',t);return a.length?a[a.length-1]:null}
   function endOf(it){return Number(it.start||0)+Number(it.duration||0)}
   function localTime(it,t){
-    var x=(Number(it.trimStart)||0)+(t-Number(it.start||0)),sd=Number(it.sourceDuration)||0;
+    var x=(Number(it.trimStart)||0)+(t-Number(it.start||0))*clipSpeedValue(it),sd=Number(it.sourceDuration)||0;
     if(sd>0)x=Math.min(Math.max(0,sd-.025),Math.max(0,x));
     return Math.max(0,x)
   }
@@ -7670,7 +7714,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     player.style.objectFit=it.fit==='cover'?'cover':'contain';
     player.style.transform='translate('+tx+'%,'+ty+'%) scale('+sc+') rotate('+rot+'deg)';
     player.style.opacity=String(Math.max(0,Math.min(1,(st.opacity==null?100:st.opacity)/100)));
-    player.style.filter=clipEffectFilter(nonOverlayFx(it,t));
+    player.style.filter=clipFilterForItem(nonOverlayFx(it,t),it);
     player.style.webkitFilter=player.style.filter
   }
   function gainFor(it){return (clipPreviewMuted?0:clipPreviewVolume*Math.max(0,Math.min(200,Number(it&&it.volume==null?100:it.volume)||0))/100)}
@@ -7730,7 +7774,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=1;ctx.filter='none';ctx.clearRect(0,0,c.width,c.height);
     /* If the main visual is an image, canvas owns that image. If it is video, canvas stays transparent. */
     var main=visualAt(t);
-    if(main&&main.type==='image'&&main.img){ctx.filter=clipEffectFilter(nonOverlayFx(main,t));drawMediaV30(ctx,main,main.img,main.img.naturalWidth,main.img.naturalHeight,c.width,c.height,t);ctx.filter='none'}
+    if(main&&main.type==='image'&&main.img){ctx.filter=clipFilterForItem(nonOverlayFx(main,t),main);drawMediaV30(ctx,main,main.img,main.img.naturalWidth,main.img.naturalHeight,c.width,c.height,t);ctx.filter='none'}
     clipActive('overlay',t).forEach(function(o){if(o.img){ctx.filter=clipEffectFilter(o.effect||'none');drawMediaV30(ctx,o,o.img,o.img.naturalWidth,o.img.naturalHeight,c.width,c.height,t);ctx.filter='none'}});
     clipActive('text',t).forEach(function(x){drawTextV30(ctx,x,c.width,c.height,t)});
     clipActive('effect',t).forEach(function(x){if(clipFxOverlayName(x.effect))clipDrawFxOverlay(ctx,x.effect,t,c.width,c.height,x)});
@@ -7971,7 +8015,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
   function visualAt(t){var a=clipActive('visual',t);return a.length?a[a.length-1]:null}
   function endOf(it){return Number(it.start||0)+Number(it.duration||0)}
   function localTime(it,t){
-    var x=(Number(it.trimStart)||0)+(Number(t)||0)-(Number(it.start)||0);
+    var x=(Number(it.trimStart)||0)+((Number(t)||0)-(Number(it.start)||0))*clipSpeedValue(it);
     var sd=Number(it.sourceDuration)||Number(player.duration)||0;
     if(sd>0)x=Math.min(Math.max(0,sd-.025),Math.max(0,x));
     return Math.max(0,x)
@@ -8006,7 +8050,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     player.style.objectFit=it.fit==='cover'?'cover':'contain';
     player.style.transform='translate('+((Number(st.x)||0)/2)+'%,'+((Number(st.y)||0)/2)+'%) scale('+sc+') rotate('+(Number(st.rotation)||0)+'deg)';
     player.style.opacity=String(Math.max(0,Math.min(1,(st.opacity==null?100:Number(st.opacity))/100)));
-    player.style.filter=clipEffectFilter(mainFx(it,t));
+    player.style.filter=clipFilterForItem(mainFx(it,t),it);
     player.style.webkitFilter=player.style.filter
   }
   function gain(it){
@@ -8135,7 +8179,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
       try{player.pause()}catch(_){}
       player.style.display='none';activeUrl=null;activeId=it&&it.id||null;return false
     }
-    activeId=it.id;stylePlayer(it,t);applyAudio(it);
+    activeId=it.id;stylePlayer(it,t);applyAudio(it);try{player.playbackRate=clipSpeedValue(it)}catch(_){};
     if(activeUrl!==it.url){
       v52CancelPendingPlay();
       activeUrl=it.url;
@@ -8285,7 +8329,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     var current=visualAt(t);
 
     if(current&&current.type==='video'&&current.id===activeId&&!player.paused&&player.readyState>=2){
-      var mt=current.start+Math.max(0,(player.currentTime||0)-(Number(current.trimStart)||0));
+      var mt=current.start+Math.max(0,(player.currentTime||0)-(Number(current.trimStart)||0))/clipSpeedValue(current);
       if(isFinite(mt)&&mt>=current.start-.08&&mt<=endOf(current)+.08){
         t=mt;startProject=t;startPerf=now
       }
@@ -8500,7 +8544,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
 
     var left=t-it.start,rightDur=it.duration-left;
     var right=Object.assign({},it,{id:clipUid(),start:t,duration:rightDur});
-    if(it.sourceDuration)right.trimStart=(Number(it.trimStart)||0)+left;
+    if(it.sourceDuration)right.trimStart=(Number(it.trimStart)||0)+left*clipSpeedValue(it);
 
     var media=duplicateMedia(it);
     if(media.video)right.video=media.video;
@@ -9187,7 +9231,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
   }
 
   function sourceTarget(it,t,video){
-    var x=(Number(it.trimStart)||0)+(Number(t)||0)-(Number(it.start)||0);
+    var x=(Number(it.trimStart)||0)+((Number(t)||0)-(Number(it.start)||0))*clipSpeedValue(it);
     var sd=Number(it.sourceDuration)||Number(video&&video.duration)||0;
     if(sd>0)x=Math.min(Math.max(0,sd-.025),Math.max(0,x));
     return Math.max(0,x)
@@ -9507,7 +9551,8 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
           it:it,
           url:it.url,
           volume:Math.max(0,Math.min(2,(it.volume==null?100:it.volume)/100)),
-          kind:'video'
+          kind:'video',
+          speed:clipSpeedValue(it)
         })
       }
     });
@@ -9518,7 +9563,8 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
             it:it,
             url:it.url,
             volume:Math.max(0,Math.min(2,(it.volume==null?100:it.volume)/100)),
-            kind:tr
+            kind:tr,
+            speed:1
           })
         }
       })
@@ -9576,6 +9622,8 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
         var offset=Math.max(0,Number(it.trimStart)||0);
         var dur=Math.max(.001,Number(it.duration)||.001);
         var vol=Math.max(0,Math.min(2,Number(job.volume)||0));
+        var rate=Math.max(.25,Math.min(4,Number(job.speed)||1));
+        try{src.playbackRate.value=rate}catch(_){}
 
         if(it.loop&&buf.duration>.02){
           src.loop=true;
@@ -9600,7 +9648,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
           src.start(when,offset);
           src.stop(end)
         }else{
-          src.start(when,offset,realDur)
+          src.start(when,offset,Math.min(Math.max(.001,buf.duration-offset),realDur*rate))
         }
         scheduledCount++
       }catch(e){
@@ -10269,9 +10317,93 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
 
   v45MirrorProgress();
 
-  toast('V54: AI Director kịch bản chuyên nghiệp · kết hợp toàn bộ lựa chọn giao diện · Wan 3.0 30s shot-beat · giữ nguyên V52 export fix');
+  toast('V56: CLIP có Lightroom Video + tốc độ 0.25×–4× · giữ nguyên AI Director và V52 export fix');
 })();
 
+
+
+/* ================= V56 LIGHTROOM VIDEO + SPEED ================= */
+(function(){
+  var LR_KEYS=['exposure','contrast','highlights','shadows','temperature','tint','saturation','vibrance','fade','clarity'];
+  var ID_MAP={
+    exposure:'v56Exposure',contrast:'v56Contrast',highlights:'v56Highlights',shadows:'v56Shadows',
+    temperature:'v56Temperature',tint:'v56Tint',saturation:'v56Saturation',vibrance:'v56Vibrance',fade:'v56Fade',clarity:'v56Clarity'
+  };
+  function clamp(n,a,b){n=Number(n);if(!isFinite(n))n=0;return Math.max(a,Math.min(b,n))}
+  window.clipSpeedValue=function(it){return it&&it.type==='video'?clamp(it.speed==null?1:it.speed,.25,4):1};
+  window.clipLrDefaults=function(){return {exposure:0,contrast:0,highlights:0,shadows:0,temperature:0,tint:0,saturation:0,vibrance:0,fade:0,clarity:0}};
+  window.clipGetLr=function(it){
+    var d=clipLrDefaults(),x=it&&it.lr&&typeof it.lr==='object'?it.lr:{};
+    LR_KEYS.forEach(function(k){d[k]=Number(x[k])||0});return d
+  };
+  window.clipLightroomFilter=function(it){
+    if(!it||it.type!=='video')return '';
+    var l=clipGetLr(it);
+    var bright=Math.pow(2,clamp(l.exposure,-2,2)*.34);
+    bright*=1+clamp(l.highlights,-100,100)*.00125+clamp(l.shadows,-100,100)*.00075;
+    var contrast=1+clamp(l.contrast,-100,100)*.006+clamp(l.clarity,-100,100)*.0025;
+    contrast*=1-clamp(l.fade,0,100)*.0035;
+    var sat=1+clamp(l.saturation,-100,100)*.008+clamp(l.vibrance,-100,100)*.0045;
+    sat=Math.max(0,Math.min(2.6,sat));contrast=Math.max(.35,Math.min(2.2,contrast));bright=Math.max(.35,Math.min(2.2,bright));
+    var temp=clamp(l.temperature,-100,100),tint=clamp(l.tint,-100,100);
+    var sep=Math.abs(temp)*.0016;
+    var hue=(temp*.055)+(tint*.10);
+    return 'brightness('+bright.toFixed(3)+') contrast('+contrast.toFixed(3)+') saturate('+sat.toFixed(3)+') sepia('+sep.toFixed(3)+') hue-rotate('+hue.toFixed(2)+'deg)'
+  };
+  window.clipFilterForItem=function(base,it){
+    var a=clipEffectFilter(base||'none'),b=clipLightroomFilter(it);
+    return ((a&&a!=='none'?a:'')+' '+(b||'')).trim()||'none'
+  };
+
+  function selectedVideo(){var f=clipFind(clipSelectedId||clipLastSelectedId);return f&&f.it&&f.it.type==='video'?f.it:null}
+  function lrValueText(k,v){return k==='exposure'?(Number(v)||0).toFixed(2):String(Math.round(Number(v)||0))}
+  function syncUi(){
+    var it=selectedVideo(),box=$('v56VideoTools');if(!box)return;
+    box.style.display=it?'block':'none';if(!it)return;
+    var sp=clipSpeedValue(it);$('v56Speed').value=sp;$('v56SpeedReadout').textContent=sp.toFixed(2)+'×';
+    Array.prototype.forEach.call(document.querySelectorAll('#v56SpeedPresets button'),function(b){b.classList.toggle('on',Math.abs(Number(b.dataset.speed)-sp)<.001)});
+    var lr=clipGetLr(it);LR_KEYS.forEach(function(k){var el=$(ID_MAP[k]),vl=$(ID_MAP[k]+'Val');if(el)el.value=lr[k];if(vl)vl.textContent=lrValueText(k,lr[k])});
+  }
+  function refreshClip(it){
+    if(!it)return;clipRenderTimeline();try{clipLoadInspector()}catch(_){};try{clipSetCurrentTime(clipCurrentTime)}catch(_){try{clipDrawAt(clipCurrentTime,false)}catch(__){}};try{clipMaybeAutoFit()}catch(_){}
+  }
+  function setSpeed(it,newSpeed){
+    if(!it||it.type!=='video')return;
+    var old=clipSpeedValue(it),next=clamp(newSpeed,.25,4);
+    if(Math.abs(old-next)<.0001){it.speed=next;syncUi();return}
+    var sourceSpan=Math.max(.001,(Number(it.duration)||.001)*old);
+    var available=Number(it.sourceDuration)>0?Math.max(.001,Number(it.sourceDuration)-(Number(it.trimStart)||0)):sourceSpan;
+    sourceSpan=Math.min(sourceSpan,available);
+    it.speed=next;it.duration=Math.max(.05,sourceSpan/next);
+    syncUi();refreshClip(it)
+  }
+  function setLr(it,k,v){
+    if(!it||it.type!=='video')return;var lr=clipGetLr(it);lr[k]=Number(v)||0;it.lr=lr;
+    var vl=$(ID_MAP[k]+'Val');if(vl)vl.textContent=lrValueText(k,lr[k]);
+    try{clipDrawAt(clipCurrentTime,false)}catch(_){try{clipSetCurrentTime(clipCurrentTime)}catch(__){}}
+  }
+
+  if($('v56Speed'))$('v56Speed').addEventListener('input',function(){var it=selectedVideo();if(it)setSpeed(it,this.value)});
+  Array.prototype.forEach.call(document.querySelectorAll('#v56SpeedPresets button'),function(b){b.addEventListener('click',function(){var it=selectedVideo();if(it)setSpeed(it,this.dataset.speed)})});
+  LR_KEYS.forEach(function(k){var el=$(ID_MAP[k]);if(el)el.addEventListener('input',function(){var it=selectedVideo();if(it)setLr(it,k,this.value)})});
+  if($('v56ResetColor'))$('v56ResetColor').addEventListener('click',function(){var it=selectedVideo();if(!it)return;it.lr=clipLrDefaults();syncUi();try{clipDrawAt(clipCurrentTime,false)}catch(_){}});
+  if($('v56ResetSpeed'))$('v56ResetSpeed').addEventListener('click',function(){var it=selectedVideo();if(it)setSpeed(it,1)});
+
+  /* The app has several inspector wrappers; append V56 after the final one. */
+  var baseLoad=clipLoadInspector;
+  clipLoadInspector=function(){var r=baseLoad.apply(this,arguments);syncUi();return r};
+
+  /* Timeline badge/readout without changing block structure or existing interactions. */
+  var baseTimeline=clipRenderTimeline;
+  clipRenderTimeline=function(){var r=baseTimeline.apply(this,arguments);requestAnimationFrame(function(){
+    (clipTracks.visual||[]).forEach(function(it){if(it.type!=='video')return;var b=document.querySelector('.clip-block[data-id="'+it.id+'"]');if(b)b.setAttribute('data-v56-speed',clipSpeedValue(it).toFixed(2))})
+  });return r};
+
+  /* Ensure old/existing video items have safe defaults, but do not touch any other object type. */
+  (clipTracks.visual||[]).forEach(function(it){if(it.type==='video'){if(it.speed==null)it.speed=1;if(it.lr===undefined)it.lr=null}});
+  syncUi();clipRenderTimeline();
+  console.log('[IDECO V56] Lightroom Video + Speed ready');
+})();
 
 /* ================= KHO LƯU TẠM — nút xóa ================= */
 function wireClearCache(btnId){
