@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2212%22%20fill%3D%22%23ee3a23%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2243%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%20font-size%3D%2231%22%20font-weight%3D%22800%22%20fill%3D%22white%22%3EI%3C%2Ftext%3E%3C%2Fsvg%3E">
-<title>IDECO · Studio Tạo Ảnh & Dựng Video AI · V61 Project Save + TikTok Trim + Wide Timeline</title>
+<title>IDECO · Studio Tạo Ảnh & Dựng Video AI · GPT Image 2.5 Flare + Sunburst · V9.10 FAST</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
@@ -1385,7 +1385,7 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
 <div id="app">
   <header>
     <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22180%22%20height%3D%2254%22%20viewBox%3D%220%200%20180%2054%22%3E%0A%3Crect%20width%3D%22180%22%20height%3D%2254%22%20rx%3D%228%22%20fill%3D%22%23ffffff%22%2F%3E%0A%3Ctext%20x%3D%2210%22%20y%3D%2237%22%20font-family%3D%22Arial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22800%22%20fill%3D%22%23ee3a23%22%3EIDECO%3C%2Ftext%3E%0A%3C%2Fsvg%3E" alt="" onerror="this.style.display='none'">
-    <div class="t"><b>Studio Tạo Ảnh <span>AI</span></b><small>Nanobanana 2 Lite + GPT-Image-2 · Kie.ai</small></div>
+    <div class="t"><b>Studio Tạo Ảnh <span>AI</span></b><small>Nano Banana + GPT-Image-2 + GPT-Image-2.5 Flare / Sunburst · Kie.ai</small></div>
     <button class="credit" id="btnCredit"><span class="dot" id="cdot"></span><b id="creditVal">—</b>&nbsp;credits</button>
   </header>
 
@@ -1401,10 +1401,12 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
   <div class="sec">
     <label class="lbl">Mô hình tạo ảnh</label>
     <select id="imgModel">
-      <option value="nanobanana">🍌 Nanobanana 2 Lite · nhanh &amp; tiết kiệm credit</option>
-      <option value="gptimage2">✨ GPT-Image-2 · chi tiết, hỗ trợ 4K</option>
+      <option value="gptimage25flare">⚡ GPT-Image-2.5 Flare · nhanh + Edit chính xác</option>
+      <option value="gptimage25sunburst">☀️ GPT-Image-2.5 Sunburst · cao cấp + Edit chính xác nhất</option>
+      <option value="gptimage2">✨ GPT-Image-2 · tương thích cũ</option>
+      <option value="nanobanana">🍌 Nanobanana 2 Lite · tiết kiệm credit</option>
     </select>
-    <div class="ref-hint" id="modelHint">Nanobanana 2 Lite: tạo ảnh nhanh, chi phí thấp, phù hợp làm nhiều ảnh mỗi ngày.</div>
+    <div class="ref-hint" id="modelHint">GPT-Image-2.5 Flare: mặc định cho đa số tác vụ, nhanh; tự chuyển Text-to-Image ↔ Image-to-Image khi có ảnh tham chiếu.</div>
   </div>
 
   <div class="sec">
@@ -1427,7 +1429,43 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
       <div class="slot" data-i="2"><button class="x">✕</button><span class="plus">＋</span><span>Thêm ảnh</span></div>
     </div>
     <div class="ref-hint">Đính kèm ảnh sản phẩm / logo / ảnh mẫu — AI sẽ tạo ảnh mới dựa trên ảnh này. Không đính kèm thì AI vẽ hoàn toàn từ mô tả.</div>
-    <input type="file" id="fileInput" accept="image/*">
+    <input type="file" id="fileInput" accept="image/*" multiple>
+  </div>
+
+  <div class="sec" id="editTools">
+    <label class="lbl">Edit ảnh · GPT Image 2.5</label>
+    <div class="optrow">
+      <div>
+        <label class="lbl">Tác vụ</label>
+        <select id="editMode">
+          <option value="normal">Tạo / chỉnh theo prompt</option>
+          <option value="targeted">Chỉ sửa chi tiết được yêu cầu</option>
+          <option value="background">Thay / chỉnh nền</option>
+          <option value="remove">Xóa vật thể / chi tiết</option>
+          <option value="add">Thêm vật thể / chi tiết</option>
+          <option value="text">Sửa chữ / nhãn / typography</option>
+          <option value="recolor">Đổi màu / vật liệu</option>
+          <option value="restyle">Đổi phong cách, giữ chủ thể</option>
+        </select>
+      </div>
+      <div>
+        <label class="lbl">Nền đầu ra</label>
+        <select id="background">
+          <option value="auto">Tự động</option>
+          <option value="opaque">Nền thường</option>
+          <option value="transparent">Trong suốt PNG</option>
+        </select>
+      </div>
+    </div>
+    <label class="lbl" style="margin-top:10px">Chi tiết cần khóa / giữ nguyên</label>
+    <textarea id="preservePrompt" style="min-height:66px" placeholder="VD: Giữ nguyên khuôn mặt, logo IDECO, bao bì, chữ trên sản phẩm và bố cục; chỉ thay nền phía sau..."></textarea>
+    <div class="chips" id="editChips">
+      <span class="chip" data-edit="Chỉ thay đổi đúng phần tôi yêu cầu; giữ nguyên mọi chi tiết còn lại.">🎯 Sửa đúng vùng</span>
+      <span class="chip" data-edit="Giữ nguyên tuyệt đối khuôn mặt, nhận diện nhân vật và tỷ lệ cơ thể.">👤 Giữ khuôn mặt</span>
+      <span class="chip" data-edit="Giữ nguyên sản phẩm, logo, nhãn, chữ, màu bao bì và tỷ lệ sản phẩm.">📦 Khóa sản phẩm</span>
+      <span class="chip" data-edit="Giữ nguyên toàn bộ chữ hiện có, chính tả và bố cục typography.">🔤 Khóa chữ</span>
+    </div>
+    <div class="ref-hint">Mẹo: bấm ✏ Edit dưới ảnh đã tạo để đưa ảnh đó trở lại làm ảnh gốc, rồi mô tả thay đổi tiếp theo — phù hợp workflow chỉnh nhiều vòng.</div>
   </div>
 
   <div class="sec optrow">
@@ -1442,6 +1480,11 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
         <option value="9:16">9:16 story</option>
         <option value="3:2">3:2</option>
         <option value="2:3">2:3</option>
+        <option value="21:9">21:9 siêu rộng</option>
+        <option value="27:16">27:16 điện ảnh</option>
+        <option value="16:27">16:27 dọc điện ảnh</option>
+        <option value="9:8">9:8</option>
+        <option value="8:9">8:9</option>
       </select>
     </div>
     <div>
@@ -2315,11 +2358,18 @@ function refreshCredits(){
 }
 
 /* Đổi mô tả gợi ý theo model tạo ảnh */
-$('imgModel').onchange = function(){
-  $('modelHint').textContent = this.value === 'nanobanana'
-    ? 'Nanobanana 2 Lite: tạo ảnh nhanh, chi phí thấp, phù hợp làm nhiều ảnh mỗi ngày.'
-    : 'GPT-Image-2: chi tiết cao, hỗ trợ tới 4K in ấn — tốn nhiều credit hơn.';
-};
+function updateImgModelHint(){
+  var v = $('imgModel').value;
+  var hints = {
+    gptimage25flare: 'GPT-Image-2.5 Flare: nhanh, phù hợp đa số tác vụ. Có ảnh tham chiếu → gpt-image-2-5-flare-image-to-image; không có ảnh → ...-text-to-image.',
+    gptimage25sunburst: 'GPT-Image-2.5 Sunburst: ưu tiên độ chính xác và chất lượng cao cho chỉnh ảnh / chiến dịch. Tự chọn Image-to-Image khi có ảnh tham chiếu.',
+    gptimage2: 'GPT-Image-2: model tương thích cũ, hỗ trợ 1K / 2K / 4K.',
+    nanobanana: 'Nanobanana 2 Lite: tạo ảnh nhanh, chi phí thấp; một số tùy chọn GPT 2.5 sẽ không được gửi.'
+  };
+  $('modelHint').textContent = hints[v] || '';
+}
+$('imgModel').onchange = updateImgModelHint;
+updateImgModelHint();
 
 /* ================= CHIP GỢI Ý ================= */
 Array.prototype.forEach.call(document.querySelectorAll('.chip'), function(c){
@@ -2329,6 +2379,30 @@ Array.prototype.forEach.call(document.querySelectorAll('.chip'), function(c){
     $('prompt').value = c.getAttribute('data-p');
   };
 });
+
+/* ================= GPT IMAGE 2.5 · EDIT TOOLS ================= */
+Array.prototype.forEach.call(document.querySelectorAll('#editChips .chip'), function(c){
+  c.onclick = function(){
+    var t = $('preservePrompt');
+    var add = c.getAttribute('data-edit') || '';
+    if(add && t.value.indexOf(add) < 0) t.value = (t.value.trim() ? t.value.trim() + ' ' : '') + add;
+    c.classList.toggle('on');
+  };
+});
+function buildImagePrompt(base){
+  var mode = $('editMode') ? $('editMode').value : 'normal';
+  var keep = $('preservePrompt') ? $('preservePrompt').value.trim() : '';
+  var lead = {
+    targeted:'EDIT CHÍNH XÁC: Chỉ sửa đúng chi tiết được yêu cầu, không tự ý thay đổi phần khác.',
+    background:'EDIT NỀN: Chỉ thay đổi hoặc xử lý phần nền theo yêu cầu; ưu tiên giữ nguyên chủ thể.',
+    remove:'XÓA CHI TIẾT: Xóa sạch vật thể/chi tiết được yêu cầu và tái tạo vùng nền tự nhiên.',
+    add:'THÊM CHI TIẾT: Thêm vật thể/chi tiết theo yêu cầu nhưng giữ nhất quán phối cảnh, ánh sáng và tỷ lệ.',
+    text:'EDIT CHỮ: Sửa chính xác chữ/nhãn/typography theo yêu cầu, ưu tiên đúng chính tả và bố cục.',
+    recolor:'ĐỔI MÀU/VẬT LIỆU: Chỉ đổi màu hoặc chất liệu được yêu cầu, giữ cấu trúc và hình dạng.',
+    restyle:'ĐỔI PHONG CÁCH: Áp dụng phong cách mới nhưng giữ nhận diện chủ thể, bố cục và các chi tiết khóa.'
+  }[mode] || '';
+  return [lead, base, keep ? ('BẮT BUỘC GIỮ NGUYÊN: ' + keep) : ''].filter(Boolean).join('\n\n');
+}
 
 /* ================= ẢNH THAM CHIẾU ================= */
 Array.prototype.forEach.call(document.querySelectorAll('#refs .slot'), function(slot){
@@ -2347,12 +2421,18 @@ Array.prototype.forEach.call(document.querySelectorAll('#refs .slot'), function(
 });
 
 $('fileInput').addEventListener('change', function(){
-  var file = this.files && this.files[0];
-  if(!file) return;
-  compressImage(file, 1600, 0.86, function(dataUrl){
-    if(!dataUrl){ toast('Không đọc được ảnh này', true); return; }
-    refImages[pickSlot] = { dataUrl: dataUrl, uploadedUrl: null };
-    renderSlots();
+  var fs = this.files ? Array.prototype.slice.call(this.files) : [];
+  if(!fs.length) return;
+  /* UI hiện có 3 ô: nếu chọn nhiều file sẽ điền liên tiếp vào các ô còn trống. */
+  var targets = [];
+  for(var k=pickSlot;k<refImages.length && targets.length<fs.length;k++) if(!refImages[k] || k===pickSlot) targets.push(k);
+  for(var z=0;z<refImages.length && targets.length<fs.length;z++) if(targets.indexOf(z)<0 && !refImages[z]) targets.push(z);
+  fs.slice(0, targets.length).forEach(function(file, n){
+    compressImage(file, 2000, 0.9, function(dataUrl){
+      if(!dataUrl){ toast('Không đọc được ảnh ' + file.name, true); return; }
+      refImages[targets[n]] = { dataUrl: dataUrl, uploadedUrl: null };
+      renderSlots();
+    });
   });
 });
 
@@ -2395,31 +2475,33 @@ function renderSlots(){
 }
 
 function uploadRefs(){
-  var toUpload = refImages.filter(function(r){ return r; });
-  var done = [];
-  var chain = Promise.resolve();
-  toUpload.forEach(function(r, idx){
-    chain = chain.then(function(){
-      if(r.uploadedUrl){ done.push(r.uploadedUrl); return; }
-      updateJob('đang tải ảnh mẫu ' + (idx + 1) + '/' + toUpload.length + ' lên...', 6 + idx * 4);
-      return fetch(UPLOAD_URL, {
-        method: 'POST',
-        headers: headers(),
-        body: JSON.stringify({
-          base64Data: r.dataUrl,
-          uploadPath: 'ideco/refs',
-          fileName: 'ref_' + Date.now() + '_' + idx + '.jpg'
-        })
-      }).then(function(res){ return res.json(); })
-        .then(function(d){
-          var u = d && d.data && (d.data.downloadUrl || d.data.fileUrl || d.data.url);
-          if(!u) throw new Error('Tải ảnh mẫu lên thất bại: ' + (d.msg || 'không rõ lỗi'));
-          r.uploadedUrl = u;
-          done.push(u);
-        });
-    });
-  });
-  return chain.then(function(){ return done; });
+  var refs = refImages.map(function(r,i){ return r ? {r:r,i:i} : null; }).filter(Boolean);
+  if(!refs.length) return Promise.resolve([]);
+  var finished = 0;
+  updateJob('đang tải ' + refs.length + ' ảnh mẫu song song...', 7);
+  return Promise.all(refs.map(function(x){
+    if(x.r.uploadedUrl){
+      finished++;
+      return Promise.resolve(x.r.uploadedUrl);
+    }
+    return fetch(UPLOAD_URL, {
+      method: 'POST',
+      headers: headers(),
+      body: JSON.stringify({
+        base64Data: x.r.dataUrl,
+        uploadPath: 'ideco/refs',
+        fileName: 'ref_' + Date.now() + '_' + x.i + '.jpg'
+      })
+    }).then(function(res){ return res.json(); })
+      .then(function(d){
+        var u = d && d.data && (d.data.downloadUrl || d.data.fileUrl || d.data.url);
+        if(!u) throw new Error('Tải ảnh mẫu lên thất bại: ' + (d.msg || 'không rõ lỗi'));
+        x.r.uploadedUrl = u;
+        finished++;
+        updateJob('đã tải ảnh mẫu ' + finished + '/' + refs.length + '...', 7 + Math.round(finished / refs.length * 7));
+        return u;
+      });
+  }));
 }
 
 /* ================= TẠO ẢNH ================= */
@@ -2427,10 +2509,14 @@ $('btnGo').onclick = generate;
 
 function generate(){
   if(busy) return;
-  var prompt = $('prompt').value.trim();
-  if(!prompt){ toast('Vui lòng nhập mô tả ảnh trước nhé', true); $('prompt').focus(); return; }
+  var rawPrompt = $('prompt').value.trim();
+  if(!rawPrompt){ toast('Vui lòng nhập mô tả ảnh trước nhé', true); $('prompt').focus(); return; }
+  var prompt = buildImagePrompt(rawPrompt);
 
-  imgModelLabel = $('imgModel').value === 'nanobanana' ? 'Nano Banana 2 Lite' : 'GPT-Image-2';
+  var engineNow = $('imgModel').value;
+  imgModelLabel = engineNow === 'nanobanana' ? 'Nano Banana 2 Lite'
+    : engineNow === 'gptimage25flare' ? 'GPT-Image-2.5 Flare'
+    : engineNow === 'gptimage25sunburst' ? 'GPT-Image-2.5 Sunburst' : 'GPT-Image-2';
   busy = true;
   $('btnGo').disabled = true;
   $('btnGo').textContent = 'ĐANG TẠO...';
@@ -2441,7 +2527,7 @@ function generate(){
   (hasRefs ? uploadRefs() : Promise.resolve([]))
     .then(function(urls){
       var useNano = $('imgModel').value === 'nanobanana';
-      var promptNow = $('prompt').value.trim();
+      var promptNow = prompt;
 
       if(useNano){
         /* Nano Banana 2 Lite — thử lần lượt các slug cho tới khi Kie chấp nhận.
@@ -2461,18 +2547,25 @@ function generate(){
         return createImageTaskFallback(candidates, 0, nanoInput, promptNow);
       }
 
-      /* GPT-Image-2 */
+      /* GPT-Image-2 / GPT-Image-2.5 Flare / Sunburst */
       var input = {
         prompt: prompt,
         aspect_ratio: $('aspect').value,
         resolution: $('resolution').value
       };
-      var model = 'gpt-image-2-text-to-image';
-      if(urls.length){
-        model = 'gpt-image-2-image-to-image';
-        input.input_urls = urls;
-      }
-      updateJob('đang gửi yêu cầu tạo ảnh...', 16);
+      var bg = $('background') ? $('background').value : 'auto';
+      if(bg) input.background = bg;
+
+      var selected = $('imgModel').value;
+      var baseModel = selected === 'gptimage25flare' ? 'gpt-image-2-5-flare'
+        : selected === 'gptimage25sunburst' ? 'gpt-image-2-5-sunburst'
+        : 'gpt-image-2';
+      var model = baseModel + (urls.length ? '-image-to-image' : '-text-to-image');
+      if(urls.length) input.input_urls = urls;
+
+      updateJob('đang gửi ' + model + ' · ' + input.resolution + '...', 16);
+      console.log('[IDECO image createTask]', model, input);
+      window.__idecoImageStartedAt = performance.now();
       return fetch(API_BASE + '/api/v1/jobs/createTask', {
         method: 'POST',
         headers: headers(),
@@ -2529,40 +2622,55 @@ function createImageTaskFallback(models, i, input, promptNow){
 
 function pollTask(taskId, prompt){
   var tries = 0;
-  var MAX_TRIES = 100; // ~5 phút
-  updateJob('đã vào hàng đợi...', 20);
+  var MAX_TRIES = 300; // tối đa ~5 phút khi polling 1 giây
+  var stopped = false;
+  var pollBusy = false;
+  clearInterval(pollTimer);
+  updateJob('đã vào hàng đợi · đang kiểm tra nhanh...', 20);
 
-  pollTimer = setInterval(function(){
+  function stopPoll(){
+    stopped = true;
+    if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
+  }
+
+  function checkNow(){
+    if(stopped || pollBusy) return;
     tries++;
     if(tries > MAX_TRIES){
-      clearInterval(pollTimer);
+      stopPoll();
       failJob('Quá thời gian chờ (5 phút). Thử lại hoặc kiểm tra lịch sử trên kie.ai.');
       return;
     }
-    fetch(API_BASE + '/api/v1/jobs/recordInfo?taskId=' + encodeURIComponent(taskId), { headers: pollHeaders() })
+    pollBusy = true;
+    fetch(API_BASE + '/api/v1/jobs/recordInfo?taskId=' + encodeURIComponent(taskId), { headers: headers() })
       .then(function(r){ return r.json(); })
       .then(function(d){
         var data = d.data || {};
         var state = data.state;
         if(state === 'success'){
-          clearInterval(pollTimer);
+          stopPoll();
           var urls = [];
           try{ urls = (JSON.parse(data.resultJson || '{}').resultUrls) || []; }catch(_){}
           if(!urls.length){ failJob('Tác vụ xong nhưng không nhận được link ảnh'); return; }
+          console.log('[IDECO image timing] hoàn tất sau', window.__idecoImageStartedAt ? Math.round(performance.now()-window.__idecoImageStartedAt) + ' ms' : 'n/a');
           finishJob(urls, prompt, data.creditsConsumed);
         } else if(state === 'fail'){
-          clearInterval(pollTimer);
+          stopPoll();
           failJob('Tạo ảnh thất bại: ' + (data.failMsg || data.failCode || 'không rõ nguyên nhân'));
         } else {
-          var pct = Math.min(92, 20 + (Number(data.progress) || tries * 2));
-          var labels = { waiting: 'đang chờ xử lý', queuing: 'đang xếp hàng', generating: 'đang vẽ ảnh 🎨' };
+          var pct = Math.min(94, 20 + (Number(data.progress) || Math.min(68, tries)));
+          var labels = { waiting: 'đang chờ xử lý', queuing: 'đang xếp hàng', generating: 'Flare đang vẽ ảnh ⚡' };
           updateJob((labels[state] || state || 'đang xử lý') + '...', pct);
         }
       })
-      .catch(function(){ /* lỗi mạng tạm — thử lại vòng sau */ });
-  }, 3000);
-}
+      .catch(function(){ /* lỗi mạng tạm — vòng sau thử lại */ })
+      .finally(function(){ pollBusy = false; });
+  }
 
+  // Kiểm tra ngay lập tức thay vì chờ 3 giây đầu tiên.
+  checkNow();
+  pollTimer = setInterval(checkNow, 1000);
+}
 /* ================= TIẾN TRÌNH ================= */
 function showJob(prompt, state, pct){
   $('job').classList.add('show');
@@ -2627,6 +2735,7 @@ function renderGallery(){
       '<div class="meta"><div class="p"></div><span class="mono">' + time + ' · ' + (item.model || 'GPT-Image-2') + '</span></div>' +
       '<div class="acts">' +
         '<button data-act="dl">⬇ Tải</button>' +
+        '<button data-act="edit">✏ Edit</button>' +
         '<button data-act="re">↻ Tạo lại</button>' +
         '<button data-act="vid" style="flex:0 0 44px">🎬</button>' +
         '<button data-act="del" style="flex:0 0 40px">🗑</button>' +
@@ -2649,6 +2758,7 @@ function renderGallery(){
     });
     card.querySelector('.p').textContent = item.prompt;
     card.querySelector('[data-act=dl]').onclick = function(){ downloadImg(item.url); };
+    card.querySelector('[data-act=edit]').onclick = function(){ loadImageForEdit(item.url, item.prompt); };
     card.querySelector('[data-act=vid]').onclick = function(){ sendToVideo(item.url); };
     card.querySelector('[data-act=re]').onclick = function(){
       $('prompt').value = item.prompt;
@@ -2660,6 +2770,29 @@ function renderGallery(){
       mdbDel(item.url, function(){ renderGallery(); refreshCacheBar('img'); });
     };
     g.appendChild(card);
+  });
+}
+
+function loadImageForEdit(url, oldPrompt){
+  toast('Đang nạp ảnh vào chế độ Edit...');
+  resolveMedia(url, function(src){
+    fetch(src).then(function(r){ if(!r.ok) throw new Error('Không tải được ảnh'); return r.blob(); })
+      .then(function(blob){
+        var rd = new FileReader();
+        rd.onload = function(){
+          refImages[0] = { dataUrl: rd.result, uploadedUrl: null };
+          renderSlots();
+          if($('imgModel').value === 'nanobanana' || $('imgModel').value === 'gptimage2') $('imgModel').value = 'gptimage25flare';
+          updateImgModelHint();
+          $('editMode').value = 'targeted';
+          $('prompt').value = '';
+          $('prompt').placeholder = 'Mô tả CHỈ phần muốn sửa trên ảnh này. VD: Đổi nền thành nhà thuốc hiện đại, giữ nguyên sản phẩm và toàn bộ chữ...';
+          window.scrollTo({top:0,behavior:'smooth'});
+          $('prompt').focus();
+          toast('✏ Đã nạp ảnh gốc. Nhập yêu cầu sửa rồi bấm TẠO ẢNH');
+        };
+        rd.readAsDataURL(blob);
+      }).catch(function(){ toast('Không nạp được ảnh để Edit; link có thể đã hết hạn.', true); });
   });
 }
 
@@ -11462,5 +11595,8 @@ body.clip-mode.v61-timeline-wide .clip-stage{padding-top:4px!important;padding-b
 })();
 </script>
 
+<script>
+console.log('[IDECO] V9.10 FAST: GPT Image 2.5 + parallel ref upload + immediate/1s polling');
+</script>
 </body>
 </html>
