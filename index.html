@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2212%22%20fill%3D%22%23ee3a23%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2243%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%20font-size%3D%2231%22%20font-weight%3D%22800%22%20fill%3D%22white%22%3EI%3C%2Ftext%3E%3C%2Fsvg%3E">
-<title>IDECO · Studio Tạo Ảnh & Dựng Video AI · GPT Image 2.5 Flare + Sunburst · V9.10 FAST</title>
+<title>IDECO · Studio Tạo Ảnh & Dựng Video AI · GPT Image 2.5 Flare + Sunburst · V9.11 PREVIEW + MAGNET</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
@@ -1878,7 +1878,7 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
   <div id="tabClip" style="display:none">
     <div class="clip-head">
       <button class="clip-exit" id="clipExit">← Thoát CLIP</button>
-      <div><b>✂ CLIP · Timeline Editor V61 PROJECT</b><small>CORE V60 + V61 · LƯU/MỞ DỰ ÁN · TIMELINE RỘNG · TRIM FRAME BIÊN KHI XUẤT</small></div>
+      <div><b>✂ CLIP · Timeline Editor V62 FRAME + MAGNET</b><small>CORE V61 + V62 · KHUNG PREVIEW/XUẤT · KẾT DÍNH CLIP · LƯU/MỞ DỰ ÁN</small></div>
       <span class="clip-badge">CAPCUT STYLE</span>
     </div>
 
@@ -1893,6 +1893,17 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
     <div class="clip-layout">
       <div class="clip-preview-card">
         <div class="clip-stage">
+          <div class="v62-framebar" id="v62Framebar" aria-label="Chọn khung Preview và khung xuất">
+            <span class="v62-frame-label">KHUNG PREVIEW / XUẤT</span>
+            <div class="v62-aspect-buttons" role="group" aria-label="Tỷ lệ khung hình">
+              <button type="button" data-aspect="1:1">1:1</button>
+              <button type="button" data-aspect="9:16" class="on">9:16</button>
+              <button type="button" data-aspect="16:9">16:9</button>
+              <button type="button" data-aspect="3:2">3:2</button>
+              <button type="button" data-aspect="2:3">2:3</button>
+            </div>
+            <span class="v62-frame-size" id="v62FrameSize">1080 × 1920</span>
+          </div>
           <div class="clip-preview-surface" id="clipPreviewSurface">
             <video id="clipNativeVideo" preload="auto" playsinline webkit-playsinline></video>
             <canvas id="clipCanvas" width="1080" height="1920"></canvas>
@@ -1983,7 +1994,7 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
     </div>
 
     <div class="clip-timeline-wrap">
-      <div class="clip-tl-toolbar"><button id="clipJumpStart">⏮</button><button id="clipJumpEnd">⏭</button><span class="clip-time" id="clipTlTime">0:00</span><button id="clipQuickSplit" title="Phím S">✂ Cắt tại vạch <small>S</small></button><button id="clipQuickDelete" title="Delete / Backspace">🗑 Xóa nhanh <small>Del</small></button><div class="spacer"></div><span style="font-size:10px;color:#8f929c">Zoom timeline</span><button class="zoom-btn" id="clipZoomMinus">−</button><input type="range" id="clipZoomTimeline" min="4" max="260" value="90"><button class="zoom-btn" id="clipZoomPlus">＋</button><button id="clipZoomFit">Fit toàn bộ</button><button id="clipAutoFit" class="clip-autofit on" title="Tự co timeline khi thêm clip dài">Auto Fit ✓</button></div>
+      <div class="clip-tl-toolbar"><button id="clipJumpStart">⏮</button><button id="clipJumpEnd">⏭</button><span class="clip-time" id="clipTlTime">0:00</span><button id="clipQuickSplit" title="Phím S">✂ Cắt tại vạch <small>S</small></button><button id="clipQuickDelete" title="Delete / Backspace">🗑 Xóa nhanh <small>Del</small></button><button id="clipMagnetJoin" class="v62-magnet" title="Tự động dồn các clip trên track VIDEO/ẢNH sát nhau, bỏ khoảng trống">🧲 Kết dính clip</button><div class="spacer"></div><span style="font-size:10px;color:#8f929c">Zoom timeline</span><button class="zoom-btn" id="clipZoomMinus">−</button><input type="range" id="clipZoomTimeline" min="4" max="260" value="90"><button class="zoom-btn" id="clipZoomPlus">＋</button><button id="clipZoomFit">Fit toàn bộ</button><button id="clipAutoFit" class="clip-autofit on" title="Tự co timeline khi thêm clip dài">Auto Fit ✓</button></div>
       <div class="clip-presetbar" id="clipFxPresets"><span class="lab">🎨 MÀU PHIM:</span>
 <div class="clip-preset clip-fx" draggable="true" data-fx="cinematic">🎬 Cinematic</div><div class="clip-preset clip-fx" draggable="true" data-fx="tealorange">🟧 Teal Orange</div><div class="clip-preset clip-fx" draggable="true" data-fx="warmgold">🌅 Warm Gold</div><div class="clip-preset clip-fx" draggable="true" data-fx="coolblue">❄ Cool Blue</div><div class="clip-preset clip-fx" draggable="true" data-fx="cleanpharma">💊 Clean Pharma</div><div class="clip-preset clip-fx" draggable="true" data-fx="commercial">💎 Commercial</div><div class="clip-preset clip-fx" draggable="true" data-fx="beauty">🌸 Beauty Soft</div><div class="clip-preset clip-fx" draggable="true" data-fx="sunset">🌇 Sunset</div><div class="clip-preset clip-fx" draggable="true" data-fx="emerald">💚 Emerald</div><div class="clip-preset clip-fx" draggable="true" data-fx="cyber">🌌 Cyber Neon</div><div class="clip-preset clip-fx" draggable="true" data-fx="punchy">⚡ Punchy</div><div class="clip-preset clip-fx" draggable="true" data-fx="grayscale">🎞 Film B&W</div><div class="clip-preset clip-fx" draggable="true" data-fx="noir">🕶 Noir</div><div class="clip-preset clip-fx" draggable="true" data-fx="sepia">📼 Vintage</div></div>
 <div class="clip-presetbar"><span class="lab">✨ ÁNH SÁNG / FX:</span><div class="clip-preset clip-fx" draggable="true" data-fx="dream">☁ Dream</div><div class="clip-preset clip-fx" draggable="true" data-fx="glow">✨ Glow</div><div class="clip-preset clip-fx" draggable="true" data-fx="bloom">💫 Bloom</div><div class="clip-preset clip-fx" draggable="true" data-fx="vignette">🎯 Vignette</div><div class="clip-preset clip-fx" draggable="true" data-fx="filmgrain">🎞 Film Grain</div><div class="clip-preset clip-fx" draggable="true" data-fx="lightleak">🔥 Light Leak</div><div class="clip-preset clip-fx" draggable="true" data-fx="lensflare">☀ Lens Flare</div><div class="clip-preset clip-fx" draggable="true" data-fx="sparkle">✨ Sparkle</div><div class="clip-preset clip-fx" draggable="true" data-fx="scanline">📺 Scanline</div><div class="clip-preset clip-fx" draggable="true" data-fx="rain">🌧 Mưa</div><div class="clip-preset clip-fx" draggable="true" data-fx="raindrops">💧 Mưa hạt</div><div class="clip-preset clip-fx" draggable="true" data-fx="snow">❄ Tuyết rơi</div><div class="clip-preset clip-fx" draggable="true" data-fx="stageblink">🎭 Đèn sân khấu</div><div class="clip-preset clip-fx" draggable="true" data-fx="screenopen">🪟 Mở màn</div><div class="clip-preset clip-fx" draggable="true" data-fx="soft">🫧 Soft</div><div class="clip-preset clip-fx" draggable="true" data-fx="blur">🌫 Blur</div><div class="clip-preset clip-fx" draggable="true" data-fx="flash">⚪ Flash</div></div>
@@ -1998,7 +2009,7 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
         <div class="clip-track"><div class="clip-track-label">AUDIO<small>Nhạc nền</small></div><div class="clip-lane" id="clipLaneAudio" data-track="audio"></div></div>
         <div class="clip-track"><div class="clip-track-label">SFX<small>Kéo sound effect xuống đây · kéo block để dời</small></div><div class="clip-lane" id="clipLaneSfx" data-track="sfx"></div></div>
       </div>
-      <div class="clip-exportbar"><select id="clipAspect"><option value="9:16">9:16</option><option value="16:9">16:9</option><option value="1:1">1:1</option><option value="4:5">4:5</option><option value="3:4">3:4</option></select><select id="clipRes"><option value="720">HD 720p</option><option value="1080" selected>Full HD 1080p</option><option value="1440">2K 1440p</option></select><span class="clip-progress" id="clipProgress"></span><button class="clip-export" id="clipExport">⬇ XUẤT VIDEO</button></div>
+      <div class="clip-exportbar"><select id="clipAspect" title="Tỷ lệ khung Preview / Xuất"><option value="1:1">1:1</option><option value="9:16" selected>9:16</option><option value="16:9">16:9</option><option value="3:2">3:2</option><option value="2:3">2:3</option></select><select id="clipRes"><option value="720">HD 720p</option><option value="1080" selected>Full HD 1080p</option><option value="1440">2K 1440p</option></select><span class="clip-progress" id="clipProgress"></span><button class="clip-export" id="clipExport">⬇ XUẤT VIDEO</button></div>
     </div>
   </div><!-- /tabClip -->
   <div id="clipMediaBin" aria-hidden="true"></div>
@@ -5074,7 +5085,7 @@ function clipAll(){return Object.keys(clipTracks).reduce(function(a,k){return a.
 function clipFind(id){var keys=Object.keys(clipTracks);for(var k=0;k<keys.length;k++){var a=clipTracks[keys[k]],i=a.findIndex(function(x){return x.id===id});if(i>=0)return {track:keys[k],arr:a,i:i,it:a[i]}}return null}
 function clipEnd(it){return (Number(it.start)||0)+(Number(it.duration)||0)}
 function clipTotalDuration(){var m=0;clipAll().forEach(function(x){m=Math.max(m,clipEnd(x))});return Math.max(m,.1)}
-function clipCanvasSize(){var q=Number($('clipRes').value)||1080,ar=$('clipAspect').value,w=q,h=q;if(ar==='16:9'){w=Math.round(q*16/9);h=q}else if(ar==='9:16'){w=q;h=Math.round(q*16/9)}else if(ar==='4:5'){w=q;h=Math.round(q*5/4)}else if(ar==='3:4'){w=q;h=Math.round(q*4/3)}else if(ar==='1:1'){w=q;h=q}return {w:w,h:h}}
+function clipCanvasSize(){var q=Number($('clipRes').value)||1080,ar=String($('clipAspect').value||'9:16'),p=ar.split(':'),rw=Math.max(1,Number(p[0])||9),rh=Math.max(1,Number(p[1])||16),w=q,h=q;if(rw>rh){w=Math.round(q*rw/rh);h=q}else if(rh>rw){w=q;h=Math.round(q*rh/rw)}return {w:w,h:h}}
 function clipApplyCanvasSize(){var z=clipCanvasSize(),c=$('clipCanvas');if(c.width!==z.w||c.height!==z.h){c.width=z.w;c.height=z.h}clipDrawAt(clipCurrentTime)}
 $('clipAspect').onchange=clipApplyCanvasSize;$('clipRes').onchange=clipApplyCanvasSize;
 function clipLastEnd(track){var a=clipTracks[track]||[],m=0;a.forEach(function(x){m=Math.max(m,clipEnd(x))});return m}
@@ -10985,6 +10996,15 @@ try{ if(sessionStorage.getItem(LOGIN_SESSION_KEY) === '1' || hasRememberedLogin(
         <label for="v46FileName">Tên file</label>
         <input class="v46-field" id="v46FileName" value="IDECO_CLIP">
 
+        <label for="v62ExportAspect">Khung video / tỷ lệ</label>
+        <select class="v46-select" id="v62ExportAspect">
+          <option value="1:1">1:1 · Vuông</option>
+          <option value="9:16" selected>9:16 · Dọc</option>
+          <option value="16:9">16:9 · Ngang</option>
+          <option value="3:2">3:2 · Ngang</option>
+          <option value="2:3">2:3 · Dọc</option>
+        </select>
+
         <label for="v46Resolution">Độ phân giải</label>
         <select class="v46-select" id="v46Resolution">
           <option value="720">720P · HD</option>
@@ -10992,7 +11012,7 @@ try{ if(sessionStorage.getItem(LOGIN_SESSION_KEY) === '1' || hasRememberedLogin(
           <option value="1440">1440P · 2K</option>
         </select>
 
-        <label for="v46Fps">Tỷ lệ khung hình</label>
+        <label for="v46Fps">Tốc độ khung hình (FPS)</label>
         <select class="v46-select" id="v46Fps">
           <option value="24">24 fps</option>
           <option value="25">25 fps</option>
@@ -11598,5 +11618,111 @@ body.clip-mode.v61-timeline-wide .clip-stage{padding-top:4px!important;padding-b
 <script>
 console.log('[IDECO] V9.10 FAST: GPT Image 2.5 + parallel ref upload + immediate/1s polling');
 </script>
+
+
+<!-- ================= V62: PREVIEW/EXPORT ASPECT + MAGNET JOIN ================= -->
+<style id="v62FrameMagnetStyle">
+.v62-framebar{width:100%;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 9px;padding:7px 8px;background:#121319;border:1px solid #30333c;border-radius:9px}
+.v62-frame-label{font-size:9px;font-weight:900;letter-spacing:.08em;color:#9ea2ae;white-space:nowrap}
+.v62-aspect-buttons{display:flex;gap:5px;flex-wrap:wrap}
+.v62-aspect-buttons button{border:1px solid #3b3f49;background:#202229;color:#e8e9ed;border-radius:7px;padding:6px 9px;font-size:10px;font-weight:850;line-height:1}
+.v62-aspect-buttons button:hover{border-color:#69707d}
+.v62-aspect-buttons button.on{border-color:#ff765f;background:#4a241e;color:#fff;box-shadow:0 0 0 1px rgba(255,118,95,.2)}
+.v62-frame-size{margin-left:auto;font:800 9px ui-monospace,SFMono-Regular,Menlo,monospace;color:#76e0a6;white-space:nowrap}
+#clipMagnetJoin.v62-magnet{border-color:#a77b29!important;color:#ffd36a!important;background:#2b2415!important;font-weight:850!important}
+#clipMagnetJoin.v62-magnet:hover{border-color:#e5b84c!important;background:#3b3018!important;color:#fff1ae!important}
+#clipMagnetJoin.v62-magnet.v62-working{opacity:.65;pointer-events:none}
+body.v45-export-lock #clipMagnetJoin,body.v42-exporting #clipMagnetJoin{opacity:.45!important;pointer-events:none!important}
+@media(max-width:760px){.v62-framebar{align-items:flex-start}.v62-frame-label{width:100%}.v62-frame-size{margin-left:0}.v62-aspect-buttons button{padding:6px 8px}}
+</style>
+<script id="v62FrameMagnetScript">
+(function(){
+  'use strict';
+  var ASPECTS=['1:1','9:16','16:9','3:2','2:3'];
+
+  function v62RatioValue(ar){
+    var p=String(ar||'9:16').split(':'),w=Math.max(1,Number(p[0])||9),h=Math.max(1,Number(p[1])||16);
+    return w/h;
+  }
+  function v62UpdateFrameUi(){
+    var a=$('clipAspect'),ar=a&&ASPECTS.indexOf(a.value)>=0?a.value:'9:16';
+    var surf=$('clipPreviewSurface');
+    if(surf)surf.style.setProperty('--preview-ratio',String(v62RatioValue(ar)));
+    document.querySelectorAll('#v62Framebar [data-aspect]').forEach(function(b){b.classList.toggle('on',b.dataset.aspect===ar)});
+    var ex=$('v62ExportAspect');if(ex&&ex.value!==ar)ex.value=ar;
+    var sz=$('v62FrameSize');
+    if(sz){try{var z=clipCanvasSize();sz.textContent=z.w+' × '+z.h}catch(_){sz.textContent=ar}}
+  }
+  function v62SetAspect(ar,notify){
+    if(ASPECTS.indexOf(ar)<0)return;
+    var a=$('clipAspect');if(!a)return;
+    if(a.value!==ar)a.value=ar;
+    try{a.dispatchEvent(new Event('change',{bubbles:true}))}catch(_){try{clipApplyCanvasSize()}catch(__){}}
+    try{clipApplyCanvasSize()}catch(_){}
+    v62UpdateFrameUi();
+    if(notify)toast('🖼 Khung Preview & Xuất: '+ar);
+  }
+
+  document.querySelectorAll('#v62Framebar [data-aspect]').forEach(function(b){
+    b.addEventListener('click',function(){v62SetAspect(this.dataset.aspect,true)});
+  });
+  var coreAspect=$('clipAspect');if(coreAspect)coreAspect.addEventListener('change',function(){v62UpdateFrameUi()});
+  var res=$('clipRes');if(res)res.addEventListener('change',function(){setTimeout(v62UpdateFrameUi,0)});
+
+  document.addEventListener('change',function(e){
+    if(e.target&&e.target.id==='v62ExportAspect'){v62SetAspect(e.target.value,false)}
+    if(e.target&&e.target.id==='v46Resolution'){
+      if($('clipRes')){$('clipRes').value=e.target.value;try{clipApplyCanvasSize()}catch(_){}}
+      setTimeout(v62UpdateFrameUi,0);
+    }
+  },false);
+
+  /* When opening export settings, make the dialog reflect the current Preview frame. */
+  document.addEventListener('click',function(e){
+    var t=e.target&&e.target.closest?e.target.closest('#clipExport,#v45TopExport'):null;
+    if(t)setTimeout(v62UpdateFrameUi,0);
+  },true);
+
+  function v62JoinVisualClips(){
+    if(document.body.classList.contains('v45-export-lock')||document.body.classList.contains('v42-exporting')){toast('Đang xuất video, chưa thể thay đổi timeline.',true);return}
+    var arr=clipTracks&&clipTracks.visual?clipTracks.visual:null;
+    if(!arr||arr.length<2){toast('Track VIDEO/ẢNH cần ít nhất 2 clip để kết dính.',true);return}
+    var indexed=arr.map(function(it,i){return {it:it,i:i}});
+    indexed.sort(function(a,b){var d=(Number(a.it.start)||0)-(Number(b.it.start)||0);return Math.abs(d)>0.000001?d:a.i-b.i});
+    var cursor=0,moved=0,removedGap=0,removedOverlap=0;
+    indexed.forEach(function(x){
+      var it=x.it,old=Math.max(0,Number(it.start)||0),dur=Math.max(0,Number(it.duration)||0);
+      if(old>cursor+.0005)removedGap+=old-cursor;
+      else if(old<cursor-.0005)removedOverlap+=cursor-old;
+      if(Math.abs(old-cursor)>.0005)moved++;
+      it.start=cursor;
+      cursor+=dur;
+    });
+    clipTracks.visual=indexed.map(function(x){return x.it});
+    try{clipRenderAll()}catch(_){clipRenderTimeline()}
+    try{clipSetCurrentTime(Math.min(clipCurrentTime,Math.max(.1,cursor)))}catch(_){}
+    try{clipMaybeAutoFit()}catch(_){}
+    var msg='🧲 Đã kết dính '+arr.length+' clip';
+    if(removedGap>.01)msg+=' · bỏ '+removedGap.toFixed(2)+'s khoảng trống';
+    if(removedOverlap>.01)msg+=' · gỡ '+removedOverlap.toFixed(2)+'s chồng lấn';
+    if(!moved)msg='🧲 Các clip đã khít sẵn, không cần dồn thêm.';
+    toast(msg);
+  }
+  var magnet=$('clipMagnetJoin');if(magnet)magnet.addEventListener('click',function(e){e.preventDefault();v62JoinVisualClips()});
+
+  /* Wrap global canvas resize so project restore / presets also refresh the frame readout. */
+  if(typeof clipApplyCanvasSize==='function'&&!clipApplyCanvasSize.v62Wrapped){
+    var baseApply=clipApplyCanvasSize;
+    clipApplyCanvasSize=function(){var r=baseApply.apply(this,arguments);setTimeout(v62UpdateFrameUi,0);return r};
+    clipApplyCanvasSize.v62Wrapped=true;
+  }
+
+  /* Export modal is parsed before this patch. Sync initial values now. */
+  v62UpdateFrameUi();
+  try{clipApplyCanvasSize()}catch(_){}
+  console.log('[IDECO V62] Preview/Export aspect 1:1 9:16 16:9 3:2 2:3 + Magnet Join ready');
+})();
+</script>
+
 </body>
 </html>
