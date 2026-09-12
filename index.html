@@ -10520,7 +10520,8 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
         ext:'mp4',
         deterministic:true,
         videoCodec:videoChoice.label,
-        audioCodec:audioChoice.label
+        audioCodec:audioChoice.label,
+        privacyClean:!!window.V63_PRIVACY_METADATA_CLEAN
       }
     }
     finally{
@@ -10652,7 +10653,8 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
 
       if(p)p.textContent=
         '✅ HOÀN TẤT · '+(result.blob.size/1048576).toFixed(1)+
-        ' MB · '+(result.videoCodec||'video')+' + '+(result.audioCodec||'audio');
+        ' MB · '+(result.videoCodec||'video')+' + '+(result.audioCodec||'audio')+
+        (result.privacyClean?' · 🔒 metadata nguồn không sao chép':'');
 
       setTimeout(function(){URL.revokeObjectURL(url)},30000)
     }
@@ -11101,6 +11103,18 @@ try{ if(sessionStorage.getItem(LOGIN_SESSION_KEY) === '1' || hasRememberedLogin(
         <div class="v61-tiktok-note">Dùng để loại frame đen/lỗi chuyển cảnh ở mép video. Tùy chọn này không thay đổi metadata hay cơ chế gắn nhãn AI của TikTok/nền tảng.</div>
       </div>
 
+      <div class="v63-privacy-export">
+        <div class="v63-privacy-head">
+          <b>🔒 QUYỀN RIÊNG TƯ METADATA</b>
+          <span id="v63PrivacyState">SẠCH METADATA NGUỒN</span>
+        </div>
+        <label class="v63-privacy-check">
+          <input type="checkbox" id="v63PrivacyClean" checked>
+          <span><strong>Xóa metadata riêng tư khi xuất</strong><small>Không sao chép GPS, thiết bị, tên phần mềm/tác giả và EXIF của clip/ảnh nguồn sang MP4 mới.</small></span>
+        </label>
+        <div class="v63-privacy-note">IDECO Studio đang xuất bằng cách dựng lại từng frame + audio vào một MP4 mới, vì vậy metadata EXIF/GPS của file nguồn không được truyền sang file xuất. Tùy chọn này phục vụ quyền riêng tư; không thay đổi hoặc né cơ chế nhận diện/ghi nhãn AI của TikTok hay nền tảng khác.</div>
+      </div>
+
       <div class="v46-estimate">
         <div class="v46-stat">
           <small>THỜI LƯỢNG</small>
@@ -11445,6 +11459,7 @@ body.clip-mode.v61-timeline-wide .clip-stage{padding-top:4px!important;padding-b
 .v61-save-progress{font-size:9px;color:#ffca72;margin-left:4px;min-width:90px}
 .v61-tiktok-export{margin-top:14px;padding:12px;border:1px solid #304f65;border-radius:12px;background:#111d27}.v61-tiktok-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}.v61-tiktok-head b{flex:1;color:#8fdcff;font-size:11px}.v61-tiktok-head button{border:1px solid #39769b;background:#173149;color:#a7e2ff;border-radius:8px;padding:8px 10px;font-size:9px;font-weight:900}.v61-tiktok-grid{display:grid;grid-template-columns:180px 1fr;gap:8px;align-items:center}.v61-tiktok-grid label{font-size:10px;color:#aeb7c2}.v61-tiktok-note{font-size:9px;color:#7f8b97;line-height:1.5;margin-top:8px}
 @media(max-width:900px){.v61-project-actions,.v61-layout-actions{overflow-x:auto;flex-wrap:nowrap}.v61-project-name{display:none}.v61-tiktok-grid{grid-template-columns:1fr}.v61-tiktok-head{align-items:stretch;flex-direction:column}}
+.v63-privacy-export{margin-top:12px;padding:12px;border:1px solid #315844;border-radius:12px;background:#102019}.v63-privacy-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}.v63-privacy-head b{flex:1;color:#8ef0b4;font-size:11px}.v63-privacy-head span{font:900 8px ui-monospace,monospace;color:#8ef0b4;border:1px solid #35684b;background:#173123;border-radius:999px;padding:4px 7px}.v63-privacy-head span.off{color:#c8cbd2;border-color:#555b66;background:#262a31}.v63-privacy-check{display:flex;align-items:flex-start;gap:10px;padding:10px;border:1px solid #2f5741;background:#14271d;border-radius:10px;cursor:pointer}.v63-privacy-check input{width:19px;height:19px;accent-color:#3cb371;flex:0 0 auto;margin-top:1px}.v63-privacy-check span{display:block;min-width:0}.v63-privacy-check strong{display:block;color:#e8f8ee;font-size:10.5px;margin-bottom:3px}.v63-privacy-check small{display:block;color:#95aa9d;font-size:9px;line-height:1.45}.v63-privacy-note{font-size:9px;color:#81988a;line-height:1.55;margin-top:8px}
 </style>
 
 <div class="v61-project-modal" id="v61ProjectModal" aria-hidden="true">
@@ -11721,6 +11736,31 @@ body.v45-export-lock #clipMagnetJoin,body.v42-exporting #clipMagnetJoin{opacity:
   v62UpdateFrameUi();
   try{clipApplyCanvasSize()}catch(_){}
   console.log('[IDECO V62] Preview/Export aspect 1:1 9:16 16:9 3:2 2:3 + Magnet Join ready');
+})();
+</script>
+
+<!-- ================= V63: PRIVACY METADATA CONTROL ================= -->
+<script id="v63PrivacyMetadataScript">
+(function(){
+  'use strict';
+  function el(id){return document.getElementById(id)}
+  window.V63_PRIVACY_METADATA_CLEAN=true;
+  function sync(){
+    var c=el('v63PrivacyClean'),st=el('v63PrivacyState');
+    window.V63_PRIVACY_METADATA_CLEAN=!!(!c||c.checked);
+    if(st){
+      st.textContent=window.V63_PRIVACY_METADATA_CLEAN?'SẠCH METADATA NGUỒN':'CHẾ ĐỘ THƯỜNG';
+      st.classList.toggle('off',!window.V63_PRIVACY_METADATA_CLEAN);
+    }
+  }
+  var c=el('v63PrivacyClean');
+  if(c)c.addEventListener('change',function(){sync();if(typeof toast==='function')toast(this.checked?'🔒 Xuất riêng tư: không sao chép EXIF/GPS/thiết bị từ nguồn':'Đã tắt chỉ báo chế độ riêng tư. MP4 vẫn được dựng lại từ frame/audio.');});
+  document.addEventListener('click',function(e){
+    var t=e.target&&e.target.closest?e.target.closest('#clipExport,#v45TopExport'):null;
+    if(t)setTimeout(sync,0);
+  },true);
+  sync();
+  console.log('[IDECO V63] Privacy metadata export control ready');
 })();
 </script>
 
