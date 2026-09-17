@@ -1844,16 +1844,16 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
     </div>
 
     <div class="sec sc-block-model">
-      <label class="lbl">Model viết kịch bản (B.AI)</label>
+      <label class="lbl">Model viết kịch bản (Kie.ai)</label>
       <select id="scModel">
-        <option value="qwen3.8-flash" selected>⚡ Qwen3.8-Flash · B.AI</option>
+        <option value="gemini-3-8-flash" selected>⚡ Gemini-3.8-Flash · Kie.ai</option>
       </select>
-      <div class="ref-hint">Qwen3.8-Flash qua B.AI · hỗ trợ ảnh tham chiếu · trả JSON hoàn chỉnh để dựng phân cảnh ổn định.</div>
+      <div class="ref-hint">Gemini-3.8-Flash qua Kie.ai · hỗ trợ ảnh tham chiếu đa phương thức · reasoning mức High · trả JSON hoàn chỉnh để dựng phân cảnh ổn định.</div>
     </div>
 
     <div class="job" id="scJob">
       <div class="jrow">
-        <span class="jp" id="scJobPrompt">Đang soạn kịch bản với Qwen3.8-Flash...</span>
+        <span class="jp" id="scJobPrompt">Đang soạn kịch bản với Gemini-3.8-Flash...</span>
         <span class="jstate mono" id="scJobState"></span>
       </div>
       <div class="bar"><i id="scJobBar"></i></div>
@@ -2105,8 +2105,8 @@ var API_BASE   = 'https://api.kie.ai';
 var UPLOAD_URL = 'https://kieai.redpandaai.co/api/file-base64-upload';
 var API_KEY    = 'cda99bfd4d4925fb42e58468fa6c17f2'; // key nội bộ — không chia sẻ file ra ngoài
 var WAN_API_KEY = '6a11cd4b360b77e7cd515b8296a00e6a'; // key riêng cho Wan 3.0
-var BAI_API_BASE = 'https://api.b.ai/v1';
-var BAI_API_KEY  = 'sk-1b8six06o1mgya2sk6db1u4xuyaepgq0'; // key B.AI riêng cho tab Kịch Bản
+var GEMINI_API_BASE = 'https://api.kie.ai/gemini-3-8-flash-openai/v1';
+var GEMINI_API_KEY  = '6a11cd4b360b77e7cd515b8296a00e6a'; // key Kie.ai riêng cho Gemini 3.8 Flash / tab Kịch Bản
 var PASSWORD   = 'minhtriet1973';
 var LS_HIST    = 'taoanh_gptimage2_history';
 
@@ -4004,7 +4004,7 @@ $('fpExtBtn').onclick = function(){
 
 renderVGallery();
 
-/* ================= TAB KỊCH BẢN CINEMATIC (B.AI QWEN3.8-FLASH) ================= */
+/* ================= TAB KỊCH BẢN CINEMATIC (KIE.AI GEMINI-3.8-FLASH) ================= */
 var scRefsArr = [null, null, null, null, null]; // {dataUrl, analysis?}
 var scRefAnalysis = { ready:false, busy:false, profiles:[], summary:'', lockText:'', fingerprint:'' };
 var scRefAnalysisVersion = 0;
@@ -4269,9 +4269,9 @@ function analyzeScriptRefs(silent){
   if(!refs.length){ invalidateRefAnalysis(); renderRefAnalysis(); return Promise.resolve(scRefAnalysis); }
   var fp=currentFp;
   if(scRefAnalysis.ready && scRefAnalysis.fingerprint===fp) return Promise.resolve(scRefAnalysis);
-  if(!BAI_API_KEY || BAI_API_KEY.indexOf('PASTE_')===0){
-    if(!silent) toast('Chưa cấu hình BAI_API_KEY để AI phân tích ảnh',true);
-    return Promise.reject(new Error('Chưa cấu hình BAI_API_KEY'));
+  if(!GEMINI_API_KEY || GEMINI_API_KEY.indexOf('PASTE_')===0){
+    if(!silent) toast('Chưa cấu hình GEMINI_API_KEY để AI phân tích ảnh',true);
+    return Promise.reject(new Error('Chưa cấu hình GEMINI_API_KEY'));
   }
   var myVersion=++scRefAnalysisVersion;
   scRefAnalysis.busy=true; scRefAnalysis.fingerprint=fp; renderRefAnalysis();
@@ -4289,11 +4289,11 @@ function analyzeScriptRefs(silent){
     content.push({type:'image_url',image_url:{url:r.dataUrl}});
   });
   var body={
-    model:($('scModel')&&$('scModel').value)||'qwen3.8-flash',
+    model:($('scModel')&&$('scModel').value)||'gemini-3-8-flash',
     messages:[{role:'system',content:'Bạn là Visual Continuity Supervisor cho phim quảng cáo AI. Nhiệm vụ: phân tích ảnh tham chiếu thành hồ sơ khóa nhận diện có thể tái sử dụng. Không markdown, chỉ JSON hợp lệ.'},{role:'user',content:content}],
     stream:false, temperature:0.15, max_tokens:3500, response_format:{type:'json_object'}
   };
-  var req=baiScriptRequest(body,0).then(function(data){
+  var req=geminiScriptRequest(body,0).then(function(data){
     if(myVersion!==scRefAnalysisVersion || fp!==scRefsFingerprint()) return scRefAnalysis;
     var msg=data&&data.choices&&data.choices[0]&&data.choices[0].message, txt=msg&&msg.content;
     if(Array.isArray(txt))txt=txt.map(function(x){return (x&&(x.text||x.content))||'';}).join('');
@@ -4378,7 +4378,7 @@ function styleClause(){
   return base+colorToneClause();
 }
 
-/* -- gọi B.AI Qwen3.8-Flash để soạn kịch bản -- */
+/* -- gọi Kie.ai Gemini-3.8-Flash để soạn kịch bản -- */
 function scDirectorBrief(){
   var genreMap={
     'auto':'Tự suy luận thể loại phù hợp nhất từ ý tưởng người dùng; không ép một công thức cố định.',
@@ -4525,7 +4525,7 @@ function generateAiIdea(forceNew, refsPrepared){
   var val=$('scIdeaGenre')?$('scIdeaGenre').value:'';
   var info=scIdeaGenreInfo(val);
   if(!info){toast('Chọn một kiểu kịch bản để AI đề xuất',true);return;}
-  if(!BAI_API_KEY||BAI_API_KEY.indexOf('PASTE_')===0){toast('Chưa cấu hình BAI_API_KEY trong code',true);return;}
+  if(!GEMINI_API_KEY||GEMINI_API_KEY.indexOf('PASTE_')===0){toast('Chưa cấu hình GEMINI_API_KEY trong code',true);return;}
 
   var hasRefs=scRefsArr.some(function(r){return r&&r.dataUrl;});
   var refsNeedAnalysis=hasRefs && (!scRefAnalysis.ready || scRefAnalysis.fingerprint!==scRefsFingerprint());
@@ -4578,11 +4578,11 @@ function generateAiIdea(forceNew, refsPrepared){
       content.push({type:'image_url',image_url:{url:r.dataUrl}});
     }
   });
-  var body={model:($('scModel')&&$('scModel').value)||'qwen3.8-flash',messages:[
+  var body={model:($('scModel')&&$('scModel').value)||'gemini-3-8-flash',messages:[
     {role:'system',content:'Bạn là biên kịch quảng cáo và phim ngắn multimodal. Khi có ảnh tham chiếu, phải quan sát ảnh và để nội dung nhìn thấy trong ảnh chi phối ý tưởng; không bịa thông tin sản phẩm. Ý tưởng phải mới, ngắn, quay được, không lan man. Chỉ JSON hợp lệ.'},
     {role:'user',content:content}
   ],stream:false,temperature:forceNew?0.95:0.82,max_tokens:900,response_format:{type:'json_object'}};
-  baiScriptRequest(body,0).then(function(data){
+  geminiScriptRequest(body,0).then(function(data){
     var msg=data&&data.choices&&data.choices[0]&&data.choices[0].message,raw=msg&&msg.content;
     if(Array.isArray(raw))raw=raw.map(function(x){return (x&&(x.text||x.content))||'';}).join('');
     raw=String(raw||'').trim().replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
@@ -4640,18 +4640,27 @@ $('btnGoScript').onclick = generateScript;
 if($('scRegenerate')) $('scRegenerate').onclick = regenerateScript;
 if($('scClearRefine')) $('scClearRefine').onclick = function(){ $('scRefinePrompt').value=''; $('scRefinePrompt').focus(); };
 
-function baiScriptHeaders(){
+function geminiScriptHeaders(){
   return {
-    'Authorization': 'Bearer ' + BAI_API_KEY,
+    'Authorization': 'Bearer ' + GEMINI_API_KEY,
     'Content-Type': 'application/json'
   };
 }
 
-function baiScriptRequest(body, attempt){
+/* Kie.ai Gemini 3.8 Flash OpenAI-compatible endpoint.
+   Dùng stream:false để giữ parser JSON hiện tại ổn định; endpoint vẫn là Gemini 3.8 Flash chính thức.
+   reasoning_effort=high + include_thoughts=false: ưu tiên chất lượng nhưng không trộn phần suy luận vào JSON kịch bản. */
+function geminiScriptRequest(body, attempt){
   attempt = attempt || 0;
-  return fetch(BAI_API_BASE + '/chat/completions', {
+  body = Object.assign({}, body, {
+    model: 'gemini-3-8-flash',
+    stream: false,
+    reasoning_effort: 'high',
+    include_thoughts: false
+  });
+  return fetch(GEMINI_API_BASE + '/chat/completions', {
     method: 'POST',
-    headers: baiScriptHeaders(),
+    headers: geminiScriptHeaders(),
     body: JSON.stringify(body)
   }).then(function(r){
     return r.text().then(function(raw){
@@ -4662,29 +4671,30 @@ function baiScriptRequest(body, attempt){
       var detail = (data && data.error && (data.error.message || data.error.code))
         || (data && (data.message || data.msg)) || raw || ('HTTP ' + r.status);
 
-      /* B.AI khuyến nghị retry 429/500/502/503; 400/401/403/404 không retry mù. */
-      if((r.status === 429 || r.status === 500 || r.status === 502 || r.status === 503) && attempt < 2){
+      /* Retry lỗi tạm thời; không retry mù lỗi xác thực/quyền/model. */
+      if((r.status === 429 || r.status === 500 || r.status === 502 || r.status === 503 || r.status === 504) && attempt < 2){
         var wait = attempt === 0 ? 900 : 1800;
-        updateScJob('B.AI tạm bận (' + r.status + ') · tự thử lại ' + (attempt + 2) + '/3...', 24 + attempt * 8);
+        updateScJob('Kie.ai / Gemini tạm bận (' + r.status + ') · tự thử lại ' + (attempt + 2) + '/3...', 24 + attempt * 8);
         return new Promise(function(resolve){ setTimeout(resolve, wait); })
-          .then(function(){ return baiScriptRequest(body, attempt + 1); });
+          .then(function(){ return geminiScriptRequest(body, attempt + 1); });
       }
-      if(r.status === 401) throw new Error('B.AI 401 · API key không hợp lệ hoặc hết hiệu lực');
-      if(r.status === 403) throw new Error('B.AI 403 · tài khoản/key chưa có quyền dùng model này');
-      if(r.status === 404) throw new Error('B.AI 404 · không tìm thấy model qwen3.8-flash trên tài khoản hiện tại');
-      throw new Error('B.AI lỗi ' + r.status + ': ' + String(detail).slice(0,240));
+      if(r.status === 401) throw new Error('Kie.ai 401 · API key Gemini không hợp lệ hoặc hết hiệu lực');
+      if(r.status === 403) throw new Error('Kie.ai 403 · tài khoản/key chưa có quyền dùng Gemini-3.8-Flash');
+      if(r.status === 404) throw new Error('Kie.ai 404 · không tìm thấy endpoint/model Gemini-3.8-Flash');
+      if(r.status === 429) throw new Error('Kie.ai 429 · quá giới hạn hoặc tạm hết quota Gemini');
+      throw new Error('Kie.ai Gemini lỗi ' + r.status + ': ' + String(detail).slice(0,240));
     });
   }).catch(function(err){
-    if(err && /B\.AI (401|403|404)|B\.AI lỗi/.test(err.message || '')) throw err;
+    if(err && /Kie\.ai (401|403|404|429)|Kie\.ai Gemini lỗi/.test(err.message || '')) throw err;
     if(attempt < 2){
       var wait = attempt === 0 ? 900 : 1800;
-      updateScJob('Mạng chập chờn · tự kết nối lại ' + (attempt + 2) + '/3...', 24 + attempt * 8);
+      updateScJob('Mạng chập chờn · đang kết nối lại Gemini ' + (attempt + 2) + '/3...', 24 + attempt * 8);
       return new Promise(function(resolve){ setTimeout(resolve, wait); })
-        .then(function(){ return baiScriptRequest(body, attempt + 1); });
+        .then(function(){ return geminiScriptRequest(body, attempt + 1); });
     }
     throw new Error((err && err.message === 'Failed to fetch')
-      ? 'Không kết nối được B.AI. Nếu đang mở bằng file:// và trình duyệt chặn CORS, hãy chạy app qua http://127.0.0.1.'
-      : ((err && err.message) || 'Không kết nối được B.AI'));
+      ? 'Không kết nối được Kie.ai Gemini. Nếu đang mở bằng file:// và trình duyệt chặn CORS, hãy chạy app qua http://127.0.0.1.'
+      : ((err && err.message) || 'Không kết nối được Kie.ai Gemini'));
   });
 }
 
@@ -4692,7 +4702,7 @@ function generateScript(){
   if(scBusy) return;
   var idea = $('scPrompt').value.trim();
   if(!idea){ toast('Nhập ý tưởng kịch bản đã nhé', true); return; }
-  if(!BAI_API_KEY || BAI_API_KEY.indexOf('PASTE_') === 0){ toast('Chưa cấu hình BAI_API_KEY trong code', true); return; }
+  if(!GEMINI_API_KEY || GEMINI_API_KEY.indexOf('PASTE_') === 0){ toast('Chưa cấu hình GEMINI_API_KEY trong code', true); return; }
   var hasRefs=scRefsArr.some(function(r){return r&&r.dataUrl;});
   if(hasRefs && (!scRefAnalysis.ready || scRefAnalysis.fingerprint!==scRefsFingerprint())){
     $('scJob').classList.add('show'); updateScJob('🧠 AI đang phân tích ảnh để khóa nhân vật / sản phẩm trước khi viết kịch bản…', 6);
@@ -4728,15 +4738,15 @@ function generateScriptCore(refinement){
   if(scBusy) return;
   var idea = $('scPrompt').value.trim();
   if(!idea){ toast('Nhập ý tưởng kịch bản đã nhé', true); return; }
-  if(!BAI_API_KEY || BAI_API_KEY.indexOf('PASTE_') === 0){
-    toast('Chưa cấu hình BAI_API_KEY trong code', true);
+  if(!GEMINI_API_KEY || GEMINI_API_KEY.indexOf('PASTE_') === 0){
+    toast('Chưa cấu hình GEMINI_API_KEY trong code', true);
     return;
   }
 
   var seg = scSeg;
   var nScenes = Math.max(1, Math.round(scDur / seg));
   var hasEmployee = scRefsArr.some(function(r){ return r; }) && $('scEmpLock').checked;
-  var model = $('scModel').value || 'qwen3.8-flash';
+  var model = $('scModel').value || 'gemini-3-8-flash';
   var voices = buildVoices();
   var cams = selectedCams();
   var director = scDirectorBrief();
@@ -4747,14 +4757,14 @@ function generateScriptCore(refinement){
   $('btnGoScript').textContent = refinement ? 'ĐANG TẠO LẠI...' : 'ĐANG SOẠN KỊCH BẢN...';
   if($('scRegenerate')){ $('scRegenerate').disabled=true; $('scRegenerate').textContent=refinement?'ĐANG TẠO LẠI...':'🔁 TẠO LẠI KỊCH BẢN'; }
   $('scJob').classList.add('show');
-  updateScJob('Đang gửi yêu cầu tới B.AI · Qwen3.8-Flash...', 15);
+  updateScJob('Đang gửi yêu cầu tới Kie.ai · Gemini-3.8-Flash...', 15);
 
   var userContent = [{
     type: 'text',
     text: buildScriptSystemPrompt(idea, nScenes, seg, hasEmployee, voices, cams, director, refinement)
   }];
 
-  /* Qwen3.8-Flash là multimodal; giữ nguyên ảnh tham chiếu dưới chuẩn OpenAI image_url. */
+  /* Gemini-3.8-Flash trên Kie.ai hỗ trợ multimodal; giữ ảnh tham chiếu theo chuẩn OpenAI-compatible image_url. */
   scRefsArr.forEach(function(r){
     if(r && r.dataUrl){
       userContent.push({
@@ -4779,16 +4789,16 @@ function generateScriptCore(refinement){
     response_format: { type: 'json_object' }
   };
 
-  baiScriptRequest(body, 0)
+  geminiScriptRequest(body, 0)
   .then(function(data){
-    updateScJob('Đang xử lý kết quả Qwen...', 80);
+    updateScJob('Đang xử lý kết quả Gemini...', 80);
     var msg = data && data.choices && data.choices[0] && data.choices[0].message;
     var txt = msg && msg.content;
     if(Array.isArray(txt)){
       txt = txt.map(function(x){ return (x && (x.text || x.content)) || ''; }).join('');
     }
     txt = String(txt || '').trim();
-    if(!txt) throw new Error('Qwen3.8-Flash không trả về nội dung');
+    if(!txt) throw new Error('Gemini-3.8-Flash không trả về nội dung');
 
     txt = txt.replace(/^```json\s*/i, '').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
     var parsed;
@@ -4798,11 +4808,11 @@ function generateScriptCore(refinement){
       if(a >= 0 && b > a){
         try{ parsed = JSON.parse(txt.slice(a,b+1)); }catch(_){ }
       }
-      if(!parsed) throw new Error('Không đọc được JSON từ Qwen3.8-Flash');
+      if(!parsed) throw new Error('Không đọc được JSON từ Gemini-3.8-Flash');
     }
 
     var scenesRaw = (parsed && parsed.scenes) || [];
-    if(!scenesRaw.length) throw new Error('Qwen3.8-Flash không trả về phân cảnh nào');
+    if(!scenesRaw.length) throw new Error('Gemini-3.8-Flash không trả về phân cảnh nào');
 
     var budget = Math.round(seg * SC_WPS);
     var nameList = voices.map(function(v){ return v.name; });
@@ -4877,15 +4887,15 @@ function generateScriptCore(refinement){
       refProfiles: scRefAnalysis.ready ? scRefAnalysis.profiles.slice() : [],
       refImages: scRefsArr.filter(function(r){return r&&r.dataUrl;}).map(function(r){return {dataUrl:r.dataUrl};})
     };
-    updateScJob('✅ Hoàn tất · Qwen3.8-Flash · AI Director', 100);
+    updateScJob('✅ Hoàn tất · Gemini-3.8-Flash · Kie.ai · AI Director', 100);
     setTimeout(function(){ $('scJob').classList.remove('show'); }, 900);
     renderScResult(scLastMeta.title, finalScenes, allOverflow.join(' '), hasEmployee, voices, seg, scLastMeta);
     if($('scRefineBox')) $('scRefineBox').style.display='block';
-    toast(refinement ? '🔁 Đã tạo lại kịch bản theo prompt bổ sung!' : ('📝 Qwen3.8-Flash đã tạo ' + nScenes + ' phân cảnh × ' + seg + 's!'));
+    toast(refinement ? '🔁 Đã tạo lại kịch bản theo prompt bổ sung!' : ('📝 Gemini-3.8-Flash đã tạo ' + nScenes + ' phân cảnh × ' + seg + 's!'));
   })
   .catch(function(err){
     $('scJob').classList.remove('show');
-    toast(err.message || 'Lỗi khi gọi B.AI Qwen3.8-Flash', true);
+    toast(err.message || 'Lỗi khi gọi Kie.ai Gemini-3.8-Flash', true);
   })
   .finally(function(){
     scBusy = false;
