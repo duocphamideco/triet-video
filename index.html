@@ -5854,7 +5854,7 @@ async function clipRunProject(recording){
   function syncPreviewTimelineAudio(t){
     if(recording)return;
     ['audio','sfx'].forEach(function(tr){
-      (clipTracks[tr]||[]).forEach(function(it){
+      (tracks[tr]||[]).forEach(function(it){
         var el=it.audio;if(!el)return;
         var active=t>=it.start&&t<clipEnd(it);
         if(active){
@@ -8584,10 +8584,22 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     status.textContent=msg||'';
   }
   function snap(t){return Math.max(0,Math.round((Number(t)||0)*FPS)/FPS)}
-  function visualAt(t){var a=clipActive('visual',t);return a.length?a[a.length-1]:null}
+  function visualAt(t){
+    var a=clipActive('visual',t);
+    if(a.length)return a[a.length-1];
+    /* V64 NO-FLASH: nếu timeline có khe hở, giữ frame cuối clip trước thay vì chớp đen. */
+    var prev=null;
+    (clipTracks.visual||[]).forEach(function(it){
+      if(Number(it.start||0)<=t && (!prev || endOf(it)>endOf(prev)))prev=it
+    });
+    return prev
+  }
   function endOf(it){return Number(it.start||0)+Number(it.duration||0)}
   function localTime(it,t){
-    var x=(Number(it.trimStart)||0)+((Number(t)||0)-(Number(it.start)||0))*clipSpeedValue(it);
+    var rel=(Number(t)||0)-(Number(it.start)||0);
+    /* Khi đang giữ frame qua khe hở, không chạy tiếp vào phần source đã trim bỏ. */
+    rel=Math.max(0,Math.min(Math.max(0,Number(it.duration)||0),rel));
+    var x=(Number(it.trimStart)||0)+rel*clipSpeedValue(it);
     var sd=Number(it.sourceDuration)||Number(player.duration)||0;
     if(sd>0)x=Math.min(Math.max(0,sd-.025),Math.max(0,x));
     return Math.max(0,x)
@@ -8710,8 +8722,8 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
   /* V52: một điều phối play duy nhất. Mọi pause/load đều hủy request play cũ trước khi chạm media. */
   var v52PlayReq=0,v52PlayTimer=0;
   function v52IsExporting(){
-    return document.body.classList.contains('v42-exporting') ||
-           document.body.classList.contains('v45-export-lock')
+    /* V64: exporter uses a private timeline snapshot + private decoders, so Preview is safe in parallel. */
+    return false
   }
   function v52CancelPendingPlay(){
     v52PlayReq++;
@@ -9670,13 +9682,15 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
 
   function v45SetLock(busy){
     v45ExportBusy=!!busy;
-    document.body.classList.toggle('v45-export-lock',v45ExportBusy);
+    /* V64: chỉ khóa nút bắt đầu export lần 2. Preview + timeline vẫn hoạt động. */
+    document.body.classList.remove('v45-export-lock');
+    document.body.classList.toggle('v64-export-running',v45ExportBusy);
 
     var play=$('clipPreviewBtn');
     if(play){
-      play.disabled=v45ExportBusy;
+      play.disabled=false;
       play.title=v45ExportBusy
-        ?'Đang xuất video — dùng nút HỦY XUẤT nếu muốn dừng'
+        ?'Preview độc lập — có thể xem trong lúc video đang xuất'
         :'Phát / dừng Preview'
     }
 
@@ -9796,14 +9810,51 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     return muxerPromise
   }
 
-  function activeVisual(t){
-    if(typeof proVisualAt==='function')return proVisualAt(t);
-    var a=clipActive('visual',t);
+  function v64CloneItem(it){
+    var c=Object.assign({},it);
+    if(Array.isArray(it&&it.keyframes))c.keyframes=it.keyframes.map(function(k){
+      return Object.assign({},k,{props:k&&k.props?Object.assign({},k.props):k&&k.props})
+    });
+    if(it&&it.lr&&typeof it.lr==='object')c.lr=Object.assign({},it.lr);
+    if(it&&it.waveformPeaks)c.waveformPeaks=Array.isArray(it.waveformPeaks)?it.waveformPeaks.slice():it.waveformPeaks;
+    c.__v64OriginalDuration=Math.max(.001,Number(it&&it.duration)||.001);
+    /* Media elements are never shared with the live Preview. */
+    if(c.type==='video')c.video=null;
+    if(c.type==='image'||c.type==='overlay')c.img=null;
+    if(c.type==='audio'||c.type==='sfx')c.audio=null;
+    return c
+  }
+  function v64SnapshotTracks(){
+    var snap={visual:[],overlay:[],text:[],effect:[],audio:[],sfx:[]};
+    Object.keys(snap).forEach(function(k){snap[k]=(clipTracks[k]||[]).map(v64CloneItem)});
+    var total=0;
+    Object.keys(snap).forEach(function(k){(snap[k]||[]).forEach(function(it){
+      total=Math.max(total,(Number(it.start)||0)+(Number(it.duration)||0))
+    })});
+    var vis=snap.visual.slice().sort(function(a,b){return (Number(a.start)||0)-(Number(b.start)||0)});
+    for(var i=0;i<vis.length;i++){
+      var it=vis[i],end=(Number(it.start)||0)+(Number(it.__v64OriginalDuration)||0);
+      var next=vis[i+1];
+      var targetEnd=next?Number(next.start)||end:total;
+      /* V64 NO-FLASH: lấp khe hở hình bằng cách giữ frame cuối, không tạo frame đen. */
+      if(targetEnd>end+.0005)it.duration=Math.max(Number(it.duration)||0,targetEnd-(Number(it.start)||0))
+    }
+    return {tracks:snap,total:Math.max(.001,total)}
+  }
+  function v64Active(track,t,tracks){
+    return ((tracks&&tracks[track])||[]).filter(function(x){
+      return t>=Number(x.start||0)&&t<=Number(x.start||0)+Number(x.duration||0)
+    }).sort(function(a,b){return (Number(a.start)||0)-(Number(b.start)||0)})
+  }
+  function activeVisual(t,tracks){
+    var a=v64Active('visual',t,tracks);
     return a.length?a[a.length-1]:null
   }
 
   function sourceTarget(it,t,video){
-    var x=(Number(it.trimStart)||0)+((Number(t)||0)-(Number(it.start)||0))*clipSpeedValue(it);
+    var rel=(Number(t)||0)-(Number(it.start)||0);
+    rel=Math.max(0,Math.min(Number(it.__v64OriginalDuration)||Number(it.duration)||0,rel));
+    var x=(Number(it.trimStart)||0)+rel*clipSpeedValue(it);
     var sd=Number(it.sourceDuration)||Number(video&&video.duration)||0;
     if(sd>0)x=Math.min(Math.max(0,sd-.025),Math.max(0,x));
     return Math.max(0,x)
@@ -9849,7 +9900,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
       function clean(){clearTimeout(timer);clearInterval(watch);events.forEach(function(n){el.removeEventListener(n,check)});el.removeEventListener('error',error)}
       function finish(err){if(done)return;done=true;clean();err?reject(err):resolve()}
       function error(){finish(new Error(label+' — không đọc được nguồn hoặc định dạng không được hỗ trợ.'))}
-      function check(){if(cancelExport||clipStopFlag)return finish(new Error('Đã hủy xuất video'));if(el.error)return error();if(test())finish()}
+      function check(){if(cancelExport)return finish(new Error('Đã hủy xuất video'));if(el.error)return error();if(test())finish()}
       events.forEach(function(n){el.addEventListener(n,check)});el.addEventListener('error',error);
       timer=setTimeout(function(){finish(new Error(label+' — hết thời gian chờ. Hãy tải nguồn về máy và nhập lại.'))},ms||15000);
       watch=setInterval(check,100);check();
@@ -9883,13 +9934,13 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     if(ctx.canvas){ctx.canvas.width=1;ctx.canvas.height=1}
   }
   async function exportImage(it,ctx){
-    if(it.img&&it.img.complete&&it.img.naturalWidth>0)return;
+    if(it.img&&it.img.complete&&it.img.naturalWidth>0)return it.img;
     if(!ctx.images.has(it.url)){
       var im=new Image();im.crossOrigin='anonymous';im.src=await exportSource(it.url);
       await exportWait(im,function(){return im.complete&&im.naturalWidth>0},['load'],'Không tải được ảnh '+(it.name||''),20000);
       ctx.images.set(it.url,im);
     }
-    it.img=ctx.images.get(it.url);
+    return ctx.images.get(it.url)
   }
   async function seekExact(v,target){
     await exportWait(v,function(){return v.readyState>=2&&v.videoWidth>0&&!v.seeking},['loadeddata','canplay','seeked'],'Video chưa sẵn sàng');
@@ -9901,21 +9952,48 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     }
     if(v.seeking||v.readyState<2||!v.videoWidth)throw new Error('Video chưa có khung hình hợp lệ');
   }
-  async function renderFrameAt(t,ctx){
-    var it=activeVisual(t);
+  function v64FrameMostlyBlack(ctx){
+    if(ctx.blackProbeDisabled)return false;
+    try{
+      if(!ctx.probe){ctx.probe=document.createElement('canvas');ctx.probe.width=12;ctx.probe.height=20;ctx.probeCtx=ctx.probe.getContext('2d',{willReadFrequently:true})}
+      var p=ctx.probeCtx;p.setTransform(1,0,0,1,0,0);p.filter='none';p.clearRect(0,0,12,20);p.drawImage(ctx.canvas,0,0,12,20);
+      var d=p.getImageData(0,0,12,20).data,dark=0,n=0;
+      for(var i=0;i<d.length;i+=4){if(d[i+3]<16)continue;n++;if(d[i]<16&&d[i+1]<16&&d[i+2]<16)dark++}
+      return n>0&&dark/n>.965
+    }catch(e){ctx.blackProbeDisabled=true;return false}
+  }
+  function v64GuardFrame(ctx){
+    if(!ctx.holdCanvas){
+      ctx.holdCanvas=document.createElement('canvas');ctx.holdCanvas.width=ctx.canvas.width;ctx.holdCanvas.height=ctx.canvas.height;ctx.holdCtx=ctx.holdCanvas.getContext('2d');ctx.hasGoodFrame=false;ctx.heldFrames=0
+    }
+    var black=v64FrameMostlyBlack(ctx);
+    if(black&&ctx.hasGoodFrame){
+      var dc=ctx.canvas.getContext('2d');dc.save();dc.setTransform(1,0,0,1,0,0);dc.globalAlpha=1;dc.filter='none';dc.globalCompositeOperation='source-over';dc.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);dc.drawImage(ctx.holdCanvas,0,0);dc.restore();ctx.heldFrames++;return true
+    }
+    if(!black){ctx.holdCtx.setTransform(1,0,0,1,0,0);ctx.holdCtx.globalAlpha=1;ctx.holdCtx.filter='none';ctx.holdCtx.globalCompositeOperation='source-over';ctx.holdCtx.clearRect(0,0,ctx.holdCanvas.width,ctx.holdCanvas.height);ctx.holdCtx.drawImage(ctx.canvas,0,0);ctx.hasGoodFrame=true}
+    return false
+  }
+  async function renderFrameAt(t,ctx,tracks){
+    var it=activeVisual(t,tracks);
     try{
       if(it&&it.type==='video'){
         var v=ctx.map.get(it.url);
         if(!v){
-          // Mobile devices have a small hardware decoder budget. Keep only two live decoders.
-          while(ctx.map.size>=2){var oldest=ctx.map.keys().next().value;releaseDecoder(ctx.map.get(oldest));ctx.map.delete(oldest)}
+          /* V64: chỉ giữ 1 decoder export để chừa decoder phần cứng cho Preview trên mobile. */
+          while(ctx.map.size>=1){var oldest=ctx.map.keys().next().value;releaseDecoder(ctx.map.get(oldest));ctx.map.delete(oldest)}
           v=await createDecoder(await exportSource(it.url),ctx.dock);ctx.map.set(it.url,v);
         }else{ctx.map.delete(it.url);ctx.map.set(it.url,v)}
-        await seekExact(v,sourceTarget(it,t,v));it.video=v;
-      }else if(it&&it.type==='image'){await exportImage(it,ctx)}
-      var overlays=clipActive('overlay',t);for(var k=0;k<overlays.length;k++)await exportImage(overlays[k],ctx);
-      // Synchronous drawing: the encoder reads this private canvas before any preview callback can run.
-      window.clipRenderExportFrame(ctx.canvas,t);
+        await seekExact(v,sourceTarget(it,t,v));
+        it.video=v
+      }else if(it&&it.type==='image'){it.img=await exportImage(it,ctx)}
+      var overlays=v64Active('overlay',t,tracks);for(var k=0;k<overlays.length;k++)overlays[k].img=await exportImage(overlays[k],ctx);
+
+      /* V64: clipRenderExportFrame được cho nhìn thấy snapshot CHỈ trong đoạn đồng bộ này.
+         Preview vẫn dùng clipTracks thật và không bao giờ nhận decoder của exporter. */
+      var liveTracks=clipTracks;
+      try{clipTracks=tracks;window.clipRenderExportFrame(ctx.canvas,t)}
+      finally{clipTracks=liveTracks}
+      v64GuardFrame(ctx)
     }catch(e){throw new Error('Xuất dừng tại '+t.toFixed(2)+' giây'+(it?' · '+(it.name||it.id):'')+': '+e.message)}
   }
 
@@ -10058,9 +10136,10 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
      trong IIFE khác. Vì vậy typeof proAudioJobs ở V42 luôn là undefined và
      danh sách audio trước đây luôn rỗng => MP4 có audio track nhưng im lặng.
      V49 tự xây danh sách nguồn ngay trong exporter và kiểm tra mức tín hiệu. */
-  function v49AudioJobs(){
+  function v49AudioJobs(tracks){
+    tracks=tracks||clipTracks;
     var jobs=[];
-    (clipTracks.visual||[]).forEach(function(it){
+    (tracks.visual||[]).forEach(function(it){
       if(it&&it.type==='video'&&it.url){
         jobs.push({
           it:it,
@@ -10102,14 +10181,14 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     return peak
   }
 
-  async function renderOfflineAudio(total,exportStart){
+  async function renderOfflineAudio(total,exportStart,tracks){
     exportStart=Math.max(0,Number(exportStart)||0);
     var exportEnd=exportStart+Math.max(.001,Number(total)||.001);
     var SR=48000,CH=2;
     var frames=Math.max(1,Math.ceil(total*SR));
     var offline=new OfflineAudioContext(CH,frames,SR);
     var cache=new Map();
-    var jobs=v49AudioJobs();
+    var jobs=v49AudioJobs(tracks);
     var decodedCount=0,failedCount=0,scheduledCount=0;
 
     if(jobs.length){
@@ -10316,20 +10395,14 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
 
     document.body.classList.add('v42-exporting');
     cancelExport=false;
-    clipStopFlag=false;
     v45SetLock(true);
     v45MirrorProgress();
 
-    var oldRecording=clipIsRecording;
-    var oldPlaying=clipPlaying;
     var decoderCtx=null;
     var videoEncoder=null;
 
     try{
-      clipPlaying=false;
-      clipIsRecording=true;
-      try{clipNativePause()}catch(_){}
-
+      /* V64: Preview không bị pause; export chạy trên snapshot riêng. */
       var Mp4=await v42LoadMuxer();
 
       clipApplyCanvasSize();
@@ -10345,7 +10418,8 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
       }
 
       FPS=v46SelectedFps();
-      var projectTotal=Math.max(.001,clipTotalDuration());
+      var snap=v64SnapshotTracks(),exportTracks=snap.tracks;
+      var projectTotal=Math.max(.001,snap.total);
       var edgeFrames=Math.max(0,Math.min(2,Number(window.V61_EXPORT_TRIM_FRAMES)||0));
       var edgeSec=edgeFrames/FPS;
       if(projectTotal<=edgeSec*2+.001){edgeFrames=0;edgeSec=0}
@@ -10400,21 +10474,20 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
         Không cần chờ video xong mới bắt đầu audio.
       */
       var audioFailure=null;
-      var audioPromise=renderOfflineAudio(total,exportStart).catch(function(e){audioFailure=e;return null});
+      var audioPromise=renderOfflineAudio(total,exportStart,exportTracks).catch(function(e){audioFailure=e;return null});
 
       /*
         VIDEO: mỗi frame timeline được lấy độc lập.
         Không video.play(), không MediaRecorder, không phụ thuộc realtime.
       */
       for(var i=0;i<frameCount;i++){
-        if(cancelExport||clipStopFlag)
+        if(cancelExport)
           throw new Error('Đã hủy xuất video');
 
         var outT=Math.min(total-.000001,i/FPS);
         var t=Math.min(exportEnd-.000001,exportStart+outT);
-        clipCurrentTime=t;
 
-        await renderFrameAt(t,decoderCtx);
+        await renderFrameAt(t,decoderCtx,exportTracks);
 
         var vf=new VideoFrame(canvas,{
           timestamp:Math.round(i/FPS*1000000),
@@ -10433,9 +10506,11 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
         */
         while(videoEncoder.encodeQueueSize>6){
           if(videoError)throw videoError;
-          if(cancelExport||clipStopFlag)throw new Error("Đã hủy xuất video");
+          if(cancelExport)throw new Error("Đã hủy xuất video");
           await sleep(4)
         }
+        /* Nhường main thread đều đặn để Preview/timeline/mobile gesture vẫn phản hồi. */
+        if(clipPlaying||i%4===0)await sleep(0);
 
         if(i%10===0||i===frameCount-1){
           var pct=Math.round((i+1)/frameCount*78);
@@ -10443,10 +10518,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
             (v44Mode()==='turbo'?'⚡ TURBO ':'🛡 CHÍNH XÁC ')+
             videoChoice.label+' · Frame '+(i+1)+'/'+frameCount+
             ' · '+pct+'%';
-          $('clipSeek').value=Math.round(t/projectTotal*1000);
-          $('clipTime').textContent=clipFmt(t)+' / '+clipFmt(projectTotal);
-          $('clipTlTime').textContent=clipFmt(t);
-          clipUpdatePlayhead()
+          /* V64: không di chuyển playhead Preview khi exporter tiến frame. */
         }
       }
 
@@ -10503,7 +10575,8 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
         deterministic:true,
         videoCodec:videoChoice.label,
         audioCodec:audioChoice.label,
-        privacyClean:!!window.V63_PRIVACY_METADATA_CLEAN
+        privacyClean:!!window.V63_PRIVACY_METADATA_CLEAN,
+        heldFrames:Number(decoderCtx&&decoderCtx.heldFrames)||0
       }
     }
     finally{
@@ -10512,16 +10585,9 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
       }
       restoreDecoders(decoderCtx);
 
-      clipIsRecording=oldRecording;
-      clipPlaying=oldPlaying;
-      clipStopFlag=false;
       document.body.classList.remove('v42-exporting');
       v45SetLock(false);
-      v45MirrorProgress();
-
-      try{
-        clipSetCurrentTime(Math.min(clipCurrentTime,clipTotalDuration()))
-      }catch(_){}
+      v45MirrorProgress()
     }
   }
 
@@ -10576,7 +10642,6 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
   function v45CancelExport(){
     if(!v45ExportBusy)return;
     cancelExport=true;
-    clipStopFlag=true;
     var p=$('clipProgress');
     if(p)p.textContent='⏹ Đang hủy xuất an toàn...';
     v45MirrorProgress();
@@ -10598,15 +10663,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
       return
     }
 
-    v45StopPreviewBeforeExport();
-
-    /*
-      Đặt playhead về đầu trước khi lock.
-      Sau đó timeline/Preview bị khóa hoàn toàn.
-    */
-    clipApplyCanvasSize();
-    clipSetCurrentTime(0);
-
+    /* V64: giữ nguyên Preview/playhead hiện tại. Export chụp snapshot riêng và chạy độc lập. */
     v45SetLock(true);
 
     var cancelBtn=$('v45TopCancel');
@@ -10616,7 +10673,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     }
 
     var p=$('clipProgress');
-    if(p)p.textContent='🔒 Đang khóa Preview · chuẩn bị render...';
+    if(p)p.textContent='⚙️ Render nền độc lập · Preview vẫn xem được...';
     v45MirrorProgress();
 
     try{
@@ -10636,6 +10693,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
       if(p)p.textContent=
         '✅ HOÀN TẤT · '+(result.blob.size/1048576).toFixed(1)+
         ' MB · '+(result.videoCodec||'video')+' + '+(result.audioCodec||'audio')+
+        (result.heldFrames?(' · chống chớp '+result.heldFrames+' frame'):'')+
         (result.privacyClean?' · 🔒 metadata nguồn không sao chép':'');
 
       setTimeout(function(){URL.revokeObjectURL(url)},30000)
@@ -10824,36 +10882,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     Chỉ nút "Xuất" trong dialog mới bắt đầu render.
   */
 
-  /*
-    Chặn các phím Play trong lúc export.
-    Không dùng Play/Space làm Stop export nữa.
-  */
-  window.addEventListener('keydown',function(e){
-    if(!v45ExportBusy)return;
-    var k=String(e.key||'').toLowerCase();
-    if(k===' '||k==='k'||k==='enter'){
-      if(e.target&&(
-        e.target.tagName==='INPUT'||
-        e.target.tagName==='TEXTAREA'||
-        e.target.tagName==='SELECT'
-      ))return;
-      e.preventDefault();
-      e.stopPropagation();
-      e.stopImmediatePropagation()
-    }
-  },true);
-
-  /* Nếu code cũ cố kích hoạt Play bằng click khi export, chặn ở capture phase. */
-  document.addEventListener('click',function(e){
-    if(!v45ExportBusy)return;
-    var t=e.target&&e.target.closest?e.target.closest('#clipPreviewBtn'):null;
-    if(t){
-      e.preventDefault();
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-      toast('Preview đang khóa để bảo vệ quá trình xuất. Muốn dừng hãy bấm HỦY XUẤT.')
-    }
-  },true);
+  /* V64: không chặn Play/Space/click Preview khi export. Exporter đã tách snapshot + decoder riêng. */
 
   v45MirrorProgress();
 
@@ -11141,8 +11170,8 @@ try{ if(sessionStorage.getItem(LOGIN_SESSION_KEY) === '1' || hasRememberedLogin(
 
   function $(id){ return document.getElementById(id); }
   function isExporting(){
-    return document.body.classList.contains('v42-exporting') ||
-           document.body.classList.contains('v45-export-lock');
+    /* V64: audio Preview độc lập với OfflineAudioContext của exporter. */
+    return false;
   }
   function ensureCtx(){
     if(!ctx){
@@ -11629,7 +11658,7 @@ console.log('[IDECO] V9.10 FAST: GPT Image 2.5 + parallel ref upload + immediate
 #clipMagnetJoin.v62-magnet{border-color:#a77b29!important;color:#ffd36a!important;background:#2b2415!important;font-weight:850!important}
 #clipMagnetJoin.v62-magnet:hover{border-color:#e5b84c!important;background:#3b3018!important;color:#fff1ae!important}
 #clipMagnetJoin.v62-magnet.v62-working{opacity:.65;pointer-events:none}
-body.v45-export-lock #clipMagnetJoin,body.v42-exporting #clipMagnetJoin{opacity:.45!important;pointer-events:none!important}
+body.v45-export-lock #clipMagnetJoin{opacity:.45!important;pointer-events:none!important}
 @media(max-width:760px){.v62-framebar{align-items:flex-start}.v62-frame-label{width:100%}.v62-frame-size{margin-left:0}.v62-aspect-buttons button{padding:6px 8px}}
 </style>
 <script id="v62FrameMagnetScript">
@@ -11681,7 +11710,6 @@ body.v45-export-lock #clipMagnetJoin,body.v42-exporting #clipMagnetJoin{opacity:
   },true);
 
   function v62JoinVisualClips(){
-    if(document.body.classList.contains('v45-export-lock')||document.body.classList.contains('v42-exporting')){toast('Đang xuất video, chưa thể thay đổi timeline.',true);return}
     var arr=clipTracks&&clipTracks.visual?clipTracks.visual:null;
     if(!arr||arr.length<2){toast('Track VIDEO/ẢNH cần ít nhất 2 clip để kết dính.',true);return}
     var indexed=arr.map(function(it,i){return {it:it,i:i}});
@@ -11881,5 +11909,25 @@ body.sb-running #v101Attach{pointer-events:none;opacity:.5}
 })();
 </script>
 
+
+<style id="v64IndependentExportStyle">
+body.v64-export-running .v45-lock-note{display:inline-flex!important;border-color:#2e718d;background:#122a35;color:#78d8ff}
+body.v64-export-running .v45-lock-note::before{content:"⚙ ";}
+body.v64-export-running #clipPreviewBtn{box-shadow:0 0 0 1px rgba(120,216,255,.28)}
+body.v64-export-running .clip-playbar,body.v64-export-running .clip-toptools,body.v64-export-running .clip-timeline-wrap,body.v64-export-running #clipInspector{pointer-events:auto!important;opacity:1!important}
+</style>
+<script id="v64IndependentExportBadge">
+(function(){
+  function sync(){
+    var n=document.querySelector('.v45-lock-note');
+    if(!n)return;
+    if(document.body.classList.contains('v64-export-running'))n.textContent='RENDER NỀN · PREVIEW ĐỘC LẬP';
+    else n.textContent='PREVIEW LOCKED';
+  }
+  if(window.MutationObserver)new MutationObserver(sync).observe(document.body,{attributes:true,attributeFilter:['class']});
+  sync();
+  console.log('[IDECO V64] NO-FLASH + independent Preview/background export ready');
+})();
+</script>
 </body>
 </html>
