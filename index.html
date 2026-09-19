@@ -2518,9 +2518,9 @@ function uploadRefs(){
 /* ================= TẠO ẢNH ================= */
 $('btnGo').onclick = generate;
 
-function generate(){
+function generate(overridePrompt){
   if(busy) return;
-  var rawPrompt = $('prompt').value.trim();
+  var rawPrompt = typeof overridePrompt === 'string' ? overridePrompt : $('prompt').value.trim();
   if(!rawPrompt){ toast('Vui lòng nhập mô tả ảnh trước nhé', true); $('prompt').focus(); return; }
   var prompt = buildImagePrompt(rawPrompt);
 
@@ -2533,7 +2533,7 @@ function generate(){
   $('btnGo').textContent = 'ĐANG TẠO...';
   showJob(prompt, 'chuẩn bị...', 4);
 
-  var hasRefs = refImages.some(function(r){ return r; });
+  var hasRefs = refImages.some(function(r){ return r; }) || !!(window.v100Storyboard && window.v100Storyboard.getBatch() && window.v100Storyboard.getBatch().running && window.v100Storyboard.getBatch().anchor);
 
   (hasRefs ? uploadRefs() : Promise.resolve([]))
     .then(function(urls){
@@ -11771,6 +11771,100 @@ body.v45-export-lock #clipMagnetJoin,body.v42-exporting #clipMagnetJoin{opacity:
   },true);
   sync();
   console.log('[IDECO V63] Privacy metadata export control ready');
+})();
+</script>
+
+<style id="v100Style">
+#sbPanel{border:1px solid #e34c39;border-radius:14px;padding:16px;margin:12px 0;background:#fff7f3;color:#292323}
+#sbPanel label{display:block;font-weight:700;margin:10px 0 5px}#sbPanel textarea{width:100%;min-height:90px}#sbPanel select{width:100%}
+#sbPanel button,.m100 button{min-height:44px;border:1px solid #b74738;border-radius:9px;padding:9px 12px;background:#a82e20;color:white;font-weight:700;cursor:pointer}
+#sbPanel .sb-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}#sbPanel small{display:block;line-height:1.5;margin-top:7px}#sbList{padding-left:24px;line-height:1.7}#sbStatus{margin-top:10px;font-weight:700}
+#sbPanel button:disabled{opacity:.45;cursor:default}body.sb-running #refs{pointer-events:none;opacity:.6}
+.m100{display:none}#m100Close{display:none}
+@media(max-width:900px){
+ body.clip-mode{overflow:auto!important}body.clip-mode #tabClip{transform:none!important;left:0!important;width:100%!important;height:auto!important;overflow:visible!important;padding:0 8px calc(136px + env(safe-area-inset-bottom))!important}
+ body.clip-mode .clip-layout{display:flex!important;flex-direction:column!important;height:auto!important;min-width:0!important}
+ body.clip-mode .clip-preview-card{width:100%!important;height:auto!important;overflow:visible!important}
+ body.clip-mode .clip-head{height:auto!important;min-height:48px;flex-wrap:wrap;position:relative!important}
+ body.clip-mode .clip-head button{min-height:40px}
+ body.clip-mode .clip-head small,body.clip-mode .clip-badge{display:none!important}
+ body.clip-mode .clip-head b{font-size:0!important}body.clip-mode .clip-head b:after{content:"DỰNG CLIP";font-size:15px}
+ body.clip-mode .v61-project-actions{width:100%;margin:0!important;gap:5px}
+ body.clip-mode .v45-export-topbar{padding:5px 8px!important}
+ body.clip-mode.m100-open .m100{display:none!important}
+ body.clip-mode .clip-preview-surface{height:auto!important;max-height:32dvh!important;width:min(100%,calc(32dvh * var(--preview-ratio,1)))!important}
+ body.clip-mode .clip-stage{position:relative!important}
+ body.clip-mode .clip-timeline-wrap{height:42dvh!important;min-height:260px!important;flex:auto!important}
+ body.clip-mode #clipScroll{height:auto!important;min-height:170px!important;overflow:auto!important;-webkit-overflow-scrolling:touch}
+ body.clip-mode .clip-tl-toolbar{flex-wrap:nowrap!important;overflow-x:auto!important}body.clip-mode .clip-tl-toolbar button{min-height:44px;flex-shrink:0}
+ body.clip-mode .clip-block{min-height:44px}body.clip-mode .clip-block .clip-handle{min-width:16px}
+ body.clip-mode #clipInspector{display:none!important}
+ body.clip-mode.m100-open #clipInspector{display:block!important;position:fixed!important;inset:auto 0 0!important;width:auto!important;height:72dvh!important;max-height:72dvh!important;overflow:auto!important;z-index:1100!important;border:1px solid #d24b38;border-radius:18px 18px 0 0;padding:12px 12px calc(24px + env(safe-area-inset-bottom))!important;background:#16171d;box-shadow:0 -20px 80px #0009}
+ body.clip-mode.m100-open #m100Close{display:block;position:sticky;top:0;z-index:2;width:100%;min-height:44px;background:#a82e20;color:#fff;border:0;border-radius:8px;margin-bottom:10px}
+ body.clip-mode #clipInspector input,body.clip-mode #clipInspector select{font-size:16px!important;min-height:44px}
+ body.clip-mode #clipInspector button{min-height:44px;font-size:12px!important}
+ body.clip-mode #clipInspector label,body.clip-mode #clipInspector .clip-note{font-size:13px!important}
+ body.clip-mode .clip-side-tabs{position:sticky;top:48px;z-index:1;background:#16171d}
+ body.clip-mode .m100{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;position:fixed;bottom:0;left:0;right:0;padding:8px 8px calc(8px + env(safe-area-inset-bottom));background:#14151bf5;border-top:1px solid #b9493a;z-index:1000}
+ .m100 button{padding:6px 2px;font-size:11px;min-width:0;min-height:48px;background:#292c36;border-color:#484b57}.m100 button.primary{background:#b93625}
+ body.clip-mode .clip-playbar button{min-width:44px;min-height:44px}body.clip-mode .clip-playbar{grid-template-columns:44px 44px minmax(60px,1fr) auto!important}
+ body.clip-mode .clip-exportbar{flex-wrap:wrap}body.clip-mode .clip-exportbar select{min-height:44px;font-size:14px}
+}
+</style>
+<script id="v100StoryboardMobile">
+(function(){
+'use strict';
+var panel=document.createElement('section');panel.id='sbPanel';
+panel.innerHTML='<b>🎞 STORYBOARD · ẢNH RIÊNG TỪNG CẢNH</b><label for="sbCount">Số lượng ảnh</label><select id="sbCount"><option value="auto">Tự nhận từ prompt (mặc định 1 ảnh)</option>'+Array.from({length:12},function(_,i){return '<option value="'+(i+1)+'">'+(i+1)+' ảnh riêng</option>'}).join('')+'</select><small>Ví dụ: “Tạo 5 ảnh cho kịch bản…” → 5 lượt tạo, 5 ảnh riêng. Mỗi ảnh có thể phát sinh phí theo dịch vụ đang chọn. Tối đa 12 ảnh/lượt.</small><label for="sbScenes">Mô tả riêng từng cảnh (không bắt buộc)</label><textarea id="sbScenes" placeholder="Cảnh 1: Cô gái bước vào phòng…\nCảnh 2: Cận cảnh sản phẩm…\nCảnh 3: Nhân vật mỉm cười…"></textarea><small>Prompt bên trên là kịch bản và nhận diện chung. Có thể ghi Cảnh 1:, Cảnh 2:… ngay trong prompt. Giữ ảnh tham chiếu sản phẩm/nhân vật để tăng tính nhất quán.</small><div id="sbStatus" role="status" aria-live="polite">Sẵn sàng tạo từng ảnh riêng.</div><ol id="sbList"></ol><div class="sb-actions"><button id="sbStop" disabled>Dừng sau cảnh đang tạo</button><button id="sbRetry" disabled>Thử lại cảnh lỗi / chưa tạo</button><button id="sbToClip" disabled>＋ Đưa bộ ảnh vào CLIP</button></div>';
+$('prompt').closest('.sec').after(panel);
+var batch=null, nextPrompt=null;
+var originalGenerate=generate,originalFinish=finishJob,originalFail=failJob,originalUpload=uploadRefs;
+var locked=[];
+function countFrom(text){
+ var s=text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d');
+ var m=s.match(/\b(?:tao|ve|create|generate|make)\s+(?:(?:ra|giup|cho toi|cho anh|cho minh)\s+)*(\d+|mot|hai|ba|bon|nam|sau|bay|tam|chin|muoi)\s*(?:anh|hinh|images?|pictures?|frames?)\b/)||s.match(/\b(\d+)\s*(?:anh|hinh|images?|pictures?)\b/);
+ if(!m)return 1;var words=['','mot','hai','ba','bon','nam','sau','bay','tam','chin','muoi'];return Number(m[1])||words.indexOf(m[1]);
+}
+function scenesFrom(text){var re=/(?:^|\n)\s*(?:cảnh|scene|ảnh|hình)\s*\d+\s*[:.\-–]\s*/gim;var matches=Array.from(text.matchAll(re));return matches.map(function(m,i){return text.slice(m.index+m[0].length,i+1<matches.length?matches[i+1].index:text.length).trim()})}
+function lock(on){document.body.classList.toggle('sb-running',on);if(on){locked=Array.from(document.querySelectorAll('#tabImg input,#tabImg select,#tabImg textarea'));locked.forEach(function(e){e.dataset.sbDisabled=e.disabled?'1':'0';e.disabled=true})}else{locked.forEach(function(e){e.disabled=e.dataset.sbDisabled==='1';delete e.dataset.sbDisabled});locked=[]}}
+function render(){if(!batch)return;var done=batch.items.filter(function(x){return x.url}).length;$('sbStatus').textContent=(batch.running?'Đang tạo':'Đã tạo')+' '+done+'/'+batch.items.length+' ảnh riêng'+(batch.stop?' · dừng sau cảnh hiện tại':'');$('sbList').replaceChildren();batch.items.forEach(function(x){var li=document.createElement('li');li.textContent='Cảnh '+x.index+' — '+(x.url?'✓ Hoàn tất':x.error?'Lỗi: '+x.error:x.active?'Đang tạo…':'Chờ tạo');$('sbList').appendChild(li)});$('sbStop').disabled=!batch.running||batch.stop;$('sbRetry').disabled=batch.running||done===batch.items.length;$('sbToClip').disabled=batch.running||!done}
+function finishBatch(){batch.running=false;lock(false);resetBtn();render();$('job').classList.remove('show');refreshCredits()}
+function advance(){if(batch.stop)return finishBatch();var item=batch.items.find(function(x){return !x.url&&!x.attempted});if(!item)return finishBatch();item.attempted=true;item.active=true;batch.current=item;render();busy=false;nextPrompt=item.prompt;originalGenerate(nextPrompt);$('btnGo').textContent='ĐANG TẠO CẢNH '+item.index+'/'+batch.items.length}
+generate=function(){
+ if(busy||(batch&&batch.running))return;
+ var raw=$('prompt').value.trim();if(!raw){toast('Vui lòng nhập kịch bản / mô tả ảnh',true);return}
+ var custom=scenesFrom($('sbScenes').value);if(!custom.length&&$('sbScenes').value.trim())custom=$('sbScenes').value.trim().split(/\n\s*\n/);
+ var n=$('sbCount').value==='auto'?countFrom(raw):Number($('sbCount').value);
+ if($('sbCount').value==='auto'&&n===1&&custom.length)n=custom.length;
+ if(n<1||n>12){toast('Chọn từ 1 đến 12 ảnh mỗi lượt; có thể chia kịch bản thành nhiều lượt.',true);return}
+ if(n===1&&!custom.length){originalGenerate();return}
+ if(custom.length&&custom.length!==n){toast('Số mô tả cảnh ('+custom.length+') khác số ảnh ('+n+'). Hãy điều chỉnh để mỗi cảnh có một ảnh.',true);return}
+ var scenes=custom.length?custom:scenesFrom(raw);
+ batch={id:'sb-'+Date.now(),running:true,stop:false,refs:null,items:[]};
+ for(var i=0;i<n;i++){var p='SINGLE IMAGE OUTPUT ONLY. Produce exactly ONE full-frame cinematic still. No collage, no panels, no grid, no split-screen, no contact sheet, no added captions or scene numbers. Preserve existing text on product packaging.\nThis request renders ONLY scene '+(i+1)+' of '+n+' separate storyboard files. Any multi-image count in the context below describes separate files handled by the application, never panels inside this image.\nShared script and identity context:\n'+raw+'\n\nONLY SCENE TO RENDER: '+(scenes[i]||('Depict story beat '+(i+1)+' of '+n+' in chronological order, with a distinct action/camera composition appropriate to this beat.'))+'\nKeep the same character identity, clothing, product packaging and visual style across the sequence. Return ONE image only for this scene.';batch.items.push({index:i+1,prompt:p,url:null,attempted:false})}
+ lock(true);advance();
+};$('btnGo').onclick=generate;
+uploadRefs=function(){if(!batch||!batch.running)return originalUpload();function anchored(urls){return batch.anchor&&urls.length<3?urls.concat([batch.anchor]):urls}if(batch.refs)return Promise.resolve(anchored(batch.refs));return originalUpload().then(function(urls){batch.refs=urls;return anchored(urls)})};
+finishJob=function(urls,prompt,credits){
+ if(!batch||!batch.running)return originalFinish(urls,prompt,credits);
+ var it=batch.current;it.url=urls[0];if(!batch.anchor)batch.anchor=it.url;it.active=false;it.error=null;var hist=loadHist();hist.unshift({url:it.url,prompt:it.prompt,t:Date.now(),model:imgModelLabel,storyboardId:batch.id,scene:it.index});try{saveHist(hist);renderGallery()}catch(e){toast('Bộ nhớ lịch sử đã đầy. Ảnh vẫn còn trong bộ storyboard hiện tại.',true)}cacheMedia(it.url,'img',{prompt:it.prompt,model:imgModelLabel},function(ok){if(ok)renderGallery()});render();busy=false;advance();
+};
+failJob=function(msg){if(!batch||!batch.running)return originalFail(msg);clearInterval(pollTimer);batch.current.active=false;batch.current.error=msg;batch.stop=true;toast('Cảnh '+batch.current.index+': '+msg,true);finishBatch()};
+$('sbStop').onclick=function(){batch.stop=true;render()};
+$('sbRetry').onclick=function(){if(!batch||batch.running)return;batch.items.forEach(function(it){if(!it.url){it.attempted=false;it.error=null}});batch.stop=false;batch.running=true;lock(true);advance()};
+function importImage(item){return new Promise(function(resolve,reject){resolveMedia(item.url,function(src){var im=new Image();im.crossOrigin='anonymous';var timer=setTimeout(function(){im.onload=im.onerror=null;reject(new Error('Hết thời gian tải cảnh '+item.index))},30000);im.onload=function(){clearTimeout(timer);var it={id:clipUid(),track:'visual',type:'image',name:'Storyboard · Cảnh '+item.index,url:src,img:im,start:clipInsertStart('visual'),duration:3,scale:100,x:0,y:0,fit:'contain',effect:'none'};clipTracks.visual.push(it);clipSelectedId=it.id;clipRenderAll();resolve()};im.onerror=function(){clearTimeout(timer);reject(new Error('Không tải được cảnh '+item.index+'. Hãy tải ảnh về và dùng nút Thêm ảnh.'))};im.src=src})})}
+$('sbToClip').onclick=async function(){if(!batch)return;this.disabled=true;var added=0;try{for(var item of batch.items.filter(function(x){return x.url&&!x.imported})){await importImage(item);item.imported=true;added++}switchTab('clip');clipMaybeAutoFit();toast(added?'Đã thêm '+added+' cảnh theo thứ tự, mỗi cảnh 3 giây.':'Bộ ảnh này đã được thêm vào CLIP.')}catch(e){toast(e.message,true)}finally{this.disabled=false}};
+window.v100Storyboard={countFrom:countFrom,scenesFrom:scenesFrom,getBatch:function(){return batch}};
+// Mobile actions use the existing editor handlers and export dialog.
+var dock=document.createElement('nav');dock.className='m100';dock.setAttribute('aria-label','Công cụ dựng clip');
+var actions=[['video','＋ Video'],['image','＋ Ảnh'],['text','T＋ Chữ'],['audio','♪ Nhạc'],['props','⚙ Chỉnh'],['split','✂ Cắt'],['delete','🗑 Xóa'],['fx','✨ FX'],['tools','⋯ Thêm'],['export','⬇ Xuất']];
+actions.forEach(function(a){var b=document.createElement('button');b.type='button';b.dataset.action=a[0];b.textContent=a[1];if(['video','image','text','export'].includes(a[0]))b.className='primary';dock.appendChild(b)});document.body.appendChild(dock);
+var close=document.createElement('button');close.id='m100Close';close.textContent='✓ Xong · Đóng bảng chỉnh sửa';$('clipInspector').prepend(close);close.onclick=function(){document.body.classList.remove('m100-open')};
+function openSide(k){document.body.classList.add('m100-open');var b=document.querySelector('.clip-side-tabs [data-side="'+k+'"]');if(b)b.click();$('clipInspector').scrollTop=0}
+dock.onclick=function(e){var b=e.target.closest('button');if(!b)return;var k=b.dataset.action;var ids={video:'clipAddVideo',image:'clipAddImage',audio:'clipAddAudio',split:'clipQuickSplit',delete:'clipQuickDelete',export:'clipExport'};if(k==='text'){clipAddTextAt(clipCurrentTime);openSide('props')}else if(['props','fx','tools'].includes(k))openSide(k);else if(ids[k]&&$(ids[k]))$(ids[k]).click()};
+document.addEventListener('keydown',function(e){if(e.key==='Escape')document.body.classList.remove('m100-open')});
+// Sequential local image decoding preserves the order selected on a phone.
+$('clipImageFile').onchange=async function(){var files=Array.from(this.files||[]);this.value='';for(var f of files){var u=URL.createObjectURL(f);try{await new Promise(function(resolve,reject){var im=new Image();im.onload=function(){clipObjectUrls.push(u);var it={id:clipUid(),track:'visual',type:'image',name:f.name,url:u,img:im,start:clipInsertStart('visual'),duration:3,scale:100,x:0,y:0,fit:'contain',effect:'none'};clipTracks.visual.push(it);clipSelectedId=it.id;clipRenderAll();resolve()};im.onerror=reject;im.src=u})}catch(_){URL.revokeObjectURL(u);toast('Không đọc được ảnh '+f.name,true)}}clipMaybeAutoFit()};
 })();
 </script>
 
