@@ -7576,6 +7576,31 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     ctx.font='800 '+fs+'px "Be Vietnam Pro",Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=it.color||'#fff';ctx.shadowColor='rgba(0,0,0,.85)';ctx.shadowBlur=fs*.13;ctx.fillText(it.text||it.name,0,0,cw*.9/scale);ctx.restore();
   };
   clipDrawAt=function(t,live){v24RenderTime=t;var r=v24BaseDrawAt(t,live);requestAnimationFrame(v24UpdateTransformBox);return r};
+  window.clipRenderExportFrame=function(canvas,t){
+    v24RenderTime=t;
+    var ctx=canvas.getContext('2d');
+    ctx.save();
+    try{
+      ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=1;ctx.filter='none';ctx.globalCompositeOperation='source-over';
+      ctx.fillStyle='#000';ctx.fillRect(0,0,canvas.width,canvas.height);
+      var active=clipActive('visual',t),it=active.length?active[active.length-1]:null;
+      if(it){
+        var fx=clipActive('effect',t).filter(function(x){return x.effect!=='flash'});
+        ctx.filter=clipFilterForItem(fx.length?fx[fx.length-1].effect:it.effect,it);
+        var src=it.type==='video'?it.video:it.img;
+        var w=src&&(it.type==='video'?src.videoWidth:src.naturalWidth),h=src&&(it.type==='video'?src.videoHeight:src.naturalHeight);
+        if(!src||!w||!h||(it.type==='video'&&(src.readyState<2||src.seeking)))throw new Error('Khung hình nguồn chưa sẵn sàng');
+        clipDrawMedia(ctx,it,src,w,h,canvas.width,canvas.height);ctx.filter='none';
+      }
+      clipActive('overlay',t).forEach(function(o){
+        if(!o.img||!o.img.naturalWidth)throw new Error('Ảnh overlay chưa sẵn sàng: '+(o.name||''));
+        ctx.filter=clipEffectFilter(o.effect);clipDrawMedia(ctx,o,o.img,o.img.naturalWidth,o.img.naturalHeight,canvas.width,canvas.height);ctx.filter='none';
+      });
+      clipActive('text',t).forEach(function(x){clipDrawText(ctx,x,canvas.width,canvas.height)});
+      clipActive('effect',t).forEach(function(x){if(clipFxOverlayName(x.effect))clipDrawFxOverlay(ctx,x.effect,t,canvas.width,canvas.height,x)});
+    }finally{ctx.restore()}
+  };
+
 
   /* Native video preview receives interpolated CSS transform */
   clipNativePreviewAt=function(t,shouldPlay){
@@ -9818,137 +9843,80 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     })
   }
 
+  function exportWait(el,test,events,label,ms){
+    return new Promise(function(resolve,reject){
+      var timer,watch,done=false;
+      function clean(){clearTimeout(timer);clearInterval(watch);events.forEach(function(n){el.removeEventListener(n,check)});el.removeEventListener('error',error)}
+      function finish(err){if(done)return;done=true;clean();err?reject(err):resolve()}
+      function error(){finish(new Error(label+' — không đọc được nguồn hoặc định dạng không được hỗ trợ.'))}
+      function check(){if(cancelExport||clipStopFlag)return finish(new Error('Đã hủy xuất video'));if(el.error)return error();if(test())finish()}
+      events.forEach(function(n){el.addEventListener(n,check)});el.addEventListener('error',error);
+      timer=setTimeout(function(){finish(new Error(label+' — hết thời gian chờ. Hãy tải nguồn về máy và nhập lại.'))},ms||15000);
+      watch=setInterval(check,100);check();
+    })
+  }
+  function exportSource(url){
+    return new Promise(function(resolve,reject){
+      var timer=setTimeout(function(){reject(new Error('Không lấy được nguồn ảnh/video. Hãy nhập lại file nguồn.'))},15000);
+      try{resolveMedia(url,function(u){clearTimeout(timer);resolve(u||url)})}catch(e){clearTimeout(timer);reject(e)}
+    })
+  }
+  function releaseDecoder(v){try{v.pause();v.removeAttribute('src');v.load();v.remove()}catch(_){}}
   async function createDecoder(url,dock){
-    var v=document.createElement('video');
-    v.preload='auto';
-    v.playsInline=true;
-    v.muted=true;
-    v.volume=0;
-    v.setAttribute('muted','');
-    v.setAttribute('playsinline','');
-    v.setAttribute('webkit-playsinline','');
-    v.style.cssText=
-      'position:absolute;left:0;top:0;width:24px;height:24px;'+
-      'opacity:.05;pointer-events:none;object-fit:contain';
-    v.src=url;
-    dock.appendChild(v);
-
-    try{v.load()}catch(_){}
-
-    if(v.readyState<2||!v.videoWidth){
-      await Promise.race([
-        waitEvent(v,'loadeddata',1800),
-        waitEvent(v,'canplay',1800)
-      ])
-    }
-
-    if(!v.videoWidth||!v.videoHeight){
-      throw new Error('Chrome không giải mã được hình của một video nguồn.')
-    }
-
-    try{v.pause()}catch(_){}
-    return v
+    var v=document.createElement('video');v.preload='auto';v.playsInline=true;v.muted=true;v.volume=0;
+    v.crossOrigin='anonymous';v.setAttribute('playsinline','');v.setAttribute('webkit-playsinline','');
+    v.style.cssText='width:24px;height:24px;opacity:.05;pointer-events:none';dock.appendChild(v);
+    try{
+      v.src=url;v.load();
+      await exportWait(v,function(){return v.readyState>=2&&v.videoWidth>0&&v.videoHeight>0},['loadeddata','canplay','loadedmetadata'],'Không giải mã được hình video',20000);
+      v.pause();return v;
+    }catch(e){releaseDecoder(v);throw e}
   }
-
   async function prepareDecoders(){
-    var dock=document.createElement('div');
-    dock.id='v42DecoderDock';
-    dock.style.cssText=
-      'position:fixed;right:1px;bottom:1px;width:30px;height:30px;overflow:hidden;'+
-      'opacity:.06;pointer-events:none;z-index:2147483000;background:#000';
+    var dock=document.createElement('div');dock.id='v42DecoderDock';dock.style.cssText='position:fixed;right:1px;bottom:1px;width:30px;height:30px;overflow:hidden;opacity:.06;pointer-events:none;z-index:2147483000';
     document.body.appendChild(dock);
-
-    var map=new Map();
-    var backups=[];
-
-    var items=(clipTracks.visual||[]).filter(function(it){
-      return it&&it.type==='video'&&it.url
-    });
-
-    for(var i=0;i<items.length;i++){
-      var it=items[i];
-      backups.push({it:it,video:it.video||null});
-
-      if(!map.has(it.url)){
-        $('clipProgress').textContent=
-          'Đang chuẩn bị video nguồn '+(map.size+1)+'...';
-        var decoderUrl=await new Promise(function(resolve){
-          try{resolveMedia(it.url,function(u){resolve(u||it.url)})}
-          catch(_){resolve(it.url)}
-        });
-        map.set(it.url,await createDecoder(decoderUrl,dock))
-      }
-    }
-
-    return {dock:dock,map:map,backups:backups}
+    return {dock:dock,map:new Map(),images:new Map(),backups:(clipTracks.visual||[]).filter(function(it){return it.type==='video'}).map(function(it){return {it:it,video:it.video||null}})};
   }
-
   function restoreDecoders(ctx){
     if(!ctx)return;
-    (ctx.backups||[]).forEach(function(x){x.it.video=x.video});
-    if(ctx.map){
-      ctx.map.forEach(function(v){
-        try{
-          v.pause();
-          v.removeAttribute('src');
-          v.load()
-        }catch(_){}
-      })
-    }
-    try{ctx.dock.remove()}catch(_){}
+    ctx.backups.forEach(function(x){x.it.video=x.video});ctx.map.forEach(releaseDecoder);ctx.map.clear();ctx.images.clear();ctx.dock.remove();
+    if(ctx.canvas){ctx.canvas.width=1;ctx.canvas.height=1}
   }
-
-  async function seekExact(v,target,strict){
-    if(v.readyState<2){
-      try{v.load()}catch(_){}
-      await waitEvent(v,'loadeddata',1200)
+  async function exportImage(it,ctx){
+    if(it.img&&it.img.complete&&it.img.naturalWidth>0)return;
+    if(!ctx.images.has(it.url)){
+      var im=new Image();im.crossOrigin='anonymous';im.src=await exportSource(it.url);
+      await exportWait(im,function(){return im.complete&&im.naturalWidth>0},['load'],'Không tải được ảnh '+(it.name||''),20000);
+      ctx.images.set(it.url,im);
     }
-
+    it.img=ctx.images.get(it.url);
+  }
+  async function seekExact(v,target){
+    await exportWait(v,function(){return v.readyState>=2&&v.videoWidth>0&&!v.seeking},['loadeddata','canplay','seeked'],'Video chưa sẵn sàng');
     target=Math.max(0,Number(target)||0);
-    var delta=Math.abs((Number(v.currentTime)||0)-target);
-
-    if(delta>.0025){
-      var p=waitEvent(v,'seeked',850);
-      try{v.currentTime=target}catch(_){}
-      await p
+    if(Number.isFinite(v.duration)&&v.duration>0)target=Math.min(target,Math.max(0,v.duration-.025));
+    if(Math.abs(v.currentTime-target)>.0025){
+      v.currentTime=target;
+      await exportWait(v,function(){return !v.seeking&&v.readyState>=2&&v.videoWidth>0&&Math.abs(v.currentTime-target)<.035},['seeked','loadeddata','canplay'],'Không giải mã được khung hình tại '+target.toFixed(2)+' giây');
     }
-
-    /*
-      TURBO: seeked đã xác nhận media time mới; không chờ thêm
-      requestVideoFrameCallback cho MỌI frame.
-      CHÍNH XÁC hoặc đầu segment: chờ presentation frame thêm một nhịp.
-    */
-    if(strict||v44Mode()==='safe'){
-      await waitFrame(v,180)
-    }
+    if(v.seeking||v.readyState<2||!v.videoWidth)throw new Error('Video chưa có khung hình hợp lệ');
   }
-
-  async function renderFrameAt(t,decoderCtx){
+  async function renderFrameAt(t,ctx){
     var it=activeVisual(t);
-    var segmentChanged=(decoderCtx._v44LastVisualId!==(it&&it.id||null));
-
-    if(it&&it.type==='video'){
-      var v=decoderCtx.map.get(it.url);
-      if(!v)throw new Error('Thiếu decoder video nguồn');
-
-      var target=sourceTarget(it,t,v);
-      await seekExact(v,target,segmentChanged);
-
-      it.video=v
-    }
-
-    exportDraw(t,true);
-
-    /*
-      V43 chờ 2 requestAnimationFrame ở MỌI frame (~33ms/frame).
-      V44 Turbo bỏ hoàn toàn khoảng chờ đó.
-      Chế độ Chính xác vẫn giữ 1 frame trình duyệt.
-    */
-    if(v44Mode()==='safe'){
-      await new Promise(function(r){requestAnimationFrame(r)})
-    }
-
-    decoderCtx._v44LastVisualId=it&&it.id||null
+    try{
+      if(it&&it.type==='video'){
+        var v=ctx.map.get(it.url);
+        if(!v){
+          // Mobile devices have a small hardware decoder budget. Keep only two live decoders.
+          while(ctx.map.size>=2){var oldest=ctx.map.keys().next().value;releaseDecoder(ctx.map.get(oldest));ctx.map.delete(oldest)}
+          v=await createDecoder(await exportSource(it.url),ctx.dock);ctx.map.set(it.url,v);
+        }else{ctx.map.delete(it.url);ctx.map.set(it.url,v)}
+        await seekExact(v,sourceTarget(it,t,v));it.video=v;
+      }else if(it&&it.type==='image'){await exportImage(it,ctx)}
+      var overlays=clipActive('overlay',t);for(var k=0;k<overlays.length;k++)await exportImage(overlays[k],ctx);
+      // Synchronous drawing: the encoder reads this private canvas before any preview callback can run.
+      window.clipRenderExportFrame(ctx.canvas,t);
+    }catch(e){throw new Error('Xuất dừng tại '+t.toFixed(2)+' giây'+(it?' · '+(it.name||it.id):'')+': '+e.message)}
   }
 
   async function chooseVideoConfig(w,h,bitrate){
@@ -10366,7 +10334,9 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
 
       clipApplyCanvasSize();
 
-      var canvas=$('clipCanvas');
+      var previewCanvas=$('clipCanvas');
+      var canvas=document.createElement('canvas');
+      canvas.width=previewCanvas.width;canvas.height=previewCanvas.height;
       var w=canvas.width,h=canvas.height;
       if(w%2)w--;
       if(h%2)h--;
@@ -10423,15 +10393,14 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
       videoEncoder.configure(videoChoice.encoderConfig);
 
       decoderCtx=await prepareDecoders();
+      decoderCtx.canvas=canvas;
 
       /*
         V44: bắt đầu chuẩn bị/mix audio song song với vòng render video.
         Không cần chờ video xong mới bắt đầu audio.
       */
-      var audioPromise=renderOfflineAudio(total,exportStart).catch(function(e){
-        console.warn('[V44 audio parallel]',e);
-        throw e
-      });
+      var audioFailure=null;
+      var audioPromise=renderOfflineAudio(total,exportStart).catch(function(e){audioFailure=e;return null});
 
       /*
         VIDEO: mỗi frame timeline được lấy độc lập.
@@ -10462,8 +10431,10 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
           V44: cho encoder làm việc song song sâu hơn.
           Chỉ nhường main thread khi queue thật sự cao.
         */
-        if(videoEncoder.encodeQueueSize>18){
-          await sleep(1)
+        while(videoEncoder.encodeQueueSize>6){
+          if(videoError)throw videoError;
+          if(cancelExport||clipStopFlag)throw new Error("Đã hủy xuất video");
+          await sleep(4)
         }
 
         if(i%10===0||i===frameCount-1){
@@ -10492,6 +10463,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
       */
       $('clipProgress').textContent='🔊 Đang nhận audio đã mix song song...';
       var audioBuffer=await audioPromise;
+      if(audioFailure)throw audioFailure;
       var aStats=audioBuffer&&audioBuffer._idecoAudioStats||{jobs:0,decoded:0,scheduled:0,failed:0,peak:0};
 
       /* V52: TUYỆT ĐỐI không quay về exporter realtime cũ.
@@ -11841,7 +11813,7 @@ generate=function(){
  if(custom.length&&custom.length!==n){toast('Số mô tả cảnh ('+custom.length+') khác số ảnh ('+n+'). Hãy điều chỉnh để mỗi cảnh có một ảnh.',true);return}
  var scenes=custom.length?custom:scenesFrom(raw);
  batch={id:'sb-'+Date.now(),running:true,stop:false,refs:null,items:[]};
- for(var i=0;i<n;i++){var p='SINGLE IMAGE OUTPUT ONLY. Produce exactly ONE full-frame cinematic still. No collage, no panels, no grid, no split-screen, no contact sheet, no added captions or scene numbers. Preserve existing text on product packaging.\nThis request renders ONLY scene '+(i+1)+' of '+n+' separate storyboard files. Any multi-image count in the context below describes separate files handled by the application, never panels inside this image.\nShared script and identity context:\n'+raw+'\n\nONLY SCENE TO RENDER: '+(scenes[i]||('Depict story beat '+(i+1)+' of '+n+' in chronological order, with a distinct action/camera composition appropriate to this beat.'))+'\nKeep the same character identity, clothing, product packaging and visual style across the sequence. Return ONE image only for this scene.';batch.items.push({index:i+1,prompt:p,url:null,attempted:false})}
+ for(var i=0;i<n;i++){var p='SINGLE IMAGE OUTPUT ONLY. Produce exactly ONE full-frame cinematic still. No collage, no panels, no grid, no split-screen, no contact sheet, no scene numbers or unrequested captions. Include typography only when explicitly requested. Preserve existing text on product packaging.\nThis request renders ONLY scene '+(i+1)+' of '+n+' separate storyboard files. Any multi-image count in the context below describes separate files handled by the application, never panels inside this image.\nShared script and identity context:\n'+raw+'\n\nONLY SCENE TO RENDER: '+(scenes[i]||('Depict story beat '+(i+1)+' of '+n+' in chronological order, with a distinct action/camera composition appropriate to this beat.'))+'\nKeep the same character identity, clothing, product packaging and visual style across the sequence. Return ONE image only for this scene.';batch.items.push({index:i+1,prompt:p,url:null,attempted:false})}
  lock(true);advance();
 };$('btnGo').onclick=generate;
 uploadRefs=function(){if(!batch||!batch.running)return originalUpload();function anchored(urls){return batch.anchor&&urls.length<3?urls.concat([batch.anchor]):urls}if(batch.refs)return Promise.resolve(anchored(batch.refs));return originalUpload().then(function(urls){batch.refs=urls;return anchored(urls)})};
@@ -11865,6 +11837,47 @@ dock.onclick=function(e){var b=e.target.closest('button');if(!b)return;var k=b.d
 document.addEventListener('keydown',function(e){if(e.key==='Escape')document.body.classList.remove('m100-open')});
 // Sequential local image decoding preserves the order selected on a phone.
 $('clipImageFile').onchange=async function(){var files=Array.from(this.files||[]);this.value='';for(var f of files){var u=URL.createObjectURL(f);try{await new Promise(function(resolve,reject){var im=new Image();im.onload=function(){clipObjectUrls.push(u);var it={id:clipUid(),track:'visual',type:'image',name:f.name,url:u,img:im,start:clipInsertStart('visual'),duration:3,scale:100,x:0,y:0,fit:'contain',effect:'none'};clipTracks.visual.push(it);clipSelectedId=it.id;clipRenderAll();resolve()};im.onerror=reject;im.src=u})}catch(_){URL.revokeObjectURL(u);toast('Không đọc được ảnh '+f.name,true)}}clipMaybeAutoFit()};
+})();
+</script>
+
+<style>
+#v101RefBox{border:1px solid #d74430;background:#fff8f3;border-radius:14px;padding:16px;margin:12px 0}
+#v101RefBox .lbl{color:#9b2d20;font-size:14px}#v101RefBox .ref-hint{font-size:13px;line-height:1.6}#v101RefBox button,#v101Commands button{min-height:44px;border:1px solid #d66f60;border-radius:9px;background:#fff;color:#92291d;padding:9px 12px;font-weight:700;cursor:pointer}
+#v101Commands{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}#v101CommandHint{font-size:13px;line-height:1.55;color:#62534e;margin:8px 0}
+#v101ReferenceMode{width:100%;min-height:44px;font-size:15px;margin-top:8px}#v101RefBox .refs{margin-top:12px}#v101RefBox .slot{min-height:105px}#v101Attach{width:100%;margin-top:8px}
+body.sb-running #v101Attach{pointer-events:none;opacity:.5}
+</style>
+<script id="v101ImageReferenceCommands">
+(function(){
+  var box=$('refs').closest('.sec');box.id='v101RefBox';
+  box.querySelector('.lbl').textContent='📎 Ảnh tham chiếu · sản phẩm / người mẫu (tối đa 3)';
+  box.querySelector('.ref-hint').textContent='Thêm ảnh sản phẩm để AI giữ đúng bao bì, logo, màu và chữ trên nhãn. Có thể thêm ảnh người mẫu để tham chiếu khuôn mặt. Chọn mục đích bên dưới rồi viết yêu cầu tạo ảnh.';
+  var attach=document.createElement('button');attach.id='v101Attach';attach.type='button';attach.textContent='＋ Đính kèm ảnh sản phẩm / người mẫu';
+  attach.onclick=function(){if(busy)return;var free=refImages.findIndex(function(x){return !x});if(free<0){toast('Đã đủ 3 ảnh. Bấm × trên ảnh muốn thay, rồi đính kèm lại.',true);return}pickSlot=free;$('fileInput').value='';$('fileInput').click()};
+  box.insertBefore(attach,$('refs'));
+  var label=document.createElement('label');label.className='lbl';label.htmlFor='v101ReferenceMode';label.textContent='Cách dùng ảnh tham chiếu';box.appendChild(label);
+  var mode=document.createElement('select');mode.id='v101ReferenceMode';mode.innerHTML='<option value="auto">Theo yêu cầu trong prompt</option><option value="holding">Tạo người mẫu cầm sản phẩm</option><option value="product">Chụp / thiết kế quảng cáo sản phẩm</option><option value="identity">Giữ nhận diện người mẫu</option>';box.appendChild(mode);
+  $('prompt').closest('.sec').after(box);
+  var commands={
+    '/poster':'Thiết kế poster quảng cáo chuyên nghiệp, bố cục rõ ràng, chủ thể nổi bật, ánh sáng đẹp và phong cách phù hợp sản phẩm. Chỉ đưa nội dung chữ do người dùng cung cấp; không tự bịa giá, ưu đãi hoặc công dụng.',
+    '/magazine-cover':'Thiết kế ảnh bìa tạp chí cao cấp, bố cục editorial, nhân vật/sản phẩm nổi bật, typography tinh tế. Dùng tên tạp chí và tiêu đề do người dùng cung cấp; nếu chưa có thì để bố cục sạch, không tự thêm chữ.',
+    '/product-photo':'Tạo ảnh chụp sản phẩm thương mại, ánh sáng studio, vật liệu chân thực, giữ nguyên nhận diện và chữ gốc trên bao bì trong ảnh tham chiếu.',
+    '/model-holding':'Tạo ảnh người mẫu trưởng thành cầm sản phẩm trong ảnh tham chiếu. Bàn tay tự nhiên, tỷ lệ sản phẩm hợp lý, mặt nhãn chính hướng về camera; giữ đúng logo, chữ gốc, màu sắc và hình dạng bao bì.',
+    '/storyboard':'Tạo ảnh tĩnh điện ảnh cho cảnh được chỉ định, nhất quán nhân vật và sản phẩm. Không thêm chữ chú thích, không ghép khung. Số lượng ảnh riêng do lựa chọn storyboard của ứng dụng điều khiển.'
+  };
+  function commandPrompt(text){
+    var extra=[];var clean=String(text||'').replace(/(^|\s)\/(poster|magazine-cover|manazine-cover|product-photo|model-holding|storyboard)(?=$|[\s;,:.!])/gi,function(all,space,key){key='/'+key.toLowerCase();if(key==='/manazine-cover')key='/magazine-cover';extra.push(commands[key]);return space});
+    var refs=refImages.some(function(x){return x});
+    if(refs){extra.push('REFERENCE FIDELITY: Use the attached images as visual references. Preserve visible product packaging, logos, label wording, colors and proportions. Do not invent or replace product branding.');if(mode.value==='holding')extra.push(commands['/model-holding']);if(mode.value==='product')extra.push(commands['/product-photo']);if(mode.value==='identity')extra.push('Giữ nhận diện khuôn mặt người mẫu từ ảnh tham chiếu, không đổi thành người khác.');}
+    return [clean.trim()].concat(Array.from(new Set(extra))).filter(Boolean).join('\n\n');
+  }
+  var base=buildImagePrompt;buildImagePrompt=function(text){return base(commandPrompt(text))};
+  var tray=document.createElement('div');tray.id='v101Commands';
+  Object.keys(commands).forEach(function(cmd){var b=document.createElement('button');b.type='button';b.textContent=cmd;b.onclick=function(){if(busy)return;var p=$('prompt');p.value=cmd+' '+p.value.replace(/^\/(?:poster|magazine-cover|manazine-cover|product-photo|model-holding|storyboard)\s*/i,'');if(cmd==='/model-holding')mode.value='holding';p.dispatchEvent(new Event('input',{bubbles:true}));p.focus()};tray.appendChild(b)});
+  $('prompt').before(tray);
+  var hint=document.createElement('div');hint.id='v101CommandHint';hint.textContent='Lệnh nhanh: /poster, /magazine-cover (nhận cả /manazine-cover), /model-holding… Ví dụ: /poster tạo 3 ảnh người mẫu cầm sản phẩm trong ảnh đính kèm. Các lệnh là mẫu hướng dẫn phong cách cho mô hình đang chọn.';$('prompt').after(hint);
+  $('prompt').placeholder='/poster Tạo 3 ảnh người mẫu nữ cầm sản phẩm trong ảnh tham chiếu, tông đỏ trắng, giữ đúng chữ trên hộp…';
+  window.v101ImageCommands={expand:commandPrompt};
 })();
 </script>
 
