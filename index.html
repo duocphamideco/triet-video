@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2212%22%20fill%3D%22%23ee3a23%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2243%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%20font-size%3D%2231%22%20font-weight%3D%22800%22%20fill%3D%22white%22%3EI%3C%2Ftext%3E%3C%2Fsvg%3E">
-<title>IDECO · AI FILM STUDIO V66.1 · Script → Keyframe → Video Model → Timeline</title>
+<title>IDECO · AI FILM STUDIO V66.3 EASY · Script → Image → Video → Timeline</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
@@ -12240,6 +12240,105 @@ body.v64-export-running .clip-playbar,body.v64-export-running .clip-toptools,bod
 
   window.V66FilmStudio={state:state,enhance:enhance,makeImage:makeImage,makeVideo:makeVideo,toClip:toClip};
   console.log('[IDECO V66] AI Film Studio workflow ready');
+})();
+</script>
+
+
+<style id="v663EasyWorkflowStyle">
+/* ===== V66.3 · EASY FILM WORKFLOW ===== */
+.scene-card.v663-simple>.slabel,.scene-card.v663-simple>.stext,.scene-card.v663-simple>.beatlist,.scene-card.v663-simple>.detailgrid,.scene-card.v663-simple>.dline,.scene-card.v663-simple>.sacts{display:none!important}
+.scene-card.v663-simple>.v66-workflow{display:none!important}
+.v663-easy{margin-top:10px;border-top:1px solid #353842;padding-top:12px}
+.v663-step{border:1px solid #343842;border-radius:13px;background:#171920;margin:9px 0;padding:11px 12px}
+.v663-step-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}.v663-num{width:25px;height:25px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#ee3a23;color:#fff;font-size:11px;font-weight:900;flex:0 0 25px}.v663-step-head b{font-size:12px;color:#f3f4f7}.v663-step-head small{margin-left:auto;color:#858b97;font-size:9.5px}
+.v663-help{color:#9aa0ad;font-size:10.5px;line-height:1.5;margin:-2px 0 8px}
+.v663-field{margin:8px 0}.v663-field label{display:block;color:#b7bbc5;font-size:10.5px;font-weight:800;margin-bottom:5px}.v663-field textarea,.v663-field input,.v663-field select{width:100%;border:1px solid #3b3f49;border-radius:9px;background:#101116;color:#f0f1f4;padding:9px 10px;font:inherit;font-size:11.5px;outline:none}.v663-field textarea{min-height:78px;resize:vertical;line-height:1.5}.v663-field textarea:focus,.v663-field input:focus,.v663-field select:focus{border-color:#5e9cff}
+.v663-row{display:grid;grid-template-columns:1fr 1fr;gap:7px}.v663-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.v663-actions button{flex:1;min-width:125px;border:1px solid #3d424d;background:#23262e;color:#eef0f4;border-radius:9px;padding:10px 9px;font-size:10.5px;font-weight:900}.v663-actions button.primary{background:#ee3a23;border-color:#ee3a23;color:#fff}.v663-actions button.blue{background:#244a75;border-color:#386b9f;color:#ddecff}.v663-actions button.green{background:#1d5136;border-color:#2f7650;color:#d6f7e3}.v663-actions button:disabled{opacity:.42;cursor:not-allowed}
+.v663-preview{margin-top:8px;background:#0c0d10;border:1px solid #30333c;border-radius:10px;min-height:150px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}.v663-preview img,.v663-preview video{width:100%;max-height:330px;object-fit:contain;background:#07080a}.v663-empty{padding:26px 10px;color:#686e79;font-size:10.5px;text-align:center}.v663-tag{position:absolute;left:6px;top:6px;background:rgba(14,15,19,.82);color:#fff;border-radius:999px;padding:3px 7px;font-size:8.5px;font-weight:900;z-index:2}
+.v663-adjust{background:#121923;border:1px dashed #42658b;border-radius:10px;padding:9px;margin-top:8px}.v663-adjust label{color:#9cc8f1!important}.v663-advanced{margin-top:7px}.v663-advanced summary{cursor:pointer;color:#8d94a0;font-size:10px}.v663-advanced textarea{margin-top:6px;min-height:94px}
+.v663-status{font-size:10.5px;line-height:1.45;min-height:18px;margin-top:7px;color:#9da3af}.v663-status.busy{color:#ffb257}.v663-status.ok{color:#76e0a6}.v663-status.err{color:#ff7b67}
+.v663-simple-note{padding:9px 10px;border-radius:10px;background:#14231b;border:1px solid #2b6645;color:#c9ecd7;font-size:10.5px;line-height:1.45;margin-bottom:9px}
+@media(max-width:620px){.v663-row{grid-template-columns:1fr}.v663-actions{flex-direction:column}.v663-actions button{width:100%;min-width:0}}
+</style>
+<script id="v663EasyWorkflow">
+(function(){
+  if(window.__V663_EASY_WORKFLOW__)return;window.__V663_EASY_WORKFLOW__=true;
+  function E(s){return typeof escHtml==='function'?escHtml(String(s||'')):String(s||'').replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]||c})}
+  function getItem(i){
+    var st=window.V66FilmStudio&&window.V66FilmStudio.state;
+    if(!st)return null;
+    if(!st.items[i])st.items[i]={imagePrompt:'',videoPrompt:'',videoModel:(($('vModel')&&$('vModel').value)||'grok'),imageUrl:'',videoUrl:'',imageBusy:false,videoBusy:false,status:'',statusKind:''};
+    var x=st.items[i];if(x.imageAdjust==null)x.imageAdjust='';return x;
+  }
+  function dialogueToText(s){return (s&&s.lines||[]).map(function(l){return (l.who?l.who+': ':'')+(l.text||'')}).join('\n')}
+  function parseDialogue(t,oldLines){
+    var fallback=(oldLines&&oldLines[0]&&oldLines[0].who)||'Nhân vật';
+    return String(t||'').split(/\n+/).map(function(line){line=line.trim().replace(/^[-•]\s*/,'');if(!line)return null;var m=line.match(/^([^:]{1,40}):\s*(.+)$/);return m?{who:m[1].trim(),text:m[2].replace(/^['\"]|['\"]$/g,'').trim()}:{who:fallback,text:line.replace(/^['\"]|['\"]$/g,'').trim()}}).filter(Boolean)
+  }
+  function buildImgPrompt(s,i){
+    var base=buildScenePrompt(s,scLastVoices,15),lock=(typeof scCompactReferenceLock==='function'?scCompactReferenceLock():'');
+    return ['/storyboard CINEMATIC KEYFRAME for scene '+(i+1)+'.',base,lock?('MASTER IDENTITY LOCK: '+lock):'','STILL IMAGE ONLY. Choose one strong representative instant. Preserve exact same character identity, face, hair, body, wardrobe and product identity from original references. Natural anatomy and skin. Same cinematic continuity. No split screen, no captions unless requested.'].filter(Boolean).join('\n')
+  }
+  function buildVidPrompt(s,i){return buildScenePrompt(s,scLastVoices,15)+' Start from this scene keyframe. Keep exact same face, hair, wardrobe, product and color continuity. Natural motion and camera movement. Complete naturally in 15 seconds.'}
+  function syncPrompts(i,force){
+    var x=getItem(i),s=scLastScenes&&scLastScenes[i];if(!x||!s)return;
+    var ip=buildImgPrompt(s,i),vp=buildVidPrompt(s,i);
+    if(force||!x.imagePrompt)x.imagePrompt=ip;
+    if(force||!x.videoPrompt)x.videoPrompt=vp;
+    var card=document.querySelector('.scene-card[data-si="'+i+'"]');if(card){var a=card.querySelector('.v663-full-image-prompt'),v=card.querySelector('.v663-video-prompt');if(a)a.value=x.imagePrompt;if(v)v.value=x.videoPrompt}
+  }
+  function saveScene(i,quiet){
+    var card=document.querySelector('.scene-card[data-si="'+i+'"]'),s=scLastScenes&&scLastScenes[i];if(!card||!s)return false;
+    var vis=card.querySelector('.v663-scene-text'),dia=card.querySelector('.v663-dialogue');
+    s.visual=(vis&&vis.value.trim())||s.visual||'';s.lines=parseDialogue(dia&&dia.value,s.lines);
+    syncPrompts(i,true);
+    if(!quiet){setSimpleStatus(i,'✓ Đã lưu nội dung cảnh và cập nhật prompt ảnh/video tự động.','ok');toast('Đã lưu Cảnh '+(i+1))}
+    return true;
+  }
+  function setSimpleStatus(i,msg,kind){var el=document.querySelector('.v663-status[data-i="'+i+'"]');if(el){el.textContent=msg||'';el.className='v663-status '+(kind||'')}}
+  function renderMedia(i){var x=getItem(i),card=document.querySelector('.scene-card[data-si="'+i+'"]');if(!x||!card)return;var im=card.querySelector('.v663-image-preview'),vd=card.querySelector('.v663-video-preview');if(im)im.innerHTML=x.imageUrl?'<span class="v663-tag">ẢNH CẢNH '+(i+1)+'</span><img src="'+E(x.imageUrl)+'">':'<div class="v663-empty">Chưa có ảnh. Bấm “Tạo ảnh cảnh này”.</div>';if(vd)vd.innerHTML=x.videoUrl?'<span class="v663-tag">VIDEO 15s</span><video controls playsinline src="'+E(x.videoUrl)+'"></video>':'<div class="v663-empty">Sau khi có ảnh, chỉnh prompt video rồi bấm “Tạo video 15s”.</div>';var rv=card.querySelector('.v663-redo-image');if(rv)rv.disabled=!x.imageUrl||x.imageBusy;var mv=card.querySelector('.v663-make-video');if(mv)mv.disabled=!x.imageUrl||x.videoBusy;var tc=card.querySelector('.v663-to-clip');if(tc)tc.disabled=!x.videoUrl}
+  function makeEasyCard(card,i){
+    if(card.querySelector('.v663-easy')){renderMedia(i);return}
+    card.classList.add('v663-simple');var x=getItem(i),s=scLastScenes[i];if(!x)return;
+    var wrap=document.createElement('div');wrap.className='v663-easy';wrap.innerHTML=
+      '<div class="v663-simple-note">✨ Chỉ cần làm từ Bước 1 đến Bước 4. Các phần kỹ thuật như khóa khuôn mặt, ảnh tham chiếu và engine AI sẽ tự xử lý phía sau.</div>'+
+      '<div class="v663-step"><div class="v663-step-head"><span class="v663-num">1</span><b>Sửa nội dung phân cảnh</b><small>viết như đang kể chuyện</small></div><div class="v663-help">Có thể sửa bất cứ lúc nào. Bấm <b>Lưu cảnh</b> để AI tự cập nhật prompt ảnh và video.</div><div class="v663-field"><label>Cảnh này xảy ra như thế nào?</label><textarea class="v663-scene-text" placeholder="Ví dụ: Cô gái bước chậm qua hành lang, nhìn về phía cửa sổ, ánh sáng chiều hắt vào...">'+E(s.visual||'')+'</textarea></div><div class="v663-field"><label>Nhân vật nói gì? <span style="font-weight:400;color:#808793">(mỗi câu một dòng, có thể ghi Tên: lời thoại)</span></label><textarea class="v663-dialogue" placeholder="Lan: Em vẫn nhớ nơi này.\nNam: Anh cũng vậy.">'+E(dialogueToText(s))+'</textarea></div><div class="v663-actions"><button class="green v663-save" data-i="'+i+'">✓ LƯU CẢNH</button></div></div>'+
+      '<div class="v663-step"><div class="v663-step-head"><span class="v663-num">2</span><b>Tạo ảnh cho cảnh</b><small>AI giữ cùng nhân vật</small></div><div class="v663-help">Không cần hiểu prompt. Bấm nút tạo ảnh. Nếu chưa vừa ý, chỉ cần ghi điều muốn sửa ở ô bên dưới rồi tạo lại.</div><div class="v663-actions"><button class="blue v663-make-image" data-i="'+i+'">✨ TẠO ẢNH CẢNH NÀY</button></div><div class="v663-preview v663-image-preview"></div><div class="v663-adjust"><div class="v663-field"><label>Muốn sửa gì ở ảnh?</label><textarea class="v663-image-adjust" placeholder="Ví dụ: gương mặt tự nhiên hơn, máy quay gần hơn, giảm tông vàng, đổi góc máy thấp, giữ nguyên khuôn mặt...">'+E(x.imageAdjust||'')+'</textarea></div><div class="v663-actions"><button class="blue v663-redo-image" data-i="'+i+'">↻ TẠO LẠI ẢNH THEO YÊU CẦU</button></div></div><details class="v663-advanced"><summary>⚙ Xem / chỉnh prompt ảnh đầy đủ (nâng cao)</summary><div class="v663-field"><textarea class="v663-full-image-prompt">'+E(x.imagePrompt||'')+'</textarea></div></details></div>'+
+      '<div class="v663-step"><div class="v663-step-head"><span class="v663-num">3</span><b>Chỉnh cách ảnh chuyển thành video</b><small>chỉnh trước khi tạo</small></div><div class="v663-help">Viết bằng lời bình thường: nhân vật làm gì, camera đi thế nào, có thoại/âm thanh gì. Anh có thể sửa thoải mái trước khi bấm tạo video.</div><div class="v663-field"><label>Prompt chuyển động / video 15s</label><textarea class="v663-video-prompt" placeholder="Ví dụ: Cô gái quay đầu nhìn camera, mỉm cười nhẹ. Máy quay tiến chậm. Tóc chuyển động tự nhiên trong gió...">'+E(x.videoPrompt||'')+'</textarea></div><div class="v663-field"><label>Chọn model tạo video</label><select class="v663-video-model"><option value="grok">⚡ Grok Imagine 1.5</option><option value="minimaxh3">🌊 MiniMax H3 / Hailuo 03</option><option value="seedance2">🎬 Seedance 2.0</option><option value="seedance">🎥 Seedance 2.0 Mini</option><option value="wan30">🌙 Wan 3.0</option></select></div><div class="v663-actions"><button class="primary v663-make-video" data-i="'+i+'">🎬 TẠO VIDEO 15s TỪ ẢNH</button></div><div class="v663-preview v663-video-preview"></div></div>'+
+      '<div class="v663-step"><div class="v663-step-head"><span class="v663-num">4</span><b>Đưa cảnh vào phim</b><small>timeline dựng</small></div><div class="v663-help">Khi video đã ổn, bấm nút dưới đây. Clip sẽ tự nối vào timeline để dựng phim.</div><div class="v663-actions"><button class="green v663-to-clip" data-i="'+i+'">＋ CHÈN CẢNH NÀY VÀO CLIP</button></div><div class="v663-status" data-i="'+i+'"></div></div>';
+    card.appendChild(wrap);
+    var vm=wrap.querySelector('.v663-video-model');if(vm)vm.value=x.videoModel||'grok';
+    wrap.querySelector('.v663-full-image-prompt').addEventListener('input',function(){x.imagePrompt=this.value});
+    wrap.querySelector('.v663-video-prompt').addEventListener('input',function(){x.videoPrompt=this.value});
+    wrap.querySelector('.v663-image-adjust').addEventListener('input',function(){x.imageAdjust=this.value});
+    if(vm)vm.addEventListener('change',function(){x.videoModel=this.value});
+    renderMedia(i)
+  }
+  function enhanceEasy(){if(!(scLastScenes&&scLastScenes.length))return;Array.prototype.forEach.call(document.querySelectorAll('.scene-card[data-si]'),function(card){makeEasyCard(card,Number(card.getAttribute('data-si')))});var h=$('scResult')&&$('scResult').querySelector('.v66-studio-head');if(h){h.querySelector('b').textContent='🎬 AI FILM STUDIO · CHẾ ĐỘ DỄ DÙNG';var p=h.querySelector('p');if(p)p.textContent='Mỗi cảnh chỉ có 4 bước: sửa nội dung → tạo/chỉnh ảnh → chỉnh prompt & tạo video → chèn vào Timeline CLIP.'}}
+  function runImage(i,redo){
+    var x=getItem(i),card=document.querySelector('.scene-card[data-si="'+i+'"]');if(!x||!card)return;
+    var full=card.querySelector('.v663-full-image-prompt'),manualFull=full?full.value.trim():'',hadManual=manualFull&&manualFull!==String(x.imagePrompt||'').trim();
+    var adjustEl=card.querySelector('.v663-image-adjust'),manualAdjust=adjustEl?adjustEl.value:'';
+    saveScene(i,true);x=getItem(i);if(hadManual)x.imagePrompt=manualFull;x.imageAdjust=manualAdjust;
+    if(full)full.value=x.imagePrompt||'';
+    var finalPrompt=x.imagePrompt+(redo&&x.imageAdjust.trim()?'\nUSER REQUEST FOR THIS REGENERATION: '+x.imageAdjust.trim()+'\nKeep all other scene/identity details unchanged.':'');
+    var old=x.imagePrompt;x.imagePrompt=finalPrompt;var oldField=card.querySelector('.v66-image-prompt');if(oldField)oldField.value=finalPrompt;
+    setSimpleStatus(i,redo?'Đang tạo lại ảnh theo yêu cầu của anh...':'Đang tạo ảnh cảnh '+(i+1)+'...','busy');
+    if(window.V66FilmStudio)window.V66FilmStudio.makeImage(i);
+    x.imagePrompt=old;if(full)full.value=old;
+  }
+  function runVideo(i){
+    var x=getItem(i),card=document.querySelector('.scene-card[data-si="'+i+'"]');if(!x||!card)return;var vp=card.querySelector('.v663-video-prompt'),vm=card.querySelector('.v663-video-model');
+    var manualVideo=vp?vp.value.trim():'',hadManual=manualVideo&&manualVideo!==String(x.videoPrompt||'').trim(),chosenModel=vm?vm.value:(x.videoModel||'grok');
+    saveScene(i,true);x=getItem(i);if(hadManual)x.videoPrompt=manualVideo;x.videoModel=chosenModel;if(vp)vp.value=x.videoPrompt||'';if(vm)vm.value=x.videoModel;
+    var oldP=card.querySelector('.v66-video-prompt'),oldM=card.querySelector('.v66-video-model');if(oldP)oldP.value=x.videoPrompt;if(oldM)oldM.value=x.videoModel;setSimpleStatus(i,'Đang tạo video 15s từ đúng ảnh của cảnh này...','busy');if(window.V66FilmStudio)window.V66FilmStudio.makeVideo(i)
+  }
+  document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('.v663-save,.v663-make-image,.v663-redo-image,.v663-make-video,.v663-to-clip');if(!b)return;var i=Number(b.getAttribute('data-i'));if(b.classList.contains('v663-save'))saveScene(i);else if(b.classList.contains('v663-make-image'))runImage(i,false);else if(b.classList.contains('v663-redo-image'))runImage(i,true);else if(b.classList.contains('v663-make-video'))runVideo(i);else if(b.classList.contains('v663-to-clip')&&window.V66FilmStudio)window.V66FilmStudio.toClip(i)});
+  var oldEnh=window.V66FilmStudio&&window.V66FilmStudio.enhance;if(oldEnh){window.V66FilmStudio.enhance=function(){oldEnh.apply(this,arguments);setTimeout(enhanceEasy,0)}}
+  var rr=renderScResult;renderScResult=function(){rr.apply(this,arguments);setTimeout(function(){if(window.V66FilmStudio&&window.V66FilmStudio.enhance)window.V66FilmStudio.enhance();else enhanceEasy()},10)};
+  var obs=new MutationObserver(function(){if($('scResult')&&$('scResult').querySelector('.scene-card[data-si]'))setTimeout(enhanceEasy,0)});if($('scResult'))obs.observe($('scResult'),{childList:true,subtree:true});
+  setInterval(function(){if(!(scLastScenes&&scLastScenes.length))return;(window.V66FilmStudio.state.items||[]).forEach(function(x,i){renderMedia(i);if(x&&x.status)setSimpleStatus(i,x.status,x.statusKind)})},700);
+  setTimeout(enhanceEasy,0);window.V663EasyFilm={enhance:enhanceEasy,saveScene:saveScene};console.log('[IDECO V66.3] Easy Film Workflow ready');
 })();
 </script>
 
