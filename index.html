@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2212%22%20fill%3D%22%23ee3a23%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2243%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%20font-size%3D%2231%22%20font-weight%3D%22800%22%20fill%3D%22white%22%3EI%3C%2Ftext%3E%3C%2Fsvg%3E">
-<title>IDECO · Studio Tạo Ảnh & Dựng Video AI · GPT Image 2.5 Flare + Sunburst · V9.13 V65.1 NONSTOP DECODE + PREVIEW</title>
+<title>IDECO · AI FILM STUDIO V66.1 · Script → Keyframe → Video Model → Timeline</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
@@ -289,6 +289,16 @@ select{width:100%;border:1px solid var(--line);border-radius:12px;background:#fd
 /* ===== V57: absolute original product lock + iterative script refinement ===== */
 .sc-refine-box{border-color:#ead7a7!important;background:#fffdf7!important}
 .sc-refine-box textarea{min-height:88px}
+
+/* ===== V66.2: FREE FILM / COMMERCIAL MODE ===== */
+.sc-modepick{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.sc-modepick button{border:1.5px solid var(--line);background:#fdfcfa;border-radius:13px;padding:12px 10px;text-align:left;color:var(--ink);font-size:12px;line-height:1.4}
+.sc-modepick button b{display:block;font-size:14px;margin-bottom:3px}
+.sc-modepick button.on{border-color:#4f6fff;background:#f3f6ff;color:#2946a3;box-shadow:inset 0 0 0 1px rgba(79,111,255,.12)}
+.sc-mode-note{margin-top:8px;font-size:11.5px;color:var(--muted);line-height:1.5}
+.sc-commercial-only.mode-disabled{opacity:.45;filter:grayscale(.25)}
+.sc-commercial-only.mode-disabled select{pointer-events:none}
+@media(max-width:520px){.sc-modepick{grid-template-columns:1fr}}
 
 /* ===== V58: AI tự nghĩ kịch bản + prompt gọn cho Grok ===== */
 .sc-idea-ai{border-color:#d9e1f2!important;background:#fbfcff!important}
@@ -1625,14 +1635,23 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
 
   <!-- ===== TAB KỊCH BẢN VIDEO ===== -->
   <div id="tabScript" style="display:none">
+    <div class="sec sc-block-mode">
+      <label class="lbl">Chế độ sáng tác kịch bản</label>
+      <div class="sc-modepick" id="scModePick">
+        <button type="button" data-mode="free" class="on"><b>🎬 TỰ DO · FILM MODE</b>Phim ngắn, cinematic, hài, tình cảm, hành động, MV, đời thường… không ép bán hàng.</button>
+        <button type="button" data-mode="commercial"><b>📣 QUẢNG CÁO · TVC MODE</b>Khi cần sản phẩm, thương hiệu, lợi ích và CTA có chủ đích.</button>
+      </div>
+      <div class="sc-mode-note" id="scModeNote"><b>Mặc định Tự do:</b> AI ưu tiên câu chuyện và cảm xúc. Không bắt buộc sản phẩm xuất hiện, không bắt buộc CTA; ảnh tham chiếu chỉ dùng để giữ đúng nhân vật/bối cảnh hoặc đạo cụ khi phù hợp.</div>
+    </div>
+
     <div class="sec sc-block-idea">
       <label class="lbl">Ý tưởng / yêu cầu kịch bản</label>
-      <textarea id="scPrompt" placeholder="VD: Nhân viên dược sĩ giới thiệu sản phẩm mới, giọng thân thiện, nhấn mạnh công dụng và lời kêu gọi mua hàng ở cuối..."></textarea>
+      <textarea id="scPrompt" placeholder="VD: Một người đàn ông trở lại quán cà phê cũ trong chiều mưa và bất ngờ gặp lại người từng rất thân; kể bằng hình ảnh điện ảnh, ít thoại..."></textarea>
       <div class="chips" id="scChips">
-        <span class="chip" data-p="Nhân viên giới thiệu sản phẩm, giọng thân thiện chuyên nghiệp, kết thúc bằng lời kêu gọi hành động">Nhân viên giới thiệu SP</span>
-        <span class="chip" data-p="Video quảng cáo cảm xúc, kể câu chuyện khách hàng tin dùng sản phẩm, tông ấm áp gần gũi">Câu chuyện khách hàng</span>
-        <span class="chip" data-p="Video hướng dẫn sử dụng sản phẩm từng bước, giọng rõ ràng dễ hiểu">Hướng dẫn sử dụng</span>
-        <span class="chip" data-p="Video khai trương / thông báo tin tức công ty, giọng trang trọng phấn khởi">Thông báo công ty</span>
+        <span class="chip" data-p="Phim ngắn cinematic có mở đầu gây tò mò, nhân vật rõ, diễn biến tự nhiên và kết thúc đáng nhớ">🎬 Phim ngắn</span>
+        <span class="chip" data-p="Câu chuyện cảm xúc đời thường, ít thoại, ưu tiên biểu cảm, ánh sáng và khoảnh khắc tinh tế">❤️ Cảm xúc</span>
+        <span class="chip" data-p="Tình huống hài tự nhiên có setup, bất ngờ và punchline rõ">😂 Hài</span>
+        <span class="chip" data-p="Video hành động ngắn, chuyển động rõ, camera điện ảnh, nhịp tăng dần và payoff cuối">💥 Hành động</span>
       </div>
     </div>
 
@@ -1688,14 +1707,13 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
     <div class="sec sc-block-duration">
       <label class="lbl">Độ dài video</label>
       <div class="durpick" id="scDurPick">
-        <button data-d="10" data-seg="10" class="on"><b>10s</b>1 cảnh ×10s</button>
-        <button data-d="15" data-seg="15"><b>15s</b>1 cảnh ×15s</button>
-        <button data-d="20" data-seg="10"><b>20s</b>2 cảnh ×10s</button>
-        <button data-d="30" data-seg="30" title="Dành cho Wan 3.0 tạo một video liền mạch 30 giây"><b>30s</b>1 cảnh ×30s · Wan 3.0</button>
+        <button data-d="15" data-seg="15" class="on"><b>15s</b>1 cảnh ×15s</button>
         <button data-d="30" data-seg="15"><b>30s</b>2 cảnh ×15s</button>
-        <button data-d="30" data-seg="10"><b>30s</b>3 cảnh ×10s</button>
+        <button data-d="45" data-seg="15"><b>45s</b>3 cảnh ×15s</button>
+        <button data-d="60" data-seg="15"><b>60s</b>4 cảnh ×15s</button>
+        <button data-d="75" data-seg="15"><b>75s</b>5 cảnh ×15s</button>
       </div>
-      <div class="ref-hint"><b>Wan 3.0:</b> có thể chọn <b>30s · 1 cảnh ×30s</b> để AI viết một prompt liền mạch cho cả video. Grok / Seedance vẫn nên dùng tối đa 15s mỗi phân cảnh; hai lựa chọn 30s còn lại sẽ tự chia 2×15s hoặc 3×10s.</div>
+      <div class="ref-hint"><b>AI Film Workflow:</b> mỗi phân cảnh cố định <b>15 giây</b>. 30s = 2 cảnh, 45s = 3 cảnh, 60s = 4 cảnh, 75s = 5 cảnh. Mỗi cảnh có prompt ảnh và prompt video riêng nhưng dùng chung khóa nhận diện nhân vật/sản phẩm để giữ tính liên tục.</div>
     </div>
 
     <div class="sec sc-block-director">
@@ -1711,7 +1729,7 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
           <option value="fun">🥳 Phim vui nhộn / viral · tươi sáng, dễ chia sẻ</option>
           <option value="emotional">❤️ Phim cảm xúc · ấm áp, chạm cảm xúc</option>
         </select></div>
-        <div><label>Mục tiêu video</label><select id="scGoal">
+        <div class="sc-commercial-only" id="scGoalWrap"><label>Mục tiêu video <small>· TVC mode</small></label><select id="scGoal">
           <option value="direct-response" selected>🎯 Bán hàng / chuyển đổi · hook mạnh + CTA rõ</option>
           <option value="brand">🏆 Nhận diện thương hiệu · premium, đáng nhớ</option>
           <option value="education">💡 Hướng dẫn / giải thích · dễ hiểu, thuyết phục</option>
@@ -1728,7 +1746,7 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
           <option value="pro" selected>✨ Sáng tạo chuyên nghiệp · có motif &amp; payoff</option>
           <option value="bold">🚀 Bứt phá · ý tưởng bất ngờ nhưng vẫn logic</option>
         </select></div>
-        <div><label>Cách đưa sản phẩm vào câu chuyện</label><select id="scProductRole">
+        <div class="sc-commercial-only" id="scProductWrap"><label>Cách đưa sản phẩm vào câu chuyện <small>· TVC mode</small></label><select id="scProductRole">
           <option value="early">👁 Xuất hiện sớm · nhận diện ngay 1–3s đầu</option>
           <option value="natural" selected>🤝 Tự nhiên · sản phẩm là giải pháp trong tình huống</option>
           <option value="throughout">🔁 Xuyên suốt · lặp lại có chủ đích</option>
@@ -1740,7 +1758,7 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
           <option value="cinematic-color" selected>🎞 Màu sắc điện ảnh</option>
         </select></div>
       </div>
-      <div class="ref-hint">AI sẽ ưu tiên <b>ý tưởng bạn nhập</b>, sau đó phối hợp mục tiêu, nhịp dựng, mức sáng tạo, vai trò sản phẩm, thời lượng, nhân vật, giọng nói, phong cách, góc máy và ảnh tham chiếu thành một creative brief thống nhất.</div>
+      <div class="ref-hint">AI sẽ ưu tiên <b>ý tưởng bạn nhập</b>. Ở <b>Tự do</b>, AI tập trung câu chuyện, nhân vật, nhịp, cảm xúc và hình ảnh; sản phẩm/CTA không bắt buộc. Ở <b>TVC</b>, mục tiêu thương mại và vai trò sản phẩm mới được đưa vào creative brief.</div>
       <div class="sc-prompt-limit-note">✂ <b>Prompt Grok tự động rút gọn:</b> mỗi phân cảnh khi Copy/Gửi Dựng Video được giới hạn khoảng <b>1.800 ký tự</b>, ưu tiên khóa ảnh gốc, sản phẩm nhỏ đúng tỷ lệ, hành động, camera, ánh sáng và thoại; mô tả lặp/phụ sẽ bị lược bỏ.</div>
     </div>
 
@@ -4011,8 +4029,8 @@ var scRefAnalysisVersion = 0;
 var scRefAnalysisPromise = null;
 var scRefAnalyzeTimer = null;
 var scPickSlot = 0;
-var scDur = 10;      // tổng thời lượng: 10 | 15 | 20 | 30
-var scSeg = 10;      // độ dài mỗi phân cảnh: 10 | 15 | 30 (30 = Wan 3.0 một cảnh liền mạch)
+var scDur = 15;      // V66: tổng thời lượng 15 | 30 | 45 | 60 | 75
+var scSeg = 15;      // V66: mỗi phân cảnh cố định 15 giây
 var scCast = 0;      // 0 = chỉ lời bình, 1 = 1 nhân vật, 2 = đối thoại
 var scBusy = false;
 var scIdeaBusy = false;
@@ -4379,6 +4397,22 @@ function styleClause(){
 }
 
 /* -- gọi Kie.ai Gemini-3.8-Flash để soạn kịch bản -- */
+var scScriptMode='free';
+function scApplyScriptMode(mode){
+  scScriptMode=(mode==='commercial')?'commercial':'free';
+  var buttons=document.querySelectorAll('#scModePick button');
+  buttons.forEach(function(b){b.classList.toggle('on',b.dataset.mode===scScriptMode);});
+  var note=$('scModeNote');
+  if(note) note.innerHTML=scScriptMode==='free'
+    ? '<b>Tự do:</b> AI ưu tiên câu chuyện và cảm xúc. Không bắt buộc sản phẩm, thương hiệu hay CTA. Ảnh tham chiếu được dùng để giữ continuity khi cần.'
+    : '<b>TVC:</b> AI có thể chủ động đưa sản phẩm/thương hiệu vào câu chuyện, dùng mục tiêu video, vai trò sản phẩm và CTA.';
+  ['scGoalWrap','scProductWrap'].forEach(function(id){var el=$(id);if(el)el.classList.toggle('mode-disabled',scScriptMode==='free');});
+  if($('scGoal'))$('scGoal').disabled=scScriptMode==='free';
+  if($('scProductRole'))$('scProductRole').disabled=scScriptMode==='free';
+}
+document.querySelectorAll('#scModePick button').forEach(function(b){b.addEventListener('click',function(){scApplyScriptMode(this.dataset.mode);});});
+setTimeout(function(){scApplyScriptMode('free');},0);
+
 function scDirectorBrief(){
   var genreMap={
     'auto':'Tự suy luận thể loại phù hợp nhất từ ý tưởng người dùng; không ép một công thức cố định.',
@@ -4415,12 +4449,16 @@ function scDirectorBrief(){
   };
   var genre=$('scGenre')?$('scGenre').value:'auto';
   var goal=$('scGoal')?$('scGoal').value:'direct-response';
+  if(scScriptMode==='free') goal='free-film';
   var pace=$('scPace')?$('scPace').value:'balanced';
   var creative=$('scCreative')?$('scCreative').value:'pro';
   var product=$('scProductRole')?$('scProductRole').value:'natural';
+  if(scScriptMode==='free') product='optional';
   var colorTone=$('scColorTone')?$('scColorTone').value:'cinematic-color';
+  goalMap['free-film']='Sáng tác tự do: ưu tiên câu chuyện, nhân vật, cảm xúc, hình ảnh và nhịp điện ảnh; không có nghĩa vụ bán hàng, giải thích lợi ích hay CTA.';
+  productMap['optional']='Sản phẩm/thương hiệu KHÔNG BẮT BUỘC xuất hiện. Nếu ảnh tham chiếu có sản phẩm, chỉ đưa vào khi hợp logic câu chuyện; có thể hoàn toàn không dùng sản phẩm trong cảnh.';
   return {
-    genre:genre, goal:goal, pace:pace, creative:creative, product:product, colorTone:colorTone,
+    mode:scScriptMode, genre:genre, goal:goal, pace:pace, creative:creative, product:product, colorTone:colorTone,
     genreText:genreMap[genre]||genreMap['auto'],
     goalText:goalMap[goal]||goalMap['direct-response'],
     paceText:paceMap[pace]||paceMap['balanced'],
@@ -4468,12 +4506,20 @@ function buildScriptSystemPrompt(idea, nScenes, seg, hasEmployee, voices, cams, 
     ? 'GÓC MÁY DO NGƯỜI DÙNG CHỌN: ưu tiên và chỉ sử dụng hợp lý các kiểu sau: ' + cams.join(' | ') + '. Không nhồi tất cả vào một cảnh; chọn theo chức năng kể chuyện và phân bổ đa dạng. '
     : 'GÓC MÁY: tự chọn cinematic shot phù hợp theo chức năng kể chuyện, tránh lặp một cỡ cảnh. ';
 
-  return 'VAI TRÒ: Bạn là Creative Director + TVC Director + Copywriter quảng cáo cao cấp, chuyên chuyển brief thành video ngắn có thể dựng ngay bằng AI image-to-video cho IDECO. '
+  var freeMode = director.mode==='free';
+  var roleLead = freeMode
+    ? 'VAI TRÒ: Bạn là Film Director + Screenwriter + Visual Storyteller cao cấp, chuyên phát triển phim ngắn liên mạch để dựng bằng AI image-to-video. KHÔNG mặc định đây là quảng cáo. '
+    : 'VAI TRÒ: Bạn là Creative Director + TVC Director + Copywriter quảng cáo cao cấp, chuyên chuyển brief thành video thương mại ngắn có thể dựng ngay bằng AI image-to-video cho IDECO. ';
+  var modeRule = freeMode
+    ? 'CHẾ ĐỘ TỰ DO: không ép hook bán hàng, vấn đề→giải pháp, packshot, thương hiệu, sản phẩm hay CTA. Có thể kể chuyện hoàn toàn không có sản phẩm. Nếu ảnh tham chiếu có sản phẩm thì chỉ coi đó là một thực thể cần giữ đúng khi câu chuyện thực sự dùng đến; tuyệt đối không buộc mọi cảnh phải nhắc/hiện sản phẩm. CTA có thể để trống. Trường product của cảnh có thể để trống. '
+    : 'CHẾ ĐỘ TVC: sản phẩm/thương hiệu có thể là trục chính; dùng mục tiêu thương mại và vai trò sản phẩm từ giao diện, nhưng vẫn kể chuyện tự nhiên và không bịa claim. ';
+  return roleLead
     + 'NHIỆM VỤ: tạo ĐÚNG ' + nScenes + ' phân cảnh × ' + seg + ' giây = ' + (nScenes*seg) + ' giây. Mỗi cảnh phải có cấu trúc vi mô theo timeline và nối continuity rõ sang cảnh kế tiếp. '
-    + 'NGUYÊN TẮC ƯU TIÊN: (1) ý tưởng/yêu cầu người dùng là luật cao nhất; (2) các lựa chọn giao diện phải được KẾT HỢP, không xử lý rời rạc; (3) hình phải quay/dựng được; (4) sáng tạo nhưng không làm sai thông tin sản phẩm. '
-    + 'CREATIVE BRIEF TỪ GIAO DIỆN: Thể loại=' + director.genreText + ' Mục tiêu=' + director.goalText + ' Nhịp dựng=' + director.paceText + ' Mức sáng tạo=' + director.creativeText + ' Vai trò sản phẩm=' + director.productText + ' Tông video=' + director.colorToneText + ' '
+    + modeRule
+    + 'NGUYÊN TẮC ƯU TIÊN: (1) ý tưởng/yêu cầu người dùng là luật cao nhất; (2) các lựa chọn giao diện phải được KẾT HỢP, không xử lý rời rạc; (3) hình phải quay/dựng được; (4) nếu có dữ kiện sản phẩm thì không được làm sai. '
+    + 'CREATIVE BRIEF TỪ GIAO DIỆN: Chế độ=' + (freeMode?'TỰ DO/FILM':'QUẢNG CÁO/TVC') + ' Thể loại=' + director.genreText + ' Mục tiêu=' + director.goalText + ' Nhịp dựng=' + director.paceText + ' Mức sáng tạo=' + director.creativeText + ' Vai trò sản phẩm=' + director.productText + ' Tông video=' + director.colorToneText + ' '
     + lockTxt + refTxt + castTxt + camTxt + styleClause() + revisionTxt
-    + 'CHUẨN KỊCH BẢN CHUYÊN NGHIỆP: mở bằng hook thị giác/hành động trong 1–2 giây đầu; mỗi beat phải làm ít nhất một việc (gây tò mò, nêu vấn đề, chứng minh, tạo cảm xúc, giới thiệu sản phẩm, payoff hoặc CTA). Không viết cảnh chỉ để "đẹp" mà không phục vụ câu chuyện. '
+    + 'CHUẨN KỊCH BẢN CHUYÊN NGHIỆP: mở đầu phải có lực điện ảnh/gây tò mò trong 1–2 giây đầu; mỗi beat phải làm ít nhất một việc (phát triển nhân vật, tạo tò mò, tăng xung đột, tạo cảm xúc, cung cấp thông tin, payoff; chỉ giới thiệu sản phẩm/CTA khi chế độ TVC hoặc khi ý tưởng yêu cầu). Không viết cảnh chỉ để "đẹp" mà không phục vụ câu chuyện. '
     + 'Nếu là quảng cáo sản phẩm dược/mỹ phẩm, KHÔNG tự bịa công dụng, chỉ định, con số, chứng nhận hay cam kết điều trị mà người dùng/ảnh không cung cấp. Khi thiếu dữ kiện, dùng mô tả trung tính như "sản phẩm", "giải pháp", "hỗ trợ chăm sóc" thay vì tạo claim mới. '
     + 'MỖI phân cảnh dài ' + seg + ' giây phải có khoảng ' + beatCount + ' shot-beat liên tiếp (xấp xỉ ' + beatSpan + ' giây/beat; có thể co giãn theo nhịp). Riêng 30s Wan 3.0/1 cảnh: bắt buộc chia nội bộ thành 5–7 beat để video liền mạch nhưng không đơn điệu. '
     + 'LỜI THOẠI: tổng số từ trong "lines[].text" của MỘT cảnh tối đa ' + budget + ' từ; ưu tiên ít câu nhưng đắt giá, nói được trong thời lượng, không lặp lại text on screen. '
@@ -4560,16 +4606,19 @@ function generateAiIdea(forceNew, refsPrepared){
     }).join(' | ').slice(0,900);
   }
   var prior=(forceNew&&scIdeaLast)?(' Tránh lặp ý tưởng trước: '+scIdeaToPrompt(scIdeaLast).slice(0,650)+'.') : '';
+  var freeIdeaMode=scScriptMode==='free';
   var imageInstruction=hasRefs
-    ? 'QUAN TRỌNG: các ảnh image_url đính kèm là NGUỒN THAM CHIẾU TRỰC TIẾP. Hãy quan sát nội dung nhìn thấy trong ảnh và lấy đúng sản phẩm, nhân vật, trang phục, đạo cụ hoặc bối cảnh phù hợp làm chất liệu cốt truyện; không coi ảnh là minh họa phụ. Nếu ảnh có sản phẩm, sản phẩm phải xuất hiện tự nhiên trong ý tưởng và giữ đúng ảnh gốc, kích thước nhỏ đúng tỷ lệ thật. '
+    ? (freeIdeaMode
+      ? 'QUAN TRỌNG: các ảnh image_url đính kèm là NGUỒN THAM CHIẾU TRỰC TIẾP. Hãy quan sát nhân vật, trang phục, đạo cụ và bối cảnh để giữ continuity. Nếu ảnh có sản phẩm, KHÔNG bắt buộc đưa sản phẩm vào câu chuyện; chỉ dùng khi thật sự hợp logic. Nếu dùng thì giữ đúng ảnh gốc và tỷ lệ thật. '
+      : 'QUAN TRỌNG: các ảnh image_url đính kèm là NGUỒN THAM CHIẾU TRỰC TIẾP. Hãy quan sát nội dung nhìn thấy trong ảnh và lấy đúng sản phẩm, nhân vật, trang phục, đạo cụ hoặc bối cảnh phù hợp làm chất liệu cốt truyện; không coi ảnh là minh họa phụ. Nếu ảnh có sản phẩm, sản phẩm phải xuất hiện tự nhiên trong ý tưởng và giữ đúng ảnh gốc, kích thước nhỏ đúng tỷ lệ thật. ')
     : '';
   var userText='Hãy tự nghĩ MỘT kịch bản gợi ý mới thuộc thể loại "'+info.label+'" cho video '+scDur+' giây. '+info.dir+' '
     +imageInstruction
-    +'Tông video: '+director.colorToneText+' Mục tiêu: '+director.goalText+' Vai trò sản phẩm: '+director.productText+'. '
+    +'Chế độ: '+(freeIdeaMode?'TỰ DO/FILM':'QUẢNG CÁO/TVC')+'. Tông video: '+director.colorToneText+' Mục tiêu: '+director.goalText+' Vai trò sản phẩm: '+director.productText+'. '
     +(refSummary?('Tóm tắt AI về ảnh: '+refSummary+'. '):'')
     +(refProfiles?('Hồ sơ tham chiếu: '+refProfiles+'. '):'')
     +'Kịch bản gợi ý phải NGẮN GỌN, dễ hiểu và quay được: title tối đa 8 từ; hook tối đa 18 từ; story tối đa 90 từ; ending tối đa 25 từ. '
-    +'Nếu có sản phẩm tham chiếu: không redesign bao bì, không thay logo/màu/nhãn, luôn là sản phẩm nhỏ đúng tỷ lệ thật, không oversized; không bịa công dụng/claim không có dữ kiện.'+prior
+    +(hasRefs?'Nếu có sản phẩm tham chiếu VÀ câu chuyện sử dụng sản phẩm: không redesign bao bì, không thay logo/màu/nhãn, luôn đúng tỷ lệ thật, không oversized; không bịa công dụng/claim. ':'')+(freeIdeaMode?'Không biến ý tưởng thành quảng cáo nếu người dùng không yêu cầu; không bắt buộc CTA hay brand mention. ':'')+prior
     +' Trả JSON duy nhất: {"title":"","hook":"","story":"","ending":""}.';
   var content=[{type:'text',text:userText}];
   scRefsArr.forEach(function(r,i){
@@ -4579,7 +4628,7 @@ function generateAiIdea(forceNew, refsPrepared){
     }
   });
   var body={model:($('scModel')&&$('scModel').value)||'gemini-3-8-flash',messages:[
-    {role:'system',content:'Bạn là biên kịch quảng cáo và phim ngắn multimodal. Khi có ảnh tham chiếu, phải quan sát ảnh và để nội dung nhìn thấy trong ảnh chi phối ý tưởng; không bịa thông tin sản phẩm. Ý tưởng phải mới, ngắn, quay được, không lan man. Chỉ JSON hợp lệ.'},
+    {role:'system',content:(freeIdeaMode?'Bạn là biên kịch phim ngắn multimodal và visual storyteller. Không mặc định viết quảng cáo; ưu tiên câu chuyện, nhân vật, cảm xúc và hình ảnh. Ảnh sản phẩm nếu có chỉ dùng khi hợp câu chuyện. Không bịa thông tin. ':'Bạn là biên kịch quảng cáo và phim ngắn multimodal. Khi có ảnh tham chiếu, phải quan sát ảnh; không bịa thông tin sản phẩm. ' )+'Ý tưởng phải mới, ngắn, quay được, không lan man. Chỉ JSON hợp lệ.'},
     {role:'user',content:content}
   ],stream:false,temperature:forceNew?0.95:0.82,max_tokens:900,response_format:{type:'json_object'}};
   geminiScriptRequest(body,0).then(function(data){
@@ -4779,7 +4828,9 @@ function generateScriptCore(refinement){
     messages: [
       {
         role: 'system',
-        content: 'Bạn là Creative Director và đạo diễn TVC cao cấp. Hãy tổng hợp mọi lựa chọn giao diện thành một brief thống nhất, ưu tiên ý tưởng người dùng, tạo kịch bản chi tiết có timeline/shot-beat, continuity, diễn xuất, sản phẩm, camera, ánh sáng, âm thanh, text và CTA. Nếu brief có REF-PERSON / REF-PRODUCT / REF-LOGO thì đó là khóa nhận diện tuyệt đối. REF-PRODUCT phải giữ đúng ảnh gốc 100% và luôn được mô tả là sản phẩm nhỏ (small product), đúng tỷ lệ vật lý đời thực, không oversized; close-up bằng camera chứ không phóng to vật thể. Tuân thủ tuyệt đối schema JSON; không markdown.'
+        content: director.mode==='free'
+          ? 'Bạn là Film Director + Screenwriter + Visual Storyteller cao cấp. Hãy tổng hợp mọi lựa chọn giao diện thành một brief phim thống nhất, ưu tiên tuyệt đối ý tưởng người dùng, tạo kịch bản chi tiết có timeline/shot-beat, continuity, diễn xuất, camera, ánh sáng, âm thanh và text khi cần. KHÔNG mặc định đây là quảng cáo: không bắt buộc sản phẩm, brand mention, packshot hay CTA. Nếu có REF-PERSON / REF-PRODUCT / REF-LOGO thì chỉ là khóa nhận diện khi thực thể đó xuất hiện; REF-PRODUCT phải giữ đúng ảnh gốc và tỷ lệ đời thực. Tuân thủ schema JSON; product/cta có thể để trống; không markdown.'
+          : 'Bạn là Creative Director và đạo diễn TVC cao cấp. Hãy tổng hợp mọi lựa chọn giao diện thành một brief thống nhất, ưu tiên ý tưởng người dùng, tạo kịch bản chi tiết có timeline/shot-beat, continuity, diễn xuất, sản phẩm, camera, ánh sáng, âm thanh, text và CTA. Nếu brief có REF-PERSON / REF-PRODUCT / REF-LOGO thì đó là khóa nhận diện tuyệt đối. REF-PRODUCT phải giữ đúng ảnh gốc 100% và luôn được mô tả là sản phẩm nhỏ (small product), đúng tỷ lệ vật lý đời thực, không oversized; close-up bằng camera chứ không phóng to vật thể. Tuân thủ tuyệt đối schema JSON; không markdown.'
       },
       { role: 'user', content: userContent }
     ],
@@ -12054,5 +12105,143 @@ body.v64-export-running .clip-playbar,body.v64-export-running .clip-toptools,bod
   console.log('[IDECO V65.1] Export will not abort on transient frame/audio decode failures');
 })();
 </script>
+
+
+<style id="v66FilmWorkflowStyle">
+/* ===== V66 · AI FILM STUDIO WORKFLOW ===== */
+.v66-studio-head{margin:0 0 12px;padding:14px 16px;border-radius:15px;background:linear-gradient(135deg,#161820,#252936);border:1px solid #383d4b;color:#f4f5f8}
+.v66-studio-head b{font-size:15px}.v66-studio-head p{margin:6px 0 0;color:#aeb4c2;font-size:11.5px;line-height:1.55}
+.v66-flowline{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.v66-flowline span{border:1px solid #3b4252;border-radius:999px;padding:5px 8px;font-size:9.5px;font-weight:800;color:#d8dce5;background:#20232c}.v66-flowline span.ok{border-color:#2b7650;color:#76e0a6;background:#17251d}
+.v66-workflow{margin-top:12px;border-top:1px solid #353842;padding-top:12px}
+.v66-workflow-title{display:flex;align-items:center;gap:8px;margin-bottom:9px}.v66-workflow-title b{font-size:12px;color:#fff}.v66-workflow-title span{margin-left:auto;font-size:9.5px;color:#73dfa4;border:1px solid #2d7250;background:#17251d;border-radius:999px;padding:4px 7px;font-weight:800}
+.v66-prompt-block{margin-top:9px}.v66-prompt-block label{display:flex;justify-content:space-between;align-items:center;color:#9ca1ad;font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}.v66-prompt-block label em{font-style:normal;color:#ffb257;text-transform:none;letter-spacing:0}
+.v66-prompt{width:100%;min-height:112px;background:#131419!important;border:1px solid #3a3d47!important;color:#eef0f4!important;border-radius:10px!important;padding:10px!important;font-size:11.5px!important;line-height:1.5!important;resize:vertical}
+.v66-prompt:focus{border-color:#5e9cff!important}
+.v66-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:8px}.v66-actions button{border:1px solid #3a3d47;background:#20232a;color:#e7e9ee;border-radius:9px;padding:9px 7px;font-size:10.5px;font-weight:800;min-height:38px}.v66-actions .img{border-color:#456d9e;color:#84bfff}.v66-actions .vid{border-color:#7a5531;color:#ffbd78}.v66-actions .clip{border-color:#3b7a55;color:#84e0aa}.v66-actions button:disabled{opacity:.4;cursor:not-allowed}
+.v66-preview{margin-top:9px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}.v66-media{min-height:120px;background:#0e0f13;border:1px solid #30333c;border-radius:10px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center}.v66-media img,.v66-media video{display:block;width:100%;height:100%;max-height:280px;object-fit:contain;background:#08090b}.v66-media .empty{padding:20px 10px;color:#666c78;font-size:10.5px}.v66-media .tag{position:absolute;left:6px;top:6px;z-index:2;background:rgba(15,16,20,.82);color:#fff;border-radius:999px;padding:3px 6px;font-size:8.5px;font-weight:900}
+.v66-status{margin-top:7px;min-height:18px;color:#9da3af;font-size:10.5px;line-height:1.45}.v66-status.busy{color:#ffb257}.v66-status.ok{color:#76e0a6}.v66-status.err{color:#ff7b67}
+.v66-master-lock{margin:9px 0 0;padding:8px 10px;border:1px solid #285f3f;background:#15231b;border-radius:9px;color:#bfe7ce;font-size:10.5px;line-height:1.5}
+.v66-video-engine{margin-top:9px;padding:10px;border:1px solid #3b4252;background:#171920;border-radius:10px}
+.v66-video-engine label{display:block;color:#9ca1ad;font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.v66-video-engine select{width:100%;background:#101116;color:#f1f2f5;border:1px solid #444957;border-radius:9px;padding:9px 34px 9px 10px;font-size:11px}
+.v66-video-engine .hint{display:block;margin-top:6px;color:#858b97;font-size:9.5px;line-height:1.45}
+@media(max-width:640px){.v66-actions{grid-template-columns:1fr 1fr}.v66-preview{grid-template-columns:1fr}.durpick{grid-template-columns:repeat(2,1fr)!important}}
+</style>
+<script id="v66FilmWorkflow">
+(function(){
+  if(window.__V66_FILM_WORKFLOW__)return;window.__V66_FILM_WORKFLOW__=true;
+  var state={items:[],pendingImage:-1,pendingVideo:-1,lastScriptKey:''};
+
+  function item(i){
+    if(!state.items[i])state.items[i]={imagePrompt:'',videoPrompt:'',videoModel:(($('vModel')&&$('vModel').value)||'grok'),imageUrl:'',videoUrl:'',imageBusy:false,videoBusy:false,status:'',statusKind:''};
+    return state.items[i];
+  }
+  function sceneImagePrompt(s,i){
+    var base=buildScenePrompt(s,scLastVoices,15);
+    var lock=scCompactReferenceLock?scCompactReferenceLock():'';
+    return [
+      '/storyboard CINEMATIC KEYFRAME for scene '+(i+1)+' of '+(scLastScenes?scLastScenes.length:1)+'.',
+      base,
+      lock?('MASTER IDENTITY LOCK: '+lock):'',
+      'STILL IMAGE ONLY: choose the strongest representative instant of this 15-second scene. Preserve the exact same cast identity, face geometry, hairstyle, body proportions, wardrobe continuity and product identity from the original reference images. Do not recast, do not face morph, do not beautify into another person. Keep realistic anatomy, natural skin texture and consistent cinematic color continuity with adjacent scenes. No split screen, no storyboard grid, no captions unless explicitly requested.'
+    ].filter(Boolean).join('\n');
+  }
+  function sceneVideoPrompt(s,i){
+    return buildScenePrompt(s,scLastVoices,15)+' Continuity rule: start from the generated keyframe for Scene '+(i+1)+'; keep the exact same character identity, face, hair, wardrobe, product and color continuity. Natural motion only; complete this scene in exactly 15 seconds.';
+  }
+  function syncState(){
+    var scenes=scLastScenes||[];
+    var key=(scLastMeta&&scLastMeta.title||'')+'|'+scenes.length+'|'+scenes.map(function(s){return s.visual||''}).join('|');
+    if(state.lastScriptKey!==key){
+      var old=state.items;state.items=[];
+      scenes.forEach(function(s,i){
+        var x=item(i),prev=old[i];
+        x.imagePrompt=sceneImagePrompt(s,i);x.videoPrompt=sceneVideoPrompt(s,i);
+        if(prev&&prev.videoModel)x.videoModel=prev.videoModel;
+        if(prev&&prev.imageUrl&&prev.videoUrl&&prev.imagePrompt===x.imagePrompt){x.imageUrl=prev.imageUrl;x.videoUrl=prev.videoUrl;}
+      });
+      state.lastScriptKey=key;
+    }
+  }
+  function setStatus(i,msg,kind){var x=item(i);x.status=msg||'';x.statusKind=kind||'';var el=document.querySelector('.v66-status[data-i="'+i+'"]');if(el){el.textContent=x.status;el.className='v66-status '+x.statusKind}}
+  function masterRefsForScene(i){
+    var refs=[];
+    (scRefsArr||[]).filter(Boolean).slice(0,3).forEach(function(r){refs.push({dataUrl:r.dataUrl,uploadedUrl:r.uploadedUrl||null})});
+    if(refs.length<3&&i>0){var prev=item(i-1);if(prev.imageUrl)refs.push({dataUrl:prev.imageUrl,uploadedUrl:prev.imageUrl});}
+    while(refs.length<3)refs.push(null);
+    return refs.slice(0,3);
+  }
+  function refreshCard(i){
+    var card=document.querySelector('.scene-card[data-si="'+i+'"]');if(!card)return;
+    var x=item(i),im=card.querySelector('.v66-img-media'),vd=card.querySelector('.v66-vid-media');
+    if(im)im.innerHTML=x.imageUrl?('<span class="tag">KEYFRAME</span><img src="'+escHtml(x.imageUrl)+'" alt="Ảnh phân cảnh '+(i+1)+'">'):'<div class="empty">Chưa tạo ảnh phân cảnh</div>';
+    if(vd)vd.innerHTML=x.videoUrl?('<span class="tag">VIDEO 15s</span><video controls playsinline src="'+escHtml(x.videoUrl)+'"></video>'):'<div class="empty">Chưa tạo video từ ảnh</div>';
+    var ms=card.querySelector('.v66-video-model');if(ms&&ms.value!==x.videoModel)ms.value=x.videoModel||'grok';
+    var vb=card.querySelector('.v66-make-video');if(vb)vb.disabled=!x.imageUrl||x.videoBusy;
+    var cb=card.querySelector('.v66-to-clip');if(cb)cb.disabled=!x.videoUrl;
+    var ib=card.querySelector('.v66-make-image');if(ib)ib.disabled=x.imageBusy;
+    setStatus(i,x.status,x.statusKind);
+  }
+  function enhance(){
+    if(!$('scResult')||!(scLastScenes&&scLastScenes.length))return;syncState();
+    if(!$('scResult').querySelector('.v66-studio-head')){
+      var h=document.createElement('div');h.className='v66-studio-head';h.innerHTML='<b>🎬 AI FILM STUDIO · WORKFLOW LIÊN MẠCH</b><p>Tạo kịch bản → khóa nhận diện → tạo keyframe AI từng cảnh → chọn model video riêng từng cảnh → tạo video 15s từ đúng ảnh cảnh → chèn thẳng vào Timeline CLIP.</p><div class="v66-flowline"><span class="ok">1 · Kịch bản</span><span class="ok">2 · Identity Lock</span><span>3 · Keyframe AI</span><span>4 · Chọn Model + Image → Video</span><span>5 · Timeline CLIP</span></div>';$('scResult').insertBefore(h,$('scResult').firstChild);
+    }
+    Array.prototype.forEach.call(document.querySelectorAll('.scene-card[data-si]'),function(card){
+      var i=Number(card.getAttribute('data-si')),x=item(i),s=scLastScenes[i];if(card.querySelector('.v66-workflow')){refreshCard(i);return;}
+      var w=document.createElement('div');w.className='v66-workflow';
+      w.innerHTML='<div class="v66-workflow-title"><b>🎥 Film Workflow · Cảnh '+(i+1)+'</b><span>15s · CHARACTER LOCK</span></div>'+
+        '<div class="v66-master-lock">🧬 Mọi lần tạo lại cảnh này đều tái dùng ảnh tham chiếu gốc. Khi có chỗ trống, ảnh cảnh trước cũng được dùng làm neo continuity. Prompt có thể sửa riêng mà không làm thay đổi prompt của cảnh khác.</div>'+
+        '<div class="v66-prompt-block"><label>Prompt tạo ảnh AI <em>chỉnh riêng cảnh '+(i+1)+'</em></label><textarea class="v66-prompt v66-image-prompt" data-i="'+i+'"></textarea></div>'+
+        '<div class="v66-video-engine"><label>Model tạo video cho Cảnh '+(i+1)+'</label><select class="v66-video-model" data-i="'+i+'"><option value="grok">⚡ Grok Imagine 1.5 — image-to-video, có tiếng</option><option value="minimaxh3">🌊 MiniMax H3 (Hailuo 03) — image-to-video · 768P / 2K</option><option value="seedance2">🎬 Seedance 2.0 — chất lượng cao, first/last-frame</option><option value="seedance">🎥 Seedance 2.0 Mini — điện ảnh, nhiều ảnh tham chiếu</option><option value="wan30">🌙 Wan 3.0 — image-to-video, có tiếng · 480P / 720P</option></select><span class="hint">Dùng cùng engine và thiết lập API của tab Dựng Video. Mỗi phân cảnh có thể chọn model khác nhau.</span></div>'+
+        '<div class="v66-actions"><button class="img v66-make-image" data-i="'+i+'">✨ TẠO / TẠO LẠI ẢNH</button><button class="v66-use-img" data-i="'+i+'">🖼 MỞ ẢNH Ở TAB ẢNH</button><button class="vid v66-make-video" data-i="'+i+'">🎬 ẢNH → VIDEO 15s</button><button class="clip v66-to-clip" data-i="'+i+'">＋ CHÈN VIDEO VÀO CLIP</button></div>'+
+        '<div class="v66-preview"><div class="v66-media v66-img-media"></div><div class="v66-media v66-vid-media"></div></div>'+
+        '<div class="v66-prompt-block"><label>Prompt video 15s <em>có thể chỉnh chuyển động / camera / thoại</em></label><textarea class="v66-prompt v66-video-prompt" data-i="'+i+'"></textarea></div>'+
+        '<div class="v66-status" data-i="'+i+'"></div>';
+      card.appendChild(w);
+      var ip=w.querySelector('.v66-image-prompt'),vp=w.querySelector('.v66-video-prompt'),vm=w.querySelector('.v66-video-model');ip.value=x.imagePrompt;vp.value=x.videoPrompt;if(vm)vm.value=x.videoModel||'grok';
+      ip.addEventListener('input',function(){item(i).imagePrompt=this.value});vp.addEventListener('input',function(){item(i).videoPrompt=this.value});
+      if(vm)vm.addEventListener('change',function(){item(i).videoModel=this.value;setStatus(i,'Đã chọn model video: '+this.options[this.selectedIndex].text.replace(/^[^A-Za-zÀ-ỹ0-9]+/,'').trim(),'ok')});
+      refreshCard(i);
+    });
+  }
+
+  function makeImage(i){
+    var x=item(i),card=document.querySelector('.scene-card[data-si="'+i+'"]'),ta=card&&card.querySelector('.v66-image-prompt');if(!ta)return;
+    x.imagePrompt=ta.value.trim();if(!x.imagePrompt){toast('Prompt ảnh của cảnh '+(i+1)+' đang trống',true);return}
+    if(busy){toast('AI đang tạo một ảnh khác. Hoàn tất rồi tạo cảnh tiếp theo nhé.',true);return}
+    refImages=masterRefsForScene(i);try{renderSlots()}catch(_){ }
+    $('prompt').value=x.imagePrompt;state.pendingImage=i;x.imageBusy=true;setStatus(i,'AI-Agent đang tạo keyframe cảnh '+(i+1)+' với Identity Lock...','busy');refreshCard(i);
+    generate(x.imagePrompt);
+  }
+  function openImageTab(i){var x=item(i);$('prompt').value=x.imagePrompt||'';refImages=masterRefsForScene(i);try{renderSlots()}catch(_){ }switchTab('img');$('prompt').scrollIntoView({behavior:'smooth',block:'center'});toast('Đã nạp prompt + ảnh khóa nhận diện của Cảnh '+(i+1));}
+  function makeVideo(i){
+    var x=item(i),card=document.querySelector('.scene-card[data-si="'+i+'"]'),ta=card&&card.querySelector('.v66-video-prompt');if(!x.imageUrl){toast('Hãy tạo ảnh Cảnh '+(i+1)+' trước',true);return}if(vBusy){toast('AI đang dựng video khác. Hoàn tất rồi tạo cảnh tiếp theo nhé.',true);return}
+    x.videoPrompt=ta.value.trim();if(!x.videoPrompt){toast('Prompt video đang trống',true);return}
+    var modelSel=card&&card.querySelector('.v66-video-model');if(modelSel)x.videoModel=modelSel.value||x.videoModel||'grok';
+    vRefs=[{dataUrl:x.imageUrl,uploadedUrl:x.imageUrl},null,null,null,null];try{renderVSlots()}catch(_){ }
+    $('vPrompt').value=x.videoPrompt;
+    if($('vModel')){$('vModel').value=x.videoModel||'grok';try{applyVideoModelUi()}catch(_){}}
+    if($('vDur'))$('vDur').value='15';
+    state.pendingVideo=i;x.videoBusy=true;
+    var modelText=modelSel?modelSel.options[modelSel.selectedIndex].text:(x.videoModel||'grok');
+    setStatus(i,'Đang dựng video 15s bằng '+modelText+' từ keyframe của cảnh '+(i+1)+'...','busy');refreshCard(i);
+    generateVideo();
+  }
+  function toClip(i){var x=item(i);if(!x.videoUrl){toast('Cảnh này chưa có video',true);return}clipAddRemoteVideo(x.videoUrl,'FILM · Cảnh '+(i+1)+' · 15s',function(ok){if(ok)setStatus(i,'✓ Đã chèn video Cảnh '+(i+1)+' vào Timeline CLIP','ok')});}
+
+  document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('.v66-make-image,.v66-use-img,.v66-make-video,.v66-to-clip');if(!b)return;var i=Number(b.getAttribute('data-i'));if(b.classList.contains('v66-make-image'))makeImage(i);else if(b.classList.contains('v66-use-img'))openImageTab(i);else if(b.classList.contains('v66-make-video'))makeVideo(i);else toClip(i)});
+
+  var baseRenderSc=renderScResult;renderScResult=function(){baseRenderSc.apply(this,arguments);setTimeout(enhance,0)};
+  var baseFinishImg=finishJob;finishJob=function(urls,prompt,credits){var pi=state.pendingImage;baseFinishImg.apply(this,arguments);if(pi>=0&&urls&&urls[0]){var x=item(pi);x.imageUrl=urls[0];x.videoUrl='';x.imageBusy=false;x.status='✓ Keyframe Cảnh '+(pi+1)+' đã tạo. Có thể chỉnh prompt và tạo lại, hoặc chuyển ngay Ảnh → Video 15s.';x.statusKind='ok';state.pendingImage=-1;refreshCard(pi)}};
+  var baseFailImg=failJob;failJob=function(msg){var pi=state.pendingImage;baseFailImg.apply(this,arguments);if(pi>=0){var x=item(pi);x.imageBusy=false;x.status='Lỗi tạo ảnh: '+msg;x.statusKind='err';state.pendingImage=-1;refreshCard(pi)}};
+  var baseFinishVid=finishVJob;finishVJob=function(urls,prompt,credits,taskId){var pv=state.pendingVideo;baseFinishVid.apply(this,arguments);if(pv>=0&&urls&&urls[0]&&!(vChain&&vChain.stage===1)){var x=item(pv);x.videoUrl=urls[0];x.videoBusy=false;x.status='✓ Video 15s Cảnh '+(pv+1)+' đã hoàn tất bằng '+(x.videoModel||'model đã chọn')+'. Bấm “Chèn video vào CLIP” để nối phim theo đúng thứ tự.';x.statusKind='ok';state.pendingVideo=-1;refreshCard(pv)}};
+  var baseFailVid=failVJob;failVJob=function(msg){var pv=state.pendingVideo;baseFailVid.apply(this,arguments);if(pv>=0){var x=item(pv);x.videoBusy=false;x.status='Lỗi dựng video: '+msg;x.statusKind='err';state.pendingVideo=-1;refreshCard(pv)}};
+
+  window.V66FilmStudio={state:state,enhance:enhance,makeImage:makeImage,makeVideo:makeVideo,toClip:toClip};
+  console.log('[IDECO V66] AI Film Studio workflow ready');
+})();
+</script>
+
 </body>
 </html>
