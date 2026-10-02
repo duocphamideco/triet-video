@@ -1403,6 +1403,7 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
     <button id="tabBtnImg" class="on">🖼 Tạo Ảnh</button>
     <button id="tabBtnVid">🎬 Dựng Video</button>
     <button id="tabBtnScript">📝 Kịch Bản</button>
+    <button id="tabBtnAudio">🎙 Cắt Âm Thanh</button>
     <button id="tabBtnClip">✂ CLIP</button>
   </div>
 
@@ -1891,6 +1892,21 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
 
     <div class="gobar" id="gobarScript" style="display:none"><button class="btn-go" id="btnGoScript">📝 TẠO KỊCH BẢN</button></div>
   </div><!-- /tabScript -->
+
+
+  <!-- ===== V66.4 TAB CẮT ÂM THANH ===== -->
+  <div id="tabAudio" style="display:none">
+    <div class="sec v664-audio-head">
+      <label class="lbl">🎙 CẮT FILE ÂM THANH THÀNH NHIỀU ĐOẠN</label>
+      <div class="v664-audio-intro">Chọn MP3/WAV dài, chọn <b>15 giây</b> hoặc <b>30 giây</b>. Studio tự chia từ đầu đến cuối. Ví dụ 65s + chọn 30s → <b>30s + 30s + 5s</b>. Việc cắt chạy ngay trên máy, không dùng credit AI.</div>
+      <input id="v664AudioFile" type="file" accept="audio/mpeg,audio/mp3,audio/wav,audio/x-wav,.mp3,.wav" style="display:none">
+      <button type="button" class="v664-big-btn" id="v664PickAudio">＋ CHỌN MP3 / WAV</button>
+      <div id="v664AudioInfo" class="v664-audio-info">Chưa chọn file</div>
+      <div class="v664-cut-row"><div><label>Độ dài mỗi đoạn</label><select id="v664CutLen"><option value="15">15 giây · phù hợp Wan/Grok lip-sync</option><option value="30">30 giây · phù hợp dựng Timeline</option></select></div><button type="button" id="v664CutNow">✂ CẮT ÂM THANH</button></div>
+      <div class="v664-note">💡 Wan 3.0 nhận audio reference tối đa 15 giây mỗi lần tạo. Nếu muốn nhân vật nói khớp môi, nên cắt 15s. Tùy chọn 30s dành cho dựng/mix audio trên Timeline.</div>
+    </div>
+    <div class="sec" id="v664CutResult" style="display:none"><div class="v664-result-head"><b id="v664CutTitle">Các đoạn âm thanh</b><button id="v664AddAllAudio">＋ ADD TẤT CẢ VÀO DỰNG VIDEO</button></div><div id="v664CutList" class="v664-cut-list"></div></div>
+  </div><!-- /tabAudio -->
 
   <!-- ===== TAB CLIP — CAPCUT STYLE TIMELINE EDITOR ===== -->
   <div id="tabClip" style="display:none">
@@ -2877,6 +2893,7 @@ function switchTab(tab){
   $('tabImg').style.display = tab === 'img' ? 'block' : 'none';
   $('tabVid').style.display = tab === 'vid' ? 'block' : 'none';
   $('tabScript').style.display = tab === 'script' ? 'block' : 'none';
+  $('tabAudio').style.display = tab === 'audio' ? 'block' : 'none';
   $('tabClip').style.display = tab === 'clip' ? 'block' : 'none';
   $('gobarImg').style.display = tab === 'img' ? 'block' : 'none';
   $('gobarVid').style.display = tab === 'vid' ? 'block' : 'none';
@@ -2884,10 +2901,11 @@ function switchTab(tab){
   $('tabBtnImg').classList.toggle('on', tab === 'img');
   $('tabBtnVid').classList.toggle('on', tab === 'vid');
   $('tabBtnScript').classList.toggle('on', tab === 'script');
+  $('tabBtnAudio').classList.toggle('on', tab === 'audio');
   $('tabBtnClip').classList.toggle('on', tab === 'clip');
   $('mergeBar').classList.toggle('show', tab === 'vid' && mergeSel.length > 0);
   document.body.classList.toggle('clip-mode', tab === 'clip');
-  document.body.classList.toggle('workspace-wide', tab === 'vid' || tab === 'script');
+  document.body.classList.toggle('workspace-wide', tab === 'vid' || tab === 'script' || tab === 'audio');
   document.body.classList.toggle('video-workspace', tab === 'vid');
   document.body.classList.toggle('script-workspace', tab === 'script');
   window.scrollTo({ top: 0 });
@@ -2895,6 +2913,7 @@ function switchTab(tab){
 $('tabBtnImg').onclick = function(){ switchTab('img'); };
 $('tabBtnVid').onclick = function(){ switchTab('vid'); };
 $('tabBtnScript').onclick = function(){ switchTab('script'); };
+$('tabBtnAudio').onclick = function(){ switchTab('audio'); };
 $('tabBtnClip').onclick = function(){ switchTab('clip'); clipRenderAll(); };
 $('clipExit').onclick = function(){ switchTab('vid'); };
 
@@ -3115,6 +3134,17 @@ function uploadOneRef(dataUrl, customHeaders){
 }
 
 /* Gọi createTask lần lượt qua danh sách model — model nào Kie chấp nhận thì dùng */
+/* V66.4 Upload audio reference MP3/WAV lên Kie, trả URL công khai */
+function uploadAudioRef(audioRef, customHeaders){
+  if(!audioRef) return Promise.resolve(null);
+  if(audioRef.uploadedUrl) return Promise.resolve(audioRef.uploadedUrl);
+  if(!audioRef.dataUrl) return Promise.reject(new Error('Chưa có dữ liệu MP3/WAV để upload'));
+  var h = typeof customHeaders === 'function' ? customHeaders() : (customHeaders || headers());
+  var safeName=(audioRef.name||'voice.wav').replace(/[^a-zA-Z0-9._-]+/g,'_');
+  return fetch(UPLOAD_URL,{method:'POST',headers:h,body:JSON.stringify({base64Data:audioRef.dataUrl,uploadPath:'ideco/audio-refs',fileName:'audio_'+Date.now()+'_'+safeName})})
+    .then(function(res){return res.json()}).then(function(d){var u=d&&d.data&&(d.data.downloadUrl||d.data.fileUrl||d.data.url);if(!u)throw new Error('Upload audio thất bại: '+((d&&d.msg)||'không rõ lỗi'));audioRef.uploadedUrl=u;return u});
+}
+
 function createTaskFallback(models, i, customHeaders){
   var m = models[i];
   var h = typeof customHeaders === 'function' ? customHeaders() : (customHeaders || headers());
@@ -3146,6 +3176,10 @@ function generateVideo(){
   showVJob(prompt, 'chuẩn bị...', 4);
 
   var engine = $('vModel').value; // 'grok' | 'minimaxh3' | 'seedance2' | 'seedance' | 'wan30'
+  var audioRef = window.__IDECO_VIDEO_AUDIO_REF__ || window.V664VideoAudioRef || null;
+  if(audioRef && audioRef.duration && audioRef.duration > 15.05 && (engine==='wan30'||engine==='grok')){
+    vBusy=false;$('btnGoVid').disabled=false;$('btnGoVid').textContent='🎬 TẠO VIDEO';failVJob('Audio lip-sync dài '+audioRef.duration.toFixed(1)+'s. Hãy qua tab Cắt Âm Thanh và cắt 15s.');return;
+  }
   var durSel = $('vDur').value;
   var dur = Number(durSel);
   if(engine === 'grok' && durSel === '30'){
@@ -3222,28 +3256,20 @@ function generateVideo(){
     if(wanAspect === '2:3' || wanAspect === '3:2') wanAspect = 'adaptive';
     var wanDur = Math.max(2, Math.min(30, Math.round(dur || 5)));
 
-    function createWan(urls){
-      var wanPrompt = prompt;
-      var input = {
-        prompt: wanPrompt,
-        resolution: wanRes,
-        aspect_ratio: wanAspect,
-        duration: wanDur,
-        audio: true
-      };
-      if(urls && urls.length === 1){
-        input.first_frame_url = urls[0];
-        input.prompt = prompt + '. Giữ nhất quán chủ thể và nhận diện theo ảnh khung đầu.';
-      } else if(urls && urls.length > 1){
-        input.reference_image_urls = urls.slice(0, 5);
-        input.prompt = prompt + '. Dùng các ảnh tham chiếu Image1 đến Image' + Math.min(urls.length,5) + ' để giữ nhất quán nhân vật, sản phẩm và phong cách.';
-      }
-      /* Static HTML không có endpoint callback công khai, nên app tiếp tục poll recordInfo thay vì gửi callBackUrl giả. */
-      return createTaskFallback([{ model: 'wan/3-0-video', input: input }], 0, wanHeaders);
+    function createWan(urls,audioUrl){
+      var input={prompt:prompt,resolution:wanRes,aspect_ratio:wanAspect,duration:wanDur,audio:true};
+      if(audioUrl){
+        if(urls&&urls.length)input.reference_image_urls=urls.slice(0,5);
+        input.reference_audio_urls=[audioUrl];
+        input.prompt=prompt+'. Image1 là nhân vật/khung hình tham chiếu. Audio1 là lời thoại/giọng tham chiếu: nhân vật nói tự nhiên theo Audio1, khẩu hình, hàm và biểu cảm khớp nhịp lời nói; giữ nguyên nhận diện khuôn mặt.';
+      }else if(urls&&urls.length===1){input.first_frame_url=urls[0];input.prompt=prompt+'. Giữ nhất quán chủ thể và nhận diện theo ảnh khung đầu.';}
+      else if(urls&&urls.length>1){input.reference_image_urls=urls.slice(0,5);input.prompt=prompt+'. Dùng các ảnh tham chiếu Image1 đến Image'+Math.min(urls.length,5)+' để giữ nhất quán nhân vật, sản phẩm và phong cách.';}
+      return createTaskFallback([{model:'wan/3-0-video',input:input}],0,wanHeaders);
     }
 
     if(!refs.length){
-      createWan([]).then(afterCreate).catch(onGenErr);
+      if(audioRef){updateVJob('Wan 3.0 · đang tải file thoại MP3/WAV...',8);uploadAudioRef(audioRef,wanHeaders).then(function(au){return createWan([],au)}).then(afterCreate).catch(onGenErr);}
+      else createWan([],null).then(afterCreate).catch(onGenErr);
       return;
     }
 
@@ -3266,7 +3292,8 @@ function generateVideo(){
         refLinkWan.setAttribute('href', wanUrls[0]);
         $('vJobRefWrap').style.display = 'block';
       }
-      return createWan(wanUrls);
+      if(audioRef){updateVJob('Wan 3.0 · đang tải file thoại MP3/WAV...',14);return uploadAudioRef(audioRef,wanHeaders).then(function(au){return createWan(wanUrls,au)});}
+      return createWan(wanUrls,null);
     }).then(afterCreate).catch(onGenErr);
     return;
   }
@@ -3343,11 +3370,16 @@ function generateVideo(){
       // duration API chỉ chấp nhận chuỗi '6' | '10' | '15' (không phải số)
       var durStr = dur >= 15 ? '15' : (dur >= 10 ? '10' : '6');
       var input = { image_urls: [imgUrl], prompt: p, mode: 'normal', duration: durStr, resolution: res };
-      // 'auto' không phải giá trị hợp lệ của API — bỏ hẳn trường này để Grok tự theo kích thước ảnh
       if(aspect !== 'auto') input.aspect_ratio = aspect;
-      return createTaskFallback([
-        { model: 'grok-imagine/image-to-video', input: input }
-      ], 0);
+      if(audioRef){
+        updateVJob('Grok 1.5 Voice Reference (Beta) · đang tải MP3/WAV...',15);
+        return uploadAudioRef(audioRef).then(function(au){
+          var betaInput={prompt:p+' Voice reference Audio1: preserve voice and synchronize spoken performance to Audio1.',reference_image_urls:[imgUrl],reference_audio_urls:[au],generate_audio:true,resolution:res,duration:Number(durStr)};
+          if(aspect!=='auto')betaInput.aspect_ratio=aspect;
+          return createTaskFallback([{model:'grok-imagine-video-1-5-preview',input:betaInput}],0);
+        });
+      }
+      return createTaskFallback([{ model: 'grok-imagine/image-to-video', input: input }], 0);
     }).then(afterCreate).catch(onGenErr);
   });
 
@@ -12158,6 +12190,7 @@ body.v64-export-running .clip-playbar,body.v64-export-running .clip-toptools,bod
         var x=item(i),prev=old[i];
         x.imagePrompt=sceneImagePrompt(s,i);x.videoPrompt=sceneVideoPrompt(s,i);
         if(prev&&prev.videoModel)x.videoModel=prev.videoModel;
+        if(prev){x.audioDataUrl=prev.audioDataUrl||'';x.audioUploadedUrl=prev.audioUploadedUrl||'';x.audioName=prev.audioName||'';x.audioDuration=prev.audioDuration||0;}
         if(prev&&prev.imageUrl&&prev.videoUrl&&prev.imagePrompt===x.imagePrompt){x.imageUrl=prev.imageUrl;x.videoUrl=prev.videoUrl;}
       });
       state.lastScriptKey=key;
@@ -12225,7 +12258,8 @@ body.v64-export-running .clip-playbar,body.v64-export-running .clip-toptools,bod
     if($('vDur'))$('vDur').value='15';
     state.pendingVideo=i;x.videoBusy=true;
     var modelText=modelSel?modelSel.options[modelSel.selectedIndex].text:(x.videoModel||'grok');
-    setStatus(i,'Đang dựng video 15s bằng '+modelText+' từ keyframe của cảnh '+(i+1)+'...','busy');refreshCard(i);
+    window.__IDECO_VIDEO_AUDIO_REF__=x.audioDataUrl?{dataUrl:x.audioDataUrl,uploadedUrl:x.audioUploadedUrl||'',name:x.audioName||'scene_voice.wav',duration:x.audioDuration||0}:null;
+    setStatus(i,'Đang dựng video 15s bằng '+modelText+(x.audioDataUrl?' + audio/lip-sync':'')+' từ keyframe của cảnh '+(i+1)+'...','busy');refreshCard(i);
     generateVideo();
   }
   function toClip(i){var x=item(i);if(!x.videoUrl){toast('Cảnh này chưa có video',true);return}clipAddRemoteVideo(x.videoUrl,'FILM · Cảnh '+(i+1)+' · 15s',function(ok){if(ok)setStatus(i,'✓ Đã chèn video Cảnh '+(i+1)+' vào Timeline CLIP','ok')});}
@@ -12304,7 +12338,7 @@ body.v64-export-running .clip-playbar,body.v64-export-running .clip-toptools,bod
       '<div class="v663-simple-note">✨ Chỉ cần làm từ Bước 1 đến Bước 4. Các phần kỹ thuật như khóa khuôn mặt, ảnh tham chiếu và engine AI sẽ tự xử lý phía sau.</div>'+
       '<div class="v663-step"><div class="v663-step-head"><span class="v663-num">1</span><b>Sửa nội dung phân cảnh</b><small>viết như đang kể chuyện</small></div><div class="v663-help">Có thể sửa bất cứ lúc nào. Bấm <b>Lưu cảnh</b> để AI tự cập nhật prompt ảnh và video.</div><div class="v663-field"><label>Cảnh này xảy ra như thế nào?</label><textarea class="v663-scene-text" placeholder="Ví dụ: Cô gái bước chậm qua hành lang, nhìn về phía cửa sổ, ánh sáng chiều hắt vào...">'+E(s.visual||'')+'</textarea></div><div class="v663-field"><label>Nhân vật nói gì? <span style="font-weight:400;color:#808793">(mỗi câu một dòng, có thể ghi Tên: lời thoại)</span></label><textarea class="v663-dialogue" placeholder="Lan: Em vẫn nhớ nơi này.\nNam: Anh cũng vậy.">'+E(dialogueToText(s))+'</textarea></div><div class="v663-actions"><button class="green v663-save" data-i="'+i+'">✓ LƯU CẢNH</button></div></div>'+
       '<div class="v663-step"><div class="v663-step-head"><span class="v663-num">2</span><b>Tạo ảnh cho cảnh</b><small>AI giữ cùng nhân vật</small></div><div class="v663-help">Không cần hiểu prompt. Bấm nút tạo ảnh. Nếu chưa vừa ý, chỉ cần ghi điều muốn sửa ở ô bên dưới rồi tạo lại.</div><div class="v663-actions"><button class="blue v663-make-image" data-i="'+i+'">✨ TẠO ẢNH CẢNH NÀY</button></div><div class="v663-preview v663-image-preview"></div><div class="v663-adjust"><div class="v663-field"><label>Muốn sửa gì ở ảnh?</label><textarea class="v663-image-adjust" placeholder="Ví dụ: gương mặt tự nhiên hơn, máy quay gần hơn, giảm tông vàng, đổi góc máy thấp, giữ nguyên khuôn mặt...">'+E(x.imageAdjust||'')+'</textarea></div><div class="v663-actions"><button class="blue v663-redo-image" data-i="'+i+'">↻ TẠO LẠI ẢNH THEO YÊU CẦU</button></div></div><details class="v663-advanced"><summary>⚙ Xem / chỉnh prompt ảnh đầy đủ (nâng cao)</summary><div class="v663-field"><textarea class="v663-full-image-prompt">'+E(x.imagePrompt||'')+'</textarea></div></details></div>'+
-      '<div class="v663-step"><div class="v663-step-head"><span class="v663-num">3</span><b>Chỉnh cách ảnh chuyển thành video</b><small>chỉnh trước khi tạo</small></div><div class="v663-help">Viết bằng lời bình thường: nhân vật làm gì, camera đi thế nào, có thoại/âm thanh gì. Anh có thể sửa thoải mái trước khi bấm tạo video.</div><div class="v663-field"><label>Prompt chuyển động / video 15s</label><textarea class="v663-video-prompt" placeholder="Ví dụ: Cô gái quay đầu nhìn camera, mỉm cười nhẹ. Máy quay tiến chậm. Tóc chuyển động tự nhiên trong gió...">'+E(x.videoPrompt||'')+'</textarea></div><div class="v663-field"><label>Chọn model tạo video</label><select class="v663-video-model"><option value="grok">⚡ Grok Imagine 1.5</option><option value="minimaxh3">🌊 MiniMax H3 / Hailuo 03</option><option value="seedance2">🎬 Seedance 2.0</option><option value="seedance">🎥 Seedance 2.0 Mini</option><option value="wan30">🌙 Wan 3.0</option></select></div><div class="v663-actions"><button class="primary v663-make-video" data-i="'+i+'">🎬 TẠO VIDEO 15s TỪ ẢNH</button></div><div class="v663-preview v663-video-preview"></div></div>'+
+      '<div class="v663-step"><div class="v663-step-head"><span class="v663-num">3</span><b>Chỉnh cách ảnh chuyển thành video</b><small>chỉnh trước khi tạo</small></div><div class="v663-help">Viết bằng lời bình thường: nhân vật làm gì, camera đi thế nào, có thoại/âm thanh gì. Anh có thể sửa thoải mái trước khi bấm tạo video.</div><div class="v663-field"><label>Prompt chuyển động / video 15s</label><textarea class="v663-video-prompt" placeholder="Ví dụ: Cô gái quay đầu nhìn camera, mỉm cười nhẹ. Máy quay tiến chậm. Tóc chuyển động tự nhiên trong gió...">'+E(x.videoPrompt||'')+'</textarea></div><div class="v663-field"><label>Chọn model tạo video</label><select class="v663-video-model"><option value="grok">⚡ Grok Imagine 1.5</option><option value="minimaxh3">🌊 MiniMax H3 / Hailuo 03</option><option value="seedance2">🎬 Seedance 2.0</option><option value="seedance">🎥 Seedance 2.0 Mini</option><option value="wan30">🌙 Wan 3.0</option></select></div><div class="v664-scene-audio-box"><b>🎙 Lời thoại MP3/WAV · Lip-sync</b><span class="v664-scene-audio-help">Wan 3.0: audio reference trực tiếp. Grok: Voice Reference Beta. Nên dùng file ≤15s.</span><input type="file" class="v664-scene-audio" data-i="'+i+'" accept="audio/mpeg,audio/mp3,audio/wav,audio/x-wav,.mp3,.wav"><div class="v664-scene-audio-info" data-i="'+i+'">Chưa gắn file thoại</div><div class="v664-mini-actions"><button type="button" class="v664-use-cut-audio" data-i="'+i+'">Dùng đoạn đang chọn từ tab Cắt Âm Thanh</button><button type="button" class="v664-clear-scene-audio" data-i="'+i+'">Bỏ audio</button></div></div><div class="v663-actions"><button class="primary v663-make-video" data-i="'+i+'">🎬 TẠO VIDEO 15s TỪ ẢNH</button></div><div class="v663-preview v663-video-preview"></div></div>'+
       '<div class="v663-step"><div class="v663-step-head"><span class="v663-num">4</span><b>Đưa cảnh vào phim</b><small>timeline dựng</small></div><div class="v663-help">Khi video đã ổn, bấm nút dưới đây. Clip sẽ tự nối vào timeline để dựng phim.</div><div class="v663-actions"><button class="green v663-to-clip" data-i="'+i+'">＋ CHÈN CẢNH NÀY VÀO CLIP</button></div><div class="v663-status" data-i="'+i+'"></div></div>';
     card.appendChild(wrap);
     var vm=wrap.querySelector('.v663-video-model');if(vm)vm.value=x.videoModel||'grok';
@@ -12339,6 +12373,31 @@ body.v64-export-running .clip-playbar,body.v64-export-running .clip-toptools,bod
   var obs=new MutationObserver(function(){if($('scResult')&&$('scResult').querySelector('.scene-card[data-si]'))setTimeout(enhanceEasy,0)});if($('scResult'))obs.observe($('scResult'),{childList:true,subtree:true});
   setInterval(function(){if(!(scLastScenes&&scLastScenes.length))return;(window.V66FilmStudio.state.items||[]).forEach(function(x,i){renderMedia(i);if(x&&x.status)setSimpleStatus(i,x.status,x.statusKind)})},700);
   setTimeout(enhanceEasy,0);window.V663EasyFilm={enhance:enhanceEasy,saveScene:saveScene};console.log('[IDECO V66.3] Easy Film Workflow ready');
+})();
+</script>
+
+<style id="v664AudioStyle">
+.v664-audio-intro{font-size:12.5px;line-height:1.6;color:#68645d;margin-bottom:11px}.v664-big-btn{width:100%;border:0;border-radius:12px;background:#5b4be8;color:#fff;font-weight:900;padding:13px;font-size:13px}.v664-audio-info{margin:9px 0;padding:9px 11px;border:1px solid var(--line);background:#fdfcfa;border-radius:10px;font-size:11.5px;color:#666}.v664-cut-row{display:grid;grid-template-columns:1fr auto;gap:9px;align-items:end}.v664-cut-row label{display:block;font-size:10.5px;color:#777;margin-bottom:5px;font-weight:800}.v664-cut-row select{min-width:220px}.v664-cut-row button{border:0;background:var(--red);color:#fff;border-radius:10px;padding:11px 14px;font-weight:900}.v664-note{margin-top:10px;background:#fff7df;border:1px solid #ead7a7;border-radius:10px;padding:9px 11px;color:#7a5a13;font-size:10.8px;line-height:1.5}.v664-result-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}.v664-result-head button{border:0;border-radius:9px;background:#2f8f5b;color:#fff;padding:9px 11px;font-size:10.5px;font-weight:900}.v664-cut-list{display:flex;flex-direction:column;gap:8px}.v664-seg{border:1px solid var(--line);border-radius:11px;padding:10px;background:#fdfcfa}.v664-seg-top{display:flex;gap:8px;align-items:center}.v664-seg-num{background:#24262d;color:#fff;border-radius:999px;padding:3px 8px;font-size:9px;font-weight:900}.v664-seg-name{flex:1;font-size:11.5px;font-weight:800}.v664-seg-time{font-size:10.5px;color:#777}.v664-seg audio{width:100%;margin:8px 0;height:34px}.v664-seg-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.v664-seg-actions button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 5px;font-size:9.5px;font-weight:800}.v664-seg-actions .add{border-color:#3a8a5f;color:#27734c}.v664-seg-actions .use{border-color:#6559cb;color:#5344c0}.v664-scene-audio-box{margin:9px 0;padding:10px;border:1px solid #4c466d;background:#171725;border-radius:10px}.v664-scene-audio-box>b{display:block;color:#e8e6ff;font-size:11px;margin-bottom:3px}.v664-scene-audio-help{display:block;color:#9895b6;font-size:9.8px;line-height:1.45;margin-bottom:8px}.v664-scene-audio-box input[type=file]{width:100%;font-size:10px;color:#c9c7d7}.v664-scene-audio-info{margin-top:7px;color:#9da3af;font-size:10px}.v664-mini-actions{display:flex;gap:6px;margin-top:7px}.v664-mini-actions button{flex:1;border:1px solid #45435f;background:#222235;color:#ddd;border-radius:8px;padding:7px 5px;font-size:9px;font-weight:800}.v664-video-audio-box{margin-top:8px;border:1px solid var(--line);border-radius:12px;padding:10px;background:#fdfcfa}.v664-video-audio-box .row{display:flex;gap:7px;align-items:center}.v664-video-audio-box button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 10px;font-size:10.5px;font-weight:800}.v664-video-audio-box small{display:block;color:#777;margin-top:6px;line-height:1.45}@media(max-width:620px){.v664-cut-row{grid-template-columns:1fr}.v664-cut-row button{width:100%}.v664-seg-actions{grid-template-columns:1fr}.v664-result-head{align-items:stretch;flex-direction:column}.v664-result-head button{width:100%}}
+</style>
+<script id="v664AudioLipSyncCutter">
+(function(){
+  if(window.__V664_AUDIO__)return;window.__V664_AUDIO__=true;
+  var sourceFile=null,sourceBuffer=null,segments=[];window.V664SelectedCutAudio=null;window.V664VideoAudioRef=window.V664VideoAudioRef||null;
+  function fmt(s){s=Math.max(0,Number(s)||0);var m=Math.floor(s/60),ss=(s-m*60).toFixed(1);return m+':'+(Number(ss)<10?'0':'')+ss}
+  function fileToDataUrl(f){return new Promise(function(resolve,reject){var r=new FileReader();r.onload=function(){resolve(r.result)};r.onerror=reject;r.readAsDataURL(f)})}
+  function audioDuration(f){return new Promise(function(resolve,reject){var u=URL.createObjectURL(f),a=new Audio();a.preload='metadata';a.onloadedmetadata=function(){var d=a.duration;URL.revokeObjectURL(u);resolve(d)};a.onerror=function(){URL.revokeObjectURL(u);reject(new Error('Không đọc được thời lượng audio'))};a.src=u})}
+  function wavBlob(buf,startSec,endSec){var sr=buf.sampleRate,start=Math.floor(startSec*sr),end=Math.min(buf.length,Math.floor(endSec*sr)),frames=Math.max(0,end-start),ch=Math.min(2,buf.numberOfChannels),bytes=frames*ch*2,ab=new ArrayBuffer(44+bytes),v=new DataView(ab),o=0;function str(x){for(var i=0;i<x.length;i++)v.setUint8(o++,x.charCodeAt(i))}function u16(x){v.setUint16(o,x,true);o+=2}function u32(x){v.setUint32(o,x,true);o+=4}str('RIFF');u32(36+bytes);str('WAVE');str('fmt ');u32(16);u16(1);u16(ch);u32(sr);u32(sr*ch*2);u16(ch*2);u16(16);str('data');u32(bytes);var data=[];for(var c=0;c<ch;c++)data[c]=buf.getChannelData(c);for(var i=0;i<frames;i++)for(var c=0;c<ch;c++){var x=Math.max(-1,Math.min(1,data[c][start+i]||0));v.setInt16(o,x<0?x*32768:x*32767,true);o+=2}return new Blob([ab],{type:'audio/wav'})}
+  async function choose(f){sourceFile=f;segments=[];sourceBuffer=null;$('v664CutResult').style.display='none';if(!f)return;try{$('v664AudioInfo').textContent='Đang đọc '+f.name+'...';var ab=await f.arrayBuffer(),AC=window.AudioContext||window.webkitAudioContext,ac=new AC();sourceBuffer=await ac.decodeAudioData(ab.slice(0));try{ac.close()}catch(_){};$('v664AudioInfo').innerHTML='<b>'+escHtml(f.name)+'</b> · '+fmt(sourceBuffer.duration)+' · '+Math.round(f.size/1024)+' KB'}catch(e){$('v664AudioInfo').textContent='Không đọc được audio';toast('Không đọc được MP3/WAV này',true)}}
+  function render(){var list=$('v664CutList');list.innerHTML='';$('v664CutResult').style.display=segments.length?'block':'none';$('v664CutTitle').textContent='Đã cắt '+segments.length+' đoạn';segments.forEach(function(seg,i){var d=document.createElement('div');d.className='v664-seg';d.innerHTML='<div class="v664-seg-top"><span class="v664-seg-num">ĐOẠN '+(i+1)+'</span><span class="v664-seg-name">'+escHtml(seg.file.name)+'</span><span class="v664-seg-time">'+fmt(seg.start)+' → '+fmt(seg.end)+' · '+fmt(seg.duration)+'</span></div><audio controls src="'+seg.url+'"></audio><div class="v664-seg-actions"><button data-act="download" data-i="'+i+'">⬇ TẢI WAV</button><button class="add" data-act="add" data-i="'+i+'">＋ ADD VÀO DỰNG VIDEO</button><button class="use" data-act="use" data-i="'+i+'">🎙 CHỌN LÀM AUDIO LIP-SYNC</button></div>';list.appendChild(d)})}
+  function cut(){if(!sourceBuffer){toast('Hãy chọn MP3/WAV trước',true);return}var len=Number($('v664CutLen').value)||15,dur=sourceBuffer.duration;segments.forEach(function(x){try{URL.revokeObjectURL(x.url)}catch(_){}});segments=[];for(var st=0,idx=1;st<dur-.01;st+=len,idx++){var en=Math.min(dur,st+len),blob=wavBlob(sourceBuffer,st,en),name=(sourceFile.name.replace(/\.[^.]+$/,'')||'audio')+'_part_'+String(idx).padStart(2,'0')+'_'+Math.round(en-st)+'s.wav',file=new File([blob],name,{type:'audio/wav'});segments.push({start:st,end:en,duration:en-st,file:file,url:URL.createObjectURL(blob),dataUrl:null})}render();toast('Đã cắt '+segments.length+' đoạn âm thanh')}
+  async function selectSeg(seg){if(!seg.dataUrl)seg.dataUrl=await fileToDataUrl(seg.file);window.V664SelectedCutAudio={dataUrl:seg.dataUrl,name:seg.file.name,duration:seg.duration,file:seg.file,uploadedUrl:''};window.V664VideoAudioRef=window.V664SelectedCutAudio;toast('Đã chọn '+seg.file.name+' làm audio lip-sync')}
+  function addSeg(seg){try{var it=clipAddAudioFile(seg.file,'audio');if(it){it.start=Math.max(0,clipCurrentTime||0);it.duration=seg.duration;it.sourceDuration=seg.duration}switchTab('clip');clipRenderAll();toast('Đã thêm '+seg.file.name+' vào track AUDIO tại vạch thời gian hiện tại')}catch(e){toast('Không add được audio: '+(e.message||e),true)}}
+  $('v664PickAudio').onclick=function(){$('v664AudioFile').click()};$('v664AudioFile').onchange=function(){choose(this.files&&this.files[0])};$('v664CutNow').onclick=cut;$('v664CutList').addEventListener('click',function(e){var b=e.target.closest('button[data-act]');if(!b)return;var seg=segments[Number(b.dataset.i)];if(!seg)return;if(b.dataset.act==='download'){var a=document.createElement('a');a.href=seg.url;a.download=seg.file.name;a.click()}else if(b.dataset.act==='add')addSeg(seg);else selectSeg(seg)});$('v664AddAllAudio').onclick=function(){if(!segments.length)return;var pos=typeof clipLastEnd==='function'?clipLastEnd('audio'):0;segments.forEach(function(seg){var it=clipAddAudioFile(seg.file,'audio');if(it){it.start=pos;it.duration=seg.duration;it.sourceDuration=seg.duration}pos+=seg.duration});clipSetCurrentTime(Math.max(0,pos-(segments[segments.length-1].duration||0)));switchTab('clip');clipRenderAll();toast('Đã nối '+segments.length+' đoạn liên tiếp vào track AUDIO')};
+  function installMain(){var m=$('vModel');if(!m||$('v664MainVideoAudio'))return;var host=m.closest('.sec')||m.parentNode,box=document.createElement('div');box.id='v664MainVideoAudio';box.className='v664-video-audio-box';box.innerHTML='<b style="font-size:11px">🎙 Audio / Voice reference (Wan 3.0 & Grok Beta)</b><div class="row"><input id="v664MainAudioFile" type="file" accept="audio/mpeg,audio/mp3,audio/wav,audio/x-wav,.mp3,.wav" style="flex:1;font-size:10px"><button id="v664MainAudioClear">Bỏ audio</button></div><div id="v664MainAudioInfo" style="font-size:10px;color:#777;margin-top:6px">Chưa gắn file thoại</div><small>Wan 3.0: audio reference trực tiếp. Grok 1.5: Voice Reference Beta. File nên ≤15 giây.</small>';host.appendChild(box);$('v664MainAudioFile').onchange=async function(){var f=this.files&&this.files[0];if(!f)return;var d=await audioDuration(f),data=await fileToDataUrl(f);window.V664VideoAudioRef={dataUrl:data,name:f.name,duration:d,uploadedUrl:''};$('v664MainAudioInfo').textContent=f.name+' · '+fmt(d)};$('v664MainAudioClear').onclick=function(){window.V664VideoAudioRef=null;$('v664MainAudioFile').value='';$('v664MainAudioInfo').textContent='Chưa gắn file thoại'}}setTimeout(installMain,0);
+  async function setScene(i,f){var x=window.V66FilmStudio&&window.V66FilmStudio.state.items[i];if(!x||!f)return;var d=await audioDuration(f),data=await fileToDataUrl(f);x.audioDataUrl=data;x.audioName=f.name;x.audioDuration=d;x.audioUploadedUrl='';updateScene(i);toast('Đã gắn audio cho Cảnh '+(i+1))}
+  function updateScene(i){var x=window.V66FilmStudio&&window.V66FilmStudio.state.items[i],el=document.querySelector('.v664-scene-audio-info[data-i="'+i+'"]');if(!x||!el)return;el.textContent=x.audioDataUrl?((x.audioName||'audio')+' · '+fmt(x.audioDuration||0)+(x.audioDuration>15.05?' · ⚠ dài hơn 15s':'')):'Chưa gắn file thoại'}
+  document.addEventListener('change',function(e){if(e.target&&e.target.classList.contains('v664-scene-audio')){var i=Number(e.target.dataset.i),f=e.target.files&&e.target.files[0];if(f)setScene(i,f)}});document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('.v664-use-cut-audio,.v664-clear-scene-audio');if(!b)return;var i=Number(b.dataset.i),x=window.V66FilmStudio&&window.V66FilmStudio.state.items[i];if(!x)return;if(b.classList.contains('v664-clear-scene-audio')){x.audioDataUrl='';x.audioUploadedUrl='';x.audioName='';x.audioDuration=0;updateScene(i);return}var a=window.V664SelectedCutAudio;if(!a){toast('Qua tab Cắt Âm Thanh và chọn một đoạn làm audio lip-sync trước.',true);return}x.audioDataUrl=a.dataUrl;x.audioUploadedUrl=a.uploadedUrl||'';x.audioName=a.name;x.audioDuration=a.duration;updateScene(i);toast('Đã dùng '+a.name+' cho Cảnh '+(i+1))});setInterval(function(){if(!(window.V66FilmStudio&&window.V66FilmStudio.state))return;(window.V66FilmStudio.state.items||[]).forEach(function(_,i){updateScene(i)})},1000);
+  console.log('[IDECO V66.4] Audio Lip-sync + Cutter ready');
 })();
 </script>
 
