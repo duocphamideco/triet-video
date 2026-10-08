@@ -1395,7 +1395,7 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
 <div id="app">
   <header>
     <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22180%22%20height%3D%2254%22%20viewBox%3D%220%200%20180%2054%22%3E%0A%3Crect%20width%3D%22180%22%20height%3D%2254%22%20rx%3D%228%22%20fill%3D%22%23ffffff%22%2F%3E%0A%3Ctext%20x%3D%2210%22%20y%3D%2237%22%20font-family%3D%22Arial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22800%22%20fill%3D%22%23ee3a23%22%3EIDECO%3C%2Ftext%3E%0A%3C%2Fsvg%3E" alt="" onerror="this.style.display='none'">
-    <div class="t"><b>Studio Tạo Ảnh <span>AI</span></b><small>Nano Banana + GPT-Image-2 + GPT-Image-2.5 Flare / Sunburst · Kie.ai</small></div>
+    <div class="t"><b>Studio Tạo Ảnh <span>AI</span></b><small>IDECO · Sáng tạo hình ảnh và phim AI</small></div>
     <button class="credit" id="btnCredit"><span class="dot" id="cdot"></span><b id="creditVal">—</b>&nbsp;credits</button>
   </header>
 
@@ -1416,6 +1416,7 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
       <option value="gptimage25sunburst">☀️ GPT-Image-2.5 Sunburst · cao cấp + Edit chính xác nhất</option>
       <option value="gptimage2">✨ GPT-Image-2 · tương thích cũ</option>
       <option value="nanobanana">🍌 Nanobanana 2 Lite · tiết kiệm credit</option>
+      <option value="nanobanana21">🍌 Nano Banana 2.1 · Kie.ai · tạo & sửa ảnh</option>
     </select>
     <div class="ref-hint" id="modelHint">GPT-Image-2.5 Flare: mặc định cho đa số tác vụ, nhanh; tự chuyển Text-to-Image ↔ Image-to-Image khi có ảnh tham chiếu.</div>
   </div>
@@ -1444,7 +1445,7 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
   </div>
 
   <div class="sec" id="editTools">
-    <label class="lbl">Edit ảnh · GPT Image 2.5</label>
+    <label class="lbl">Công cụ chỉnh sửa ảnh</label>
     <div class="optrow">
       <div>
         <label class="lbl">Tác vụ</label>
@@ -2409,11 +2410,13 @@ function updateImgModelHint(){
     gptimage25flare: 'GPT-Image-2.5 Flare: nhanh, phù hợp đa số tác vụ. Có ảnh tham chiếu → gpt-image-2-5-flare-image-to-image; không có ảnh → ...-text-to-image.',
     gptimage25sunburst: 'GPT-Image-2.5 Sunburst: ưu tiên độ chính xác và chất lượng cao cho chỉnh ảnh / chiến dịch. Tự chọn Image-to-Image khi có ảnh tham chiếu.',
     gptimage2: 'GPT-Image-2: model tương thích cũ, hỗ trợ 1K / 2K / 4K.',
-    nanobanana: 'Nanobanana 2 Lite: tạo ảnh nhanh, chi phí thấp; một số tùy chọn GPT 2.5 sẽ không được gửi.'
+    nanobanana: 'Nanobanana 2 Lite: tạo ảnh nhanh, chi phí thấp; một số tùy chọn GPT 2.5 sẽ không được gửi.',
+    nanobanana21: 'Nano Banana 2.1: tạo ảnh và chỉnh sửa ảnh tham chiếu bằng image_input, hỗ trợ 1K / 2K / 4K.'
   };
   $('modelHint').textContent = hints[v] || '';
 }
-$('imgModel').onchange = updateImgModelHint;
+try { var savedImageModel = localStorage.getItem('ideco_studio_image_model'); if(savedImageModel && Array.from($('imgModel').options).some(function(o){ return o.value === savedImageModel; })) $('imgModel').value = savedImageModel; } catch(e) {}
+$('imgModel').onchange = function(){ try { localStorage.setItem('ideco_studio_image_model', $('imgModel').value); } catch(e) {} updateImgModelHint(); };
 updateImgModelHint();
 
 /* ================= CHIP GỢI Ý ================= */
@@ -2559,7 +2562,8 @@ function generate(overridePrompt){
   var prompt = buildImagePrompt(rawPrompt);
 
   var engineNow = $('imgModel').value;
-  imgModelLabel = engineNow === 'nanobanana' ? 'Nano Banana 2 Lite'
+  imgModelLabel = engineNow === 'nanobanana21' ? 'Nano Banana 2.1'
+    : engineNow === 'nanobanana' ? 'Nano Banana 2 Lite'
     : engineNow === 'gptimage25flare' ? 'GPT-Image-2.5 Flare'
     : engineNow === 'gptimage25sunburst' ? 'GPT-Image-2.5 Sunburst' : 'GPT-Image-2';
   busy = true;
@@ -2573,6 +2577,25 @@ function generate(overridePrompt){
     .then(function(urls){
       var useNano = $('imgModel').value === 'nanobanana';
       var promptNow = prompt;
+
+      if($('imgModel').value === 'nanobanana21'){
+        // Kie.ai Nano Banana 2.1 dùng image_input (không phải image_urls / input_urls).
+        // Giữ ảnh đầu tiên làm ảnh gốc khi người dùng yêu cầu chỉnh sửa.
+        var nano21Input = {
+          prompt: urls.length ? 'Edit the supplied original image according to the following instruction. Preserve the original subjects, faces, product packaging, logos, readable text and composition unless the instruction explicitly requests their change. Change only the requested details. Instruction: ' + prompt : prompt,
+          image_input: urls,
+          aspect_ratio: $('aspect').value,
+          resolution: $('resolution').value,
+          output_format: 'png'
+        };
+        updateJob('đang gửi yêu cầu tạo / sửa ảnh...', 16);
+        window.__idecoImageStartedAt = performance.now();
+        return fetch(API_BASE + '/api/v1/jobs/createTask', {
+          method: 'POST', headers: headers(),
+          body: JSON.stringify({model:'nano-banana-2-1', input:nano21Input})
+        }).then(function(r){return r.json();})
+          .then(function(d){handleCreateResp(d,promptNow);});
+      }
 
       if(useNano){
         /* Nano Banana 2 Lite — thử lần lượt các slug cho tới khi Kie chấp nhận.
@@ -2608,7 +2631,7 @@ function generate(overridePrompt){
       var model = baseModel + (urls.length ? '-image-to-image' : '-text-to-image');
       if(urls.length) input.input_urls = urls;
 
-      updateJob('đang gửi ' + model + ' · ' + input.resolution + '...', 16);
+      updateJob('đang gửi yêu cầu tạo / sửa ảnh...', 16);
       console.log('[IDECO image createTask]', model, input);
       window.__idecoImageStartedAt = performance.now();
       return fetch(API_BASE + '/api/v1/jobs/createTask', {
