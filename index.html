@@ -5952,7 +5952,7 @@ function clipDrawFxOverlay(ctx,e,t,cw,ch,fxItem){
     ctx.fillStyle='rgba(255,255,255,'+a+')';ctx.fillRect(0,0,cw,ch)
   }
 }
-function clipActive(track,t){return (clipTracks[track]||[]).filter(function(x){return t>=x.start&&t<=clipEnd(x)}).sort(function(a,b){return a.start-b.start})}
+function clipActive(track,t){return (clipTracks[track]||[]).filter(function(x){return t>=x.start&&t<=clipEnd(x)}).sort(function(a,b){return track==='visual'?((Number(a.v71Layer)||0)-(Number(b.v71Layer)||0) || a.start-b.start):a.start-b.start})}
 function clipDrawMedia(ctx,it,src,sw,sh,cw,ch){if(!sw||!sh)return;var k=it.fit==='cover'?Math.max(cw/sw,ch/sh):Math.min(cw/sw,ch/sh);k*=Math.max(.05,(it.scale||100)/100);var dw=sw*k,dh=sh*k,cx=cw/2+(it.x||0)/100*cw/2,cy=ch/2+(it.y||0)/100*ch/2;ctx.drawImage(src,cx-dw/2,cy-dh/2,dw,dh)}
 function clipDrawText(ctx,it,cw,ch){ctx.save();var fs=Math.max(16,(it.size||54)*(cw/1080));ctx.font='800 '+fs+'px "Be Vietnam Pro",Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=it.color||'#fff';ctx.shadowColor='rgba(0,0,0,.85)';ctx.shadowBlur=fs*.13;ctx.fillText(it.text||it.name,cw/2+(it.x||0)/100*cw/2,ch/2+(it.y||0)/100*ch/2,cw*.9);ctx.restore()}
 function clipNativePreviewAt(t,shouldPlay){
@@ -6013,7 +6013,7 @@ function clipDrawAt(t,live){
   if(!it){finish();return}
   if(previewNative){finish();return}
   var fxs=clipActive('effect',t).filter(function(x){return x.effect!=='flash'}),eff=fxs.length?fxs[fxs.length-1].effect:it.effect;ctx.filter=clipFilterForItem(eff,it);
-  if(it.type==='image'){clipDrawMedia(ctx,it,it.img,it.img.naturalWidth,it.img.naturalHeight,c.width,c.height);ctx.filter='none';finish();return}
+  if(it.type==='image'){if(it.img&&it.img.naturalWidth&&it.img.naturalHeight)clipDrawMedia(ctx,it,it.img,it.img.naturalWidth,it.img.naturalHeight,c.width,c.height);ctx.filter='none';finish();return}
   var v=it.video;if(!v){ctx.filter='none';finish();return}
   var target=(it.trimStart||0)+(t-it.start)*clipSpeedValue(it),safeTarget=Math.max(0,Math.min(Math.max(0,(it.sourceDuration||target+.1)-.02),target));
   if(safeTarget<=0)safeTarget=Math.min(.03,Math.max(.01,(it.sourceDuration||.04)-.02));
@@ -10091,7 +10091,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
   function v64Active(track,t,tracks){
     return ((tracks&&tracks[track])||[]).filter(function(x){
       return t>=Number(x.start||0)&&t<=Number(x.start||0)+Number(x.duration||0)
-    }).sort(function(a,b){return (Number(a.start)||0)-(Number(b.start)||0)})
+    }).sort(function(a,b){return track==='visual'?((Number(a.v71Layer)||0)-(Number(b.v71Layer)||0) || (Number(a.start)||0)-(Number(b.start)||0)):(Number(a.start)||0)-(Number(b.start)||0)})
   }
   function activeVisual(t,tracks){
     var a=v64Active('visual',t,tracks);
@@ -11022,6 +11022,38 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     }
   }
 
+  /* V71: choose a writable destination during the click gesture, before the long render. */
+  var v71SaveHandle=null;
+  var v71SaveMode='download';
+  function v71DownloadBlob(blob,base,ext){
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');a.href=url;a.download=base+'.'+ext;
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(function(){URL.revokeObjectURL(url)},45000);
+  }
+  async function v71ChooseDestination(){
+    v71SaveHandle=null;
+    var choice=$('v71SaveDestination');
+    v71SaveMode=choice?choice.value:'download';
+    if(v71SaveMode!=='choose')return true;
+    if(typeof window.showSaveFilePicker!=='function'){
+      toast('Thiết bị không hỗ trợ hộp chọn ổ đĩa. Sẽ tải qua trình duyệt; có thể bật “Hỏi nơi lưu” trong cài đặt tải xuống.');
+      v71SaveMode='download';return true;
+    }
+    try{
+      v71SaveHandle=await window.showSaveFilePicker({
+        suggestedName:v46SafeName($('v46FileName')&&$('v46FileName').value)+'.mp4',
+        types:[{description:'Video MP4',accept:{'video/mp4':['.mp4']}}],
+        excludeAcceptAllOption:false
+      });
+      return !!v71SaveHandle;
+    }catch(e){
+      if(e&&e.name==='AbortError'){toast('Đã hủy chọn nơi lưu — chưa bắt đầu xuất video.');return false}
+      console.warn('[V71 save picker]',e);
+      toast('Không mở được hộp chọn ổ đĩa. Video sẽ tải xuống qua trình duyệt.');
+      v71SaveMode='download';return true;
+    }
+  }
   async function v45StartExport(){
     if(v45ExportBusy){
       toast('Video đang được xuất. Nếu muốn dừng, hãy bấm HỦY XUẤT.',true);
@@ -11049,25 +11081,30 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
       var result=await clipRunProject(true);
       if(!result)return;
 
-      var url=URL.createObjectURL(result.blob);
-      var a=document.createElement('a');
-      a.href=url;
       var baseName=v46SafeName($('v46FileName')&&$('v46FileName').value);
-      a.download=baseName+'.'+result.ext;
-
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      var v71SavedToDisk=false;
+      if(v71SaveHandle){
+        try{
+          if(p)p.textContent='💾 Đang ghi MP4 vào ổ đĩa đã chọn...';
+          var writer=await v71SaveHandle.createWritable();
+          try{await writer.write(result.blob);await writer.close();v71SavedToDisk=true}
+          catch(writeError){try{await writer.abort()}catch(_){}throw writeError}
+        }catch(writeError){
+          console.error('[V71 direct file write]',writeError);
+          toast('Không ghi được vào ổ đĩa: '+(writeError.message||writeError)+'. Đang tải bản MP4 dự phòng.',true);
+        }
+      }
+      if(!v71SavedToDisk)v71DownloadBlob(result.blob,baseName,result.ext);
 
       if(p)p.textContent=
-        '✅ HOÀN TẤT · '+(result.blob.size/1048576).toFixed(1)+
+        (v71SavedToDisk?'✅ ĐÃ LƯU VÀO Ổ ĐĨA · ':'✅ ĐÃ TẢI MP4 · ')+(result.blob.size/1048576).toFixed(1)+
         ' MB · '+(result.videoCodec||'video')+' + '+(result.audioCodec||'audio')+
         (result.heldFrames?(' · chống chớp '+result.heldFrames+' frame'):'')+
         (result.recoveredFrames?(' · 🩹 phục hồi decode '+result.recoveredFrames+' frame'):'')+
         (result.audioFallback?' · ⚠ audio im lặng do nguồn không giải mã':'')+
         (result.privacyClean?' · 🔒 metadata nguồn không sao chép':'');
 
-      setTimeout(function(){URL.revokeObjectURL(url)},30000)
+      v71SaveHandle=null;
     }
     catch(e){
       var msg=(e&&e.message)||'Lỗi xuất video';
@@ -11086,6 +11123,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
         kể cả lỗi xảy ra trước khi encoder khởi tạo.
       */
       v45SetLock(false);
+      v71SaveHandle=null;
 
       if(cancelBtn){
         cancelBtn.disabled=false;
@@ -11184,6 +11222,8 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
       $('v44ExportMode').value=$('v46RenderMode').value
     }
 
+    /* Save-file picker must start from this actual user click, not after render. */
+    if(!await v71ChooseDestination())return;
     v46CloseDialog();
     await v45StartExport()
   }
@@ -12792,7 +12832,7 @@ body.v67-music-expanded #v67MusicFullscreen{position:fixed;right:16px;top:14px;z
   }
   window.clipRenderExportFrame=function(canvas,t){
     if(transitionCtx!==canvas || t<lastTime-.01){lastCanvas=null;fromCanvas=null;lastId=null;transitionCtx=canvas}
-    const visuals=visualSorted().filter(x=>t>=x.start&&t<=x.start+x.duration+.00001);
+    const visuals=visualSorted().filter(x=>t>=x.start&&t<=x.start+x.duration+.00001).sort((a,b)=>(Number(a.v71Layer)||0)-(Number(b.v71Layer)||0)||a.start-b.start);
     const it=visuals.length?visuals[visuals.length-1]:null;
     const changed=!!(it&&lastId&&it.id!==lastId);
     if(changed&&lastCanvas)fromCanvas=cacheFrame(lastCanvas,fromCanvas);
@@ -13409,5 +13449,168 @@ window.addEventListener('pagehide',()=>{video.pause();if(sourceUrl)URL.revokeObj
 })();
 
 </script>
+<style id="v71MultiLayerStyle">
+/* V71: genuine visual stacking of clips without forcing overlapping blocks onto one line */
+body.clip-mode #v71LayerToolbar{display:flex;flex-wrap:wrap;gap:7px;align-items:center;padding:8px 9px;background:#14242c;border:1px solid #32505f;border-radius:11px;color:#e8f5ff;margin:4px 0 7px;font:600 11px 'Be Vietnam Pro',system-ui,sans-serif}
+#v71LayerToolbar b{color:#a7e6ff;font-size:11px}
+#v71LayerToolbar button,#v71LayerToolbar select{min-height:35px;padding:6px 10px;background:#223747;border:1px solid #49667b;color:#eefaff;border-radius:8px;font:700 11px system-ui;cursor:pointer}
+#v71LayerToolbar button:active{background:#1b608a}
+#v71LayerToolbar select{width:auto!important;min-width:150px;max-width:190px;flex:0 0 auto}
+#v71LayerToolbar .v71-small{color:#bed2dd;font:500 10px system-ui;flex:1;min-width:175px}
+#v71LayerToolbar .v71-target{font-weight:700;color:#b9f8df}
+#clipScroll .clip-track .clip-lane.v71-stacked{height:var(--v71-height,60px)!important;min-height:var(--v71-height,60px)!important; background-image:repeating-linear-gradient(to bottom,transparent 0,transparent calc(var(--v71-unit,55px) - 1px),rgba(185,217,248,.19) calc(var(--v71-unit,55px) - 1px),rgba(185,217,248,.19) var(--v71-unit,55px)),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px)!important;background-size:auto, var(--secpx,90px) 100%!important}
+body.clip-mode #clipScroll .clip-track:not(.v41-collapsed) .clip-lane.v71-stacked{height:var(--v71-height,60px)!important;min-height:var(--v71-height,60px)!important}
+body.clip-mode #clipScroll .clip-track:not(.v41-collapsed) .clip-lane.v71-stacked .clip-block{top:calc(var(--v71-layer,0) * var(--v71-unit,55px) + 6px)!important;height:calc(var(--v71-unit,55px) - 12px)!important;max-height:52px!important}
+body.clip-mode #clipScroll .clip-track.v41-collapsed .clip-lane.v71-stacked{height:31px!important;min-height:31px!important}
+body.clip-mode #clipScroll .clip-track.v41-collapsed .clip-lane.v71-stacked .clip-block{top:3px!important}
+#clipScroll .clip-lane.v71-stacked .clip-block.v71-dragging{z-index:20!important;outline:2px solid #63dcff!important;opacity:.86}
+#clipScroll .clip-track .v71-tag{position:absolute;right:3px;display:inline-flex;align-items:center;justify-content:center;background:#294559;border:1px solid #526e81;border-radius:5px;font:800 9px system-ui;color:#c9f0ff;padding:3px;min-width:26px;pointer-events:none}
+#clipScroll .clip-track .v71-count{font:800 9px system-ui;color:#b2e0ff;padding:4px 0;white-space:normal}
+#clipScroll .clip-track .v71-layer-btn{margin:3px 2px 0 0;border:1px solid #487991;border-radius:5px;background:#243a48;color:#cbefff;cursor:pointer;padding:5px 6px;font:800 10px system-ui}
+#v71ExportOptions{border:1px solid #b7d1db;background:#f2f9fc;border-radius:11px;padding:12px;margin:10px 0;display:grid;gap:8px;color:#173343}
+#v71ExportOptions .v71-flex{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#v71ExportOptions label{font:700 12px system-ui;color:#163e50}
+#v71ExportOptions select{background:white;border:1px solid #a9c5d2;color:#133547;border-radius:7px;padding:10px;min-width:215px;flex:1}
+#v71ExportOptions button{padding:9px 12px;border-radius:8px;border:1px solid #3e8b9f;background:#0c5975;color:white;font-weight:800;cursor:pointer}
+#v71ExportOptions p{font:500 11px/1.6 system-ui;color:#355264;margin:0}
+body.clip-mode #v71LayerToolbar .v71-kind{font-size:12px}
+@media(max-width:650px){body.clip-mode #v71LayerToolbar{gap:5px;padding:7px}#v71LayerToolbar .v71-small{flex-basis:100%;font-size:10px}#v71LayerToolbar button,#v71LayerToolbar select{min-height:42px}#v71ExportOptions .v71-flex{align-items:stretch;flex-direction:column}}
+</style>
+<script id="v71MultiLayerScript">
+(function(){
+ 'use strict';
+ const get=id=>document.getElementById(id),scroll=get('clipScroll');
+ if(!scroll||!window.clipTracks||typeof clipRenderTimeline!=='function')return;
+ const unit=()=>Math.max(35,Math.min(72,Number.parseFloat(getComputedStyle(document.body).getPropertyValue('--v68-track-h'))||54));
+ const tracks=['visual','overlay','text','effect','audio','sfx'];
+ const names={visual:'VIDEO / ẢNH',overlay:'OVERLAY',text:'CHỮ',effect:'HIỆU ỨNG',audio:'ÂM THANH',sfx:'SFX'};
+ const state={target:'audio',preferred:0};
+ const toolbar=document.createElement('div');toolbar.id='v71LayerToolbar';
+ toolbar.innerHTML='<b>▤ TIMELINE NHIỀU LỚP</b><label for="v71TrackTarget">Thêm vào nhóm</label><select id="v71TrackTarget"><option value="visual">🎬 VIDEO / ẢNH</option><option value="overlay">🖼 OVERLAY</option><option value="audio" selected>🎵 AUDIO</option><option value="sfx">🔊 SFX</option><option value="text">📝 CHỮ</option><option value="effect">✨ FX</option></select><button type="button" id="v71AddLayer">＋ LỚP MỚI</button><button type="button" id="v71CompactLayers">▤ GỌN LỚP</button><span class="v71-target" id="v71TargetDisplay"></span><span class="v71-small">Thêm clip sẽ tự xuống hàng khi trùng thời gian. Kéo block lên/xuống đổi lớp; kéo ngang đổi thời điểm.</span>';
+ const tl= document.querySelector('.clip-timeline-wrap');
+ const dock=get('v68Dock');
+ if(dock)dock.insertAdjacentElement('afterend',toolbar);else if(tl)tl.insertBefore(toolbar,tl.firstChild);
+ const group=get('v71TrackTarget');
+ function layerNum(it){return Math.max(0,Math.min(19,Math.floor(Number(it.v71Layer)||0)))}
+ function overlaps(a,b){return (Number(a.start)||0)<(Number(b.start)||0)+(Number(b.duration)||0)-.001 && (Number(b.start)||0)<(Number(a.start)||0)+(Number(a.duration)||0)-.001}
+ function allocate(track){
+   const arr=(clipTracks[track]||[]).slice().sort((a,b)=>(a.start||0)-(b.start||0));
+   const used=Array.from({length:20},()=>[]);
+   for(const it of arr){
+     if(it.v71Layer==null)it.v71Layer=(track===state.target?state.preferred:0);
+     const requested=layerNum(it);let l=requested;
+     while(l<19&&used[l].some(old=>overlaps(old,it)))l++;
+     // Prefer row zero for non-overlapping items, but preserve manual track placement.
+     it.v71Layer=l;used[l].push(it);
+   }
+   return Math.max(1,...arr.map(it=>layerNum(it)+1),track===state.target?state.preferred+1:1);
+ }
+ function refreshTarget(){get('v71TargetDisplay').textContent='LỚP '+(state.preferred+1)+' · '+names[state.target]}
+ group.onchange=()=>{state.target=group.value;state.preferred=0;refreshTarget()};
+ get('v71AddLayer').onclick=()=>{
+   const track=state.target,arr=clipTracks[track]||[];
+   const next=Math.min(19,Math.max(state.preferred+1,...arr.map(x=>layerNum(x)+1)));
+   state.preferred=next;refreshTarget();clipRenderTimeline();
+   const lane=document.querySelector('.clip-lane[data-track="'+track+'"]');if(lane){lane.closest('.clip-track')?.classList.remove('v41-collapsed');lane.scrollIntoView({block:'nearest',behavior:'smooth'})}
+   if(typeof toast==='function')toast('Đã thêm '+names[track]+' lớp '+(next+1)+'. Clip trùng thời gian sẽ tự tách thành lớp.');
+ };
+ get('v71CompactLayers').onclick=()=>{
+   for(const tr of tracks){const arr=(clipTracks[tr]||[]).slice().sort((a,b)=>a.start-b.start);const ends=[];
+     for(const it of arr){let row=ends.findIndex(v=>v<=(Number(it.start)||0)+.001);if(row<0)row=ends.length;it.v71Layer=row;ends[row]=clipEnd(it)}
+   }
+   state.preferred=0;refreshTarget();clipRenderTimeline();if(typeof toast==='function')toast('Đã sắp xếp các lớp gọn, tránh clip che nhau trong timeline.');
+ };
+ // Preserve original editing, waveform, context menus and timeline zoom; only stack blocks vertically.
+ const baseRender=clipRenderTimeline;
+ clipRenderTimeline=function(){
+   for(const tr of tracks)allocate(tr);
+   const result=baseRender.apply(this,arguments),h=unit();
+   for(const tr of tracks){
+     const lane=document.querySelector('#clipScroll > .clip-track > .clip-lane[data-track="'+tr+'"]');if(!lane)continue;
+     const n=Math.max(1,...(clipTracks[tr]||[]).map(x=>layerNum(x)+1),tr===state.target?state.preferred+1:1);
+     lane.classList.add('v71-stacked');lane.style.setProperty('--v71-unit',h+'px');lane.style.setProperty('--v71-height',(n*h)+'px');
+     for(const b of lane.querySelectorAll('.clip-block[data-id]')){
+       const f=clipFind(b.dataset.id);if(!f)continue;
+       const l=layerNum(f.it);b.style.setProperty('--v71-layer',l);
+       b.dataset.v71Layer=String(l);
+       b.title=(f.it.name||f.it.type)+' · Lớp '+(l+1)+' · '+(Number(f.it.duration)||0).toFixed(2)+'s';
+     }
+     const row=lane.closest('.clip-track'),label=row&&row.querySelector('.clip-track-label');
+     if(label){label.querySelectorAll('.v71-tag').forEach(el=>el.remove());for(let idx=0;idx<n;idx++){const t=document.createElement('span');t.className='v71-tag';t.textContent=(tr==='audio'?'A':tr==='visual'?'V':tr==='sfx'?'S':'L')+(idx+1);t.style.top=Math.round(idx*h+Math.min(33,h-16))+'px';label.appendChild(t)}let c=label.querySelector('.v71-count');if(!c){c=document.createElement('div');c.className='v71-count';label.appendChild(c)}c.textContent=n+' LỚP · '+(clipTracks[tr]||[]).length+' đoạn';
+       let button=label.querySelector('.v71-layer-btn');if(!button){button=document.createElement('button');button.type='button';button.className='v71-layer-btn';button.textContent='＋ Lớp';label.appendChild(button)}
+       button.onclick=()=>{group.value=tr;group.dispatchEvent(new Event('change'));get('v71AddLayer').click()};
+     }
+   }
+   return result;
+ };
+ refreshTarget();
+ // Auto-place newly imported media on empty lanes if an existing item is playing at the same time.
+ // Avoid mutating source clips beyond small v71Layer metadata saved with project.
+ // One selection per drag; no rerender until pointerup -> no jitter on touch screens.
+ let drag=null;
+ scroll.addEventListener('pointerdown',e=>{
+   if(e.button!=null&&e.button!==0)return;
+   const block=e.target.closest?.('#clipScroll .clip-block[data-id]');if(!block||!scroll.contains(block))return;
+   if(e.pointerType==='touch' && e.isPrimary===false)return;
+   const f=clipFind(block.dataset.id);if(!f)return;
+   // Capture before legacy draggable handlers: vertical dragging now moves this ITEM, not the entire track.
+   e.stopImmediatePropagation();e.preventDefault();
+   clipSelectId(f.it.id);
+   drag={id:f.it.id,block,ptr:e.pointerId,x:e.clientX,y:e.clientY,start:Number(f.it.start)||0,duration:Number(f.it.duration)||.1,trim:Number(f.it.trimStart)||0,layer:layerNum(f.it),track:f.track,mode:e.target.dataset?.resize||'move',moved:false};
+   try{block.setPointerCapture(e.pointerId)}catch(_){}
+ },true);
+ window.addEventListener('pointermove',e=>{
+   if(!drag||e.pointerId!==drag.ptr)return;
+   const f=clipFind(drag.id);if(!f)return;
+   const dx=(e.clientX-drag.x)/Math.max(2,clipTimelinePx),dy=e.clientY-drag.y;
+   if(Math.abs(e.clientX-drag.x)+Math.abs(dy)>4)drag.moved=true;
+   const it=f.it;
+   if(drag.mode==='move'){
+     it.start=Math.max(0,Math.round((drag.start+dx)*30)/30);
+     let newLayer=Math.max(0,Math.min(19,drag.layer+Math.round(dy/unit())));
+     it.v71Layer=newLayer;
+     drag.block.style.left=Math.round(it.start*clipTimelinePx)+'px';
+     drag.block.style.setProperty('--v71-layer',newLayer);
+   }else if(drag.mode==='r'){
+     it.duration=Math.max(.1,drag.duration+dx);
+     if(it.sourceDuration&&!it.loop){const speed=typeof clipSpeedValue==='function'?clipSpeedValue(it):1;it.duration=Math.min(it.duration,Math.max(.1,((it.sourceDuration||0)-(it.trimStart||0))/speed))}
+     drag.block.style.width=Math.max(2,Math.round(it.duration*clipTimelinePx))+'px';
+   }else if(drag.mode==='l'){
+     const nt=Math.max(0,drag.start+dx),shift=Math.max(-drag.trim,nt-drag.start),newDur=Math.max(.1,drag.duration-shift);
+     it.start=drag.start+shift;it.duration=newDur;
+     if(it.sourceDuration)it.trimStart=Math.max(0,drag.trim+shift*(typeof clipSpeedValue==='function'?clipSpeedValue(it):1));
+     drag.block.style.left=Math.round(it.start*clipTimelinePx)+'px';drag.block.style.width=Math.max(2,Math.round(it.duration*clipTimelinePx))+'px';
+   }
+ },true);
+ function finishDrag(e){if(!drag||e.pointerId!==drag.ptr)return;
+   const d=drag;drag=null;
+   try{d.block.releasePointerCapture(e.pointerId)}catch(_){}
+   if(d.moved){clipRenderTimeline();clipLoadInspector();clipDrawAt(clipCurrentTime,false)}
+ }
+ window.addEventListener('pointerup',finishDrag,true);window.addEventListener('pointercancel',finishDrag,true);
+ // Label selection on blank lane at pointer click.
+ scroll.addEventListener('pointerdown',e=>{
+   const lane=e.target.closest?.('.clip-lane.v71-stacked');if(!lane||e.target.closest('.clip-block'))return;
+   state.target=lane.dataset.track;group.value=state.target;state.preferred=Math.max(0,Math.floor((e.clientY-lane.getBoundingClientRect().top)/unit()));refreshTarget();
+ },false);
+ // Ensure clip group thumbnails are properly stacked after imports, split, deletion, restore and zoom.
+ clipRenderTimeline();
+ // Export quality / OS folder picker panel (actual save picker invoked synchronously by export dialog click in V71 patch).
+ const grid=get('v46ExportModal')?.querySelector('.v46-export-body');
+ if(grid){
+   const box=document.createElement('div');box.id='v71ExportOptions';
+   box.innerHTML='<b>🚀 NHANH HƠN & CHỌN VỊ TRÍ LƯU</b><div class="v71-flex"><button type="button" id="v71PresetDraft">⚡ XUẤT NHÁP NHANH · 720p / 24fps</button><button type="button" id="v71PresetHQ">🎬 BẢN ĐẸP · 1080p / 30fps</button></div><div class="v71-flex"><label for="v71SaveDestination">Lưu MP4</label><select id="v71SaveDestination"><option value="choose">📁 Chọn ổ đĩa & thư mục trước khi render</option><option value="download">⬇ Tải về bằng trình duyệt</option></select></div><p id="v71SaveSupport"></p><p>Video nháp 720p/24fps giảm số frame và kích thước hình phải mã hóa, thường xuất nhanh hơn. Tốc độ thực tế phụ thuộc CPU/GPU và codec video gốc. Bản đẹp giữ 30fps để tránh thiếu hình do giảm FPS.</p>';
+   grid.insertBefore(box,grid.firstChild);
+   const by=id=>get(id),set=(id,v)=>{const el=by(id);if(el){el.value=v;el.dispatchEvent(new Event('change',{bubbles:true}))}};
+   by('v71PresetDraft').onclick=()=>{set('v46Resolution','720');set('v46Fps','24');set('v46BitratePreset','economy');set('v46RenderMode','turbo');set('v46VideoCodec','avc');set('v46AudioCodec','aac');if(typeof toast==='function')toast('Đã chọn bản nháp 720p / 24fps · nhẹ hơn 1080p / 30fps')};
+   by('v71PresetHQ').onclick=()=>{set('v46Resolution','1080');set('v46Fps','30');set('v46BitratePreset','recommended');set('v46RenderMode','safe');set('v46VideoCodec','avc');set('v46AudioCodec','aac');if(typeof toast==='function')toast('Đã chọn 1080p / 30fps · ưu tiên chất lượng hình')};
+   const hasPicker=typeof window.showSaveFilePicker==='function';
+   by('v71SaveDestination').value=hasPicker?'choose':'download';
+   by('v71SaveSupport').textContent=hasPicker?'✓ Máy hỗ trợ chọn nơi lưu. Sau khi bấm Xuất, chọn ổ đĩa/thư mục trước; video sẽ được ghi vào đúng vị trí đó.':'Thiết bị/trình duyệt chưa hỗ trợ chọn ổ đĩa trực tiếp. Dùng tải xuống hoặc bật “Hỏi vị trí lưu mỗi file” trong cài đặt trình duyệt.';
+ }
+ console.info('[IDECO V71] multi-layer timeline + reliable save destination + fast draft preset');
+})();
+</script>
+
 </body>
 </html>
