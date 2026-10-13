@@ -11877,7 +11877,7 @@ body.clip-mode.v61-timeline-wide .clip-stage{padding-top:4px!important;padding-b
   function cleanItem(it){
     var o={};
     Object.keys(it||{}).forEach(function(k){
-      if(k==='video'||k==='audio'||k==='img'||k==='url'||k==='file'||k==='blob')return;
+      if(k==='video'||k==='audio'||k==='img'||k==='url'||k==='file'||k==='blob'||k.startsWith('_v60')||k==='waveformAnalyzing')return;
       var v=it[k];
       if(typeof v==='function')return;
       try{JSON.stringify(v);o[k]=v}catch(_){}
@@ -13250,5 +13250,164 @@ window.addEventListener('pagehide',()=>{video.pause();if(sourceUrl)URL.revokeObj
 })();
 </script>
 
+<script id="v70-detach-audio">
+/* IDECO V70: Non-destructive timeline audio detachment + per-clip context menu.
+   Audio is actually decoded locally from the selected video and re-encoded to WAV,
+   so the detached block can be trimmed, split, moved, saved, previewed and exported. */
+(function(){
+  'use strict';
+  const $v70=id=>document.getElementById(id);
+  const scroll=$v70('clipScroll'),split=$v70('clipSplit'),addVideo=$v70('clipAddVideo');
+  if(!scroll||!split||!addVideo)return;
+  const css=document.createElement('style');
+  css.id='v70DetachCSS';css.textContent=`
+  #v70DetachBtn{background:#193d34!important;border:1px solid #3f9879!important;color:#a9ffe1!important;font-weight:750!important}
+  #v70DetachBtn:disabled{opacity:.45}
+  #v70Context{position:fixed;z-index:2147483010;width:min(268px,calc(100vw - 20px));display:none;padding:6px;background:#1b1c23;border:1px solid #505463;border-radius:13px;box-shadow:0 14px 44px #000b;color:#f5f5f7;font:12px/1.5 'Be Vietnam Pro',system-ui,sans-serif}
+  #v70Context.show{display:block}
+  #v70Context .v70-menu-head{padding:8px 11px;color:#a4aaba;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-bottom:1px solid #383c48;margin-bottom:5px}
+  #v70Context button{display:flex;width:100%;align-items:center;gap:9px;background:transparent;border:none;text-align:left;color:#e8edf7;padding:10px;border-radius:8px;font:inherit;cursor:pointer;min-height:42px}
+  #v70Context button:hover,#v70Context button:focus-visible{background:#35404e;color:white;outline:none}
+  #v70Context button.main{color:#abffe3;font-weight:800}
+  #v70Context button.danger{color:#ffb2b2}
+  #v70Context .v70-shortcut{margin-left:auto;color:#8891a6;font-size:10px}
+  #v70Context .v70-volume{padding:8px 10px 10px;border-top:1px solid #383c48}
+  #v70Context .v70-volume label{display:flex;justify-content:space-between;font-size:11px;color:#dbe3f0;padding-bottom:7px}
+  #v70Context .v70-volume input{accent-color:#42d8a2;width:100%;min-height:24px;cursor:pointer}
+  .clip-block.v70-separated{outline:1px dashed #58d6a0!important;outline-offset:-3px}
+  .clip-block.v70-separated .bt:before{content:'🔇 ';font-size:11px}
+  .clip-block.v70-detached{background:linear-gradient(90deg,#125344,#11655b)!important;border:1px solid #2cce99!important;color:#e3fff5!important}
+  .clip-block.v70-detached .bt:before{content:'🎵 ';font-size:11px}
+  .clip-block.v70-detached .clip-wave{opacity:1!important}
+  #v70DetachHint{color:#78bdac;font-size:11px;padding:4px 9px 8px;line-height:1.55;background:#13251f;border:1px solid #2c5948;border-radius:9px;max-width:100%;margin:7px 0 3px}
+  #v70ExtractProgress{position:fixed;z-index:2147483000;bottom:max(20px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);max-width:calc(100vw - 20px);width:400px;display:none;background:#1c2525;border:1px solid #42a889;border-radius:13px;padding:11px 15px;color:#e9fff5;box-shadow:0 9px 35px #0009;font:12px/1.5 'Be Vietnam Pro',system-ui}
+  #v70ExtractProgress.on{display:block}
+  #v70ExtractProgress b{display:block;margin-bottom:3px}
+  #v70ExtractProgress .v70-p-track{height:5px;background:#31463e;border-radius:5px;margin-top:7px;overflow:hidden}
+  #v70ExtractProgress .v70-p-track i{display:block;width:0%;height:100%;background:#39d1a1;transition:width .2s}
+  @media(max-width:600px){#v70DetachBtn{min-height:41px!important}#v70Context button{min-height:47px}#v70ExtractProgress{bottom:80px}}
+  `;document.head.appendChild(css);
+  const btn=document.createElement('button');btn.id='v70DetachBtn';btn.type='button';btn.title='Chọn clip video rồi tách âm thanh thành track riêng';btn.textContent='🎧 Tách âm thanh';split.parentNode.insertBefore(btn,split);
+  const hint=document.createElement('div');hint.id='v70DetachHint';hint.innerHTML='🎧 <b>Âm thanh độc lập:</b> Chuột phải vào VIDEO → <b>Tách âm thanh</b>; trên điện thoại <b>chạm giữ clip</b> hoặc chọn video rồi bấm nút 🎧. Track âm thanh xanh có thể kéo, cắt mép, bấm S để chia đoạn, chỉnh âm lượng và xóa riêng.';
+  const toolbar=document.querySelector('.clip-tl-toolbar');if(toolbar)toolbar.insertAdjacentElement('afterend',hint);
+  const context=document.createElement('div');context.id='v70Context';context.setAttribute('role','menu');context.setAttribute('aria-label','Menu clip trong timeline');document.body.appendChild(context);
+  const pg=document.createElement('div');pg.id='v70ExtractProgress';pg.setAttribute('role','status');pg.innerHTML='<b>🎧 Đang tách âm thanh...</b><span id="v70ProgressText">Đang giải mã nguồn video trên thiết bị</span><div class="v70-p-track"><i id="v70ProgressBar"></i></div>';document.body.appendChild(pg);
+  let working=false,selectedId=null,menuTime=0,touchTimer=null,touchPoint=null;
+  function showProgress(msg,pct){pg.classList.add('on');$v70('v70ProgressText').textContent=msg;$v70('v70ProgressBar').style.width=Math.min(100,Math.max(0,pct||0))+'%'}
+  function hideProgress(){pg.classList.remove('on')}
+  function message(s,bad){try{toast(s,!!bad)}catch(_){console.log(s)}}
+  function clipOf(id){return typeof clipFind==='function'?clipFind(id):null}
+  function isVideo(it){return it&&it.type==='video'&&it.url&&!it.loading&&!it.error}
+  function contextSelected(){const x=clipOf(clipSelectedId)||clipOf(clipLastSelectedId);return x&&x.it}
+  function closeMenu(){context.classList.remove('show');selectedId=null}
+  function addMenuButton(text,cb,cls,shortcut){const b=document.createElement('button');b.type='button';b.className=cls||'';b.textContent=text;if(shortcut){let k=document.createElement('span');k.className='v70-shortcut';k.textContent=shortcut;b.appendChild(k)}b.addEventListener('click',e=>{e.stopPropagation();closeMenu();cb()});context.appendChild(b)}
+  function menuTimeFromPoint(block,x){const r=block.getBoundingClientRect(),it=clipOf(block.dataset.id)?.it;if(!it)return Math.max(0,clipCurrentTime||0);return Math.max(it.start,Math.min(it.start+it.duration,it.start+(x-r.left)/Math.max(1,clipTimelinePx)))}
+  function menuShow(id,x,y,at){const found=clipOf(id);if(!found)return;try{clipSelectId(id)}catch(_){clipSelectedId=id;clipLoadInspector()};const it=found.it;selectedId=id;menuTime=typeof at==='number'?at:it.start;context.innerHTML='';const h=document.createElement('div');h.className='v70-menu-head';h.textContent=(it.type==='video'?'🎬 ':'🎵 ')+(it.name||it.type);context.appendChild(h);
+    if(it.type==='video'){
+      if(!it._v70DetachedAudioId)addMenuButton('🎧 Tách âm thanh thành track riêng',()=>detach(id),'main');
+      else addMenuButton('🔁 Tách âm thanh lại',()=>detach(id,true),'main');
+      if(it._v70DetachedAudioId)addMenuButton('🔊 Bật lại tiếng video gốc',()=>{const f=clipOf(id);if(f){f.it.volume=100;f.it._v70DetachedAudioId=null;clipRenderTimeline();clipLoadInspector();message('Đã bật lại âm thanh gốc (có thể nghe trùng với track đã tách)')} });
+    }
+    if(['video','image','audio','sfx'].includes(it.type))addMenuButton('✂ Cắt tại vị trí chuột',()=>{clipSelectId(id);clipSetCurrentTime(menuTime);clipSplitAtPlayhead()},'', 'S');
+    if(['audio','sfx'].includes(it.type)){
+      const wrap=document.createElement('div');wrap.className='v70-volume';const label=document.createElement('label');label.innerHTML='<span>🔊 Âm lượng track</span><strong></strong>';const inp=document.createElement('input');inp.type='range';inp.min=0;inp.max=200;inp.step=1;inp.value=String(it.volume==null?100:it.volume);label.querySelector('strong').textContent=inp.value+'%';inp.addEventListener('input',()=>{const f=clipOf(id);if(!f)return;f.it.volume=Number(inp.value);label.querySelector('strong').textContent=inp.value+'%';try{clipLoadInspector()}catch(_){} });wrap.append(label,inp);context.appendChild(wrap);
+      addMenuButton('📥 Tải WAV của đoạn đã chỉnh',()=>downloadTrack(id));
+    }
+    addMenuButton('⚙ Chỉnh trong Thuộc tính',()=>{clipSelectId(id);const right=$v70('clipInspector');if(right){right.scrollIntoView({block:'nearest',behavior:'smooth'})}},'');
+    addMenuButton('🗑 Xóa block này',()=>{clipSelectId(id);clipDeleteSelected()},'danger','Del');
+    context.classList.add('show');context.style.left='0px';context.style.top='0px';const r=context.getBoundingClientRect();context.style.left=Math.max(8,Math.min(window.innerWidth-r.width-8,x))+'px';context.style.top=Math.max(8,Math.min(window.innerHeight-r.height-8,y))+'px';
+  }
+  function nearestBlock(target){return target&&target.closest?target.closest('.clip-block[data-id]'):null}
+  // Existing editor handles pointerdown for dragging. Do not start a drag on secondary button.
+  scroll.addEventListener('pointerdown',e=>{if(e.button===2&&nearestBlock(e.target)){e.stopImmediatePropagation()}},true);
+  scroll.addEventListener('contextmenu',e=>{const b=nearestBlock(e.target);if(!b)return;e.preventDefault();e.stopPropagation();menuShow(b.dataset.id,e.clientX,e.clientY,menuTimeFromPoint(b,e.clientX))});
+  scroll.addEventListener('pointerdown',e=>{if(e.pointerType!=='touch'||!nearestBlock(e.target))return;const block=nearestBlock(e.target),x=e.clientX,y=e.clientY,id=block.dataset.id,when=menuTimeFromPoint(block,x);touchPoint={x:x,y:y,id:id};clearTimeout(touchTimer);touchTimer=setTimeout(()=>{if(!touchPoint||touchPoint.id!==id)return;try{clipDrag=null;block.releasePointerCapture(e.pointerId)}catch(_){}menuShow(id,x,y,when);touchPoint=null},610)},true);
+  const cancelTouch=()=>{clearTimeout(touchTimer);touchTimer=null;touchPoint=null};
+  scroll.addEventListener('pointermove',e=>{if(touchPoint&&Math.hypot(e.clientX-touchPoint.x,e.clientY-touchPoint.y)>12)cancelTouch()},true);
+  ['pointerup','pointercancel','scroll'].forEach(ev=>scroll.addEventListener(ev,cancelTouch,true));
+  document.addEventListener('pointerdown',e=>{if(!context.contains(e.target))closeMenu()});
+  window.addEventListener('resize',closeMenu);window.addEventListener('scroll',closeMenu,true);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu()});
+  btn.onclick=()=>{const it=contextSelected();if(!it||it.type!=='video'){message('Hãy chọn một block VIDEO trên timeline, sau đó bấm Tách âm thanh.',true);return}detach(it.id)};
+  async function blobFromUrl(url){try{const response=await fetch(url);if(!response.ok)throw new Error('HTTP '+response.status);return await response.blob()}catch(e){if(typeof fetchBlobSmart!=='function')throw e;return await new Promise((resolve,reject)=>fetchBlobSmart(url,b=>b&&b.size?resolve(b):reject(new Error('Video trống')),reject,null,false))}}
+  function wavFromBuffer(buf,offset,duration,speed,callback){return new Promise((resolve,reject)=>{let finished=false;let sr=buf.sampleRate,channels=Math.min(2,Math.max(1,buf.numberOfChannels)),total=Math.max(1,Math.floor(duration*sr));const dataLen=total*channels*2;if(dataLen>0xFFFFFFFF-44)return reject(new Error('Audio quá dài cho file WAV thông thường'));let hdr=new ArrayBuffer(44),view=new DataView(hdr);
+    function str(p,s){for(let i=0;i<s.length;i++)view.setUint8(p+i,s.charCodeAt(i))}
+    str(0,'RIFF');view.setUint32(4,36+dataLen,true);str(8,'WAVE');str(12,'fmt ');view.setUint32(16,16,true);view.setUint16(20,1,true);view.setUint16(22,channels,true);view.setUint32(24,sr,true);view.setUint32(28,sr*channels*2,true);view.setUint16(32,channels*2,true);view.setUint16(34,16,true);str(36,'data');view.setUint32(40,dataLen,true);
+    const sources=Array.from({length:channels},(_,c)=>buf.getChannelData(Math.min(c,buf.numberOfChannels-1))),parts=[hdr],block=8192,peaks=new Float32Array(100),maxFrames=buf.length;let maxAmplitude=0,i=0;
+    function step(){try{
+      const stop=Math.min(total,i+block);const pcm=new Int16Array((stop-i)*channels);
+      for(let j=i;j<stop;j++){
+        const source=(offset*sr+j*speed),idx=Math.floor(source),frac=source-idx;const bucket=Math.min(99,Math.floor(j/total*100));
+        for(let c=0;c<channels;c++){
+          let x=0;if(idx>=0&&idx<maxFrames){const data=sources[c],v=data[idx];x=v+(idx+1<maxFrames?(data[idx+1]-v)*frac:0)}
+          x=Math.max(-1,Math.min(1,x));maxAmplitude=Math.max(maxAmplitude,Math.abs(x));peaks[bucket]=Math.max(peaks[bucket],Math.abs(x));pcm[(j-i)*channels+c]=Math.round(x<0?x*32768:x*32767)
+        }
+      }
+      parts.push(pcm.buffer);i=stop;
+      if(callback)callback(Math.round(20+i/total*75));
+      if(i<total)setTimeout(step,0);else{if(maxAmplitude<.00002)return reject(new Error('Không tìm thấy tín hiệu âm thanh trong video (video có thể không có tiếng).'));const out=new Blob(parts,{type:'audio/wav'});resolve({blob:out,peaks:Array.from(peaks).map(v=>Math.min(1,v/Math.max(.08,maxAmplitude))),channels:channels,rate:sr})}
+    }catch(e){reject(e)}}step()
+  })}
+  function audioMedia(url){const a=document.createElement('audio');a.preload='metadata';a.src=url;a.setAttribute('playsinline','');a.style.cssText='position:absolute;width:1px;height:1px;opacity:0;pointer-events:none';const bin=$v70('clipMediaBin');if(bin)bin.appendChild(a);try{a.load()}catch(_){}return a}
+  async function detach(id,replace){const found=clipOf(id);if(!found||!isVideo(found.it)){message('Video chưa sẵn sàng. Hãy đợi video đọc xong rồi thử lại.',true);return}
+    if(working){message('Đang tách một track khác. Vui lòng hoàn thành thao tác hiện tại.',true);return}
+    const it=found.it;
+    if(it._v70DetachedAudioId&&!replace&&clipOf(it._v70DetachedAudioId)){clipSelectId(it._v70DetachedAudioId);message('Âm thanh đã nằm ở track AUDIO (màu xanh).');return}
+    working=true;btn.disabled=true;const oldVol=it.volume;
+    try{
+      if(document.body.classList.contains('v32-playing')){const b=$v70('clipPreviewBtn');if(b)b.click()}
+      const sourceDuration=Number(it.sourceDuration)||Number(it.video&&it.video.duration)||0;
+      const trim=Math.max(0,Number(it.trimStart)||0),speed=Math.max(.25,Math.min(4,typeof clipSpeedValue==='function'?clipSpeedValue(it):Number(it.speed)||1));
+      let dur=Math.max(0,Number(it.duration)||0);
+      if(sourceDuration)dur=Math.min(dur,Math.max(0,(sourceDuration-trim)/speed));
+      if(!dur||dur<.08)throw new Error('Clip không có thời lượng âm thanh hợp lệ');
+      const max=window.innerWidth<=700?600:1800;
+      if(dur>max)throw new Error('Đoạn '+Math.round(dur)+' giây quá dài để tách WAV an toàn trên thiết bị này. Hãy cắt nhỏ clip (≤ '+Math.round(max/60)+' phút) rồi tách từng đoạn.');
+      showProgress('Đang đọc video ('+Math.round(dur*10)/10+' giây)...',4);
+      const blob=await blobFromUrl(it.url);if(!blob||!blob.size)throw new Error('Không đọc được file video gốc');
+      const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw new Error('Thiết bị không hỗ trợ Web Audio');
+      const ac=new AC();let buffer;
+      try{showProgress('Giải mã âm thanh MP4/WEBM/AAC trên thiết bị...',12);const ab=await blob.arrayBuffer();buffer=await ac.decodeAudioData(ab);}
+      catch(e){throw new Error('Không giải mã được tiếng của video này ('+(e&&e.message||e)+'). Hãy chuyển sang MP4 H.264/AAC hoặc WebM Opus trước khi tách. Chưa tắt tiếng clip gốc.');}
+      finally{try{await ac.close()}catch(_){}}
+      if(!buffer||!buffer.length)throw new Error('Video không có track âm thanh được hỗ trợ');
+      const result=await wavFromBuffer(buffer,trim,dur,speed,p=>showProgress('Đang tạo waveform + WAV chất lượng nguồn...',p));
+      showProgress('Đang đưa audio xuống timeline...',97);
+      const url=URL.createObjectURL(result.blob);clipObjectUrls.push(url);
+      const copy={id:clipUid(),track:'audio',type:'audio',name:'🎧 '+String(it.name||'Video').replace(/\s*·.*$/,'')+' · âm thanh tách',url:url,audio:audioMedia(url),start:Number(it.start)||0,duration:dur,sourceDuration:dur,trimStart:0,volume:Math.max(0,Math.min(200,Number(oldVol==null?100:oldVol))),loop:false,loading:false,error:false,waveformPeaks:result.peaks,_v70FromVideoId:it.id,_v70Detached:true};
+      if(replace&&it._v70DetachedAudioId){const prev=clipOf(it._v70DetachedAudioId);if(prev){prev.arr.splice(prev.i,1)}}
+      clipTracks.audio.push(copy);it.volume=0;it._v70DetachedAudioId=copy.id;
+      clipSelectedId=copy.id;clipLastSelectedId=copy.id;
+      clipRenderAll();clipSetCurrentTime(copy.start);clipLoadInspector();
+      requestAnimationFrame(()=>{const el=document.querySelector('.clip-block[data-id="'+copy.id+'"]');if(el)el.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'})});
+      message('✅ Đã tách tiếng sang track AUDIO. Clip gốc đã tắt tiếng; có thể kéo, cắt, chỉnh âm lượng riêng.');
+    }catch(e){it.volume=oldVol;console.error('[V70 detach]',e);message('Không tách được: '+(e&&e.message||e),true)}finally{working=false;btn.disabled=false;setTimeout(hideProgress,500)}
+  }
+  async function downloadTrack(id){
+    const f=clipOf(id);if(!f||!f.it.url)return;const it=f.it;
+    if(working){message('Đang xử lý audio khác, vui lòng đợi.',true);return}
+    working=true;
+    try{
+      showProgress('Đang tạo WAV theo thời lượng và điểm cắt của track...',10);
+      const blob=await blobFromUrl(it.url),AC=window.AudioContext||window.webkitAudioContext;
+      if(!AC)throw new Error('Trình duyệt không hỗ trợ giải mã audio');
+      const ac=new AC();let buf;
+      try{buf=await ac.decodeAudioData(await blob.arrayBuffer())}finally{try{await ac.close()}catch(_){}}
+      const seg=await wavFromBuffer(buf,Number(it.trimStart)||0,Number(it.duration)||0,1,p=>showProgress('Đang xuất WAV đã chỉnh...',p));
+      const u=URL.createObjectURL(seg.blob),a=document.createElement('a');a.href=u;
+      a.download='IDECO_AUDIO_'+(it.name||'clip').replace(/[\\/:*?\"<>|]/g,'_').slice(0,70)+'_EDIT.wav';
+      document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),20000);
+      message('Đã tải WAV theo đoạn âm thanh đã cắt/chỉnh trên timeline');
+    }catch(e){message('Không xuất được audio: '+(e.message||e),true)}finally{working=false;hideProgress()}
+  }
+  const baseRender=clipRenderTimeline;
+  clipRenderTimeline=function(){const ret=baseRender.apply(this,arguments);document.querySelectorAll('#clipScroll .clip-block[data-id]').forEach(b=>{const f=clipOf(b.dataset.id);if(!f)return;const it=f.it;b.classList.toggle('v70-detached',!!it._v70Detached);b.classList.toggle('v70-separated',it.type==='video'&&!!it._v70DetachedAudioId&&Number(it.volume)===0);if(it._v70Detached)b.title='Audio tách · kéo để di chuyển · kéo mép để cắt · chuột phải để chỉnh và tải WAV'});return ret};
+  // No transform of source media; reload/save operates on the local WAV blob generated above.
+  window.v70DetachAudio=detach;
+  try{clipRenderTimeline()}catch(e){console.warn('[V70 initial render]',e)}
+  console.info('[IDECO V70] Context menu + decoded WAV detach registered');
+})();
+
+</script>
 </body>
 </html>
