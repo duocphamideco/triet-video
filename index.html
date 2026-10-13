@@ -1374,6 +1374,49 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
 @media(max-width:720px){.v56-lr-grid{grid-template-columns:1fr}.v56-speed-presets{grid-template-columns:repeat(5,1fr)}}
 
 </style>
+
+<style id="v69-frame-style">
+/* IDECO V69 – compact, self-contained frame station, mobile first. */
+body.frame-workspace #app{max-width:1300px!important}
+#app>.tabs{overflow-x:auto;scrollbar-width:thin;flex-wrap:nowrap;gap:4px}
+#app>.tabs button{flex:1 0 auto;padding:11px 9px;white-space:nowrap;min-width:90px}
+.v69-frame-tab{padding:3px 0 36px}
+.v69-frame-head{display:flex;justify-content:space-between;align-items:center;gap:14px;background:#191c23;color:#fff;border-radius:16px;padding:16px 18px;margin-bottom:11px}
+.v69-frame-head h2{font-size:21px;letter-spacing:-.03em;margin:3px 0 6px}
+.v69-frame-head p{font-size:12px;line-height:1.55;color:#bbc5d2;max-width:730px;margin:0}
+.v69-eyebrow{font-size:10px;letter-spacing:.12em;color:#93c9e8;font-weight:900}
+.v69-primary{background:#e6452d!important;border:1px solid #ed503b!important;color:#fff!important;font-weight:900!important}
+.v69-frame-head button{flex:none;border:0;border-radius:11px;padding:13px 17px;font-size:13px;min-height:44px}
+.v69-drop{background:#fafbfd;color:#64748b;border:2px dashed #c7d3df;border-radius:13px;padding:11px 15px;text-align:center;font-size:12px;line-height:1.5;cursor:pointer;margin-bottom:11px}
+.v69-drop:hover,.v69-drop:focus-visible,.v69-drop.drag-on{border-color:#ee3a23;background:#fff2ef;outline:none}
+.v69-frame-grid{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(292px,1fr);gap:12px;align-items:start}
+.v69-frame-left,.v69-frame-card,.v69-frame-help{background:#fff;border:1px solid #e0e3e8;border-radius:15px;padding:13px;min-width:0}
+.v69-frame-stage{background:#0b0d12;border-radius:12px;min-height:230px;aspect-ratio:16/9;display:grid;place-items:center;position:relative;overflow:hidden}
+#v69Video{width:100%;height:100%;object-fit:contain;display:none;position:absolute;inset:0}
+.v69-video-placeholder{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:7px;color:#dbe2ea;text-align:center;padding:16px;font-size:14px}
+.v69-video-placeholder span{font-size:37px}.v69-video-placeholder small{font-size:11px;color:#95a1b1;line-height:1.5;max-width:250px}
+.v69-source-info{font-size:11px;color:#64748b;line-height:1.5;margin:8px 3px;word-break:break-word}
+.v69-scrub{padding:9px 0 0}.v69-times{display:flex;justify-content:space-between;gap:8px;font:700 11px ui-monospace,monospace;color:#475569;margin-bottom:10px}
+#v69FrameIndex{color:#c73829}
+#v69Range{width:100%;height:8px;margin:3px 0 17px;accent-color:#ec4430;cursor:pointer;touch-action:pan-x}
+.v69-frame-controls{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+.v69-frame-controls button,.v69-other-actions button,.v69-main-actions button,.v69-fp-extras button{border:1px solid #d4d9e1;border-radius:10px;background:#f4f6f9;color:#263449;font-weight:800;min-height:43px;padding:10px 7px;font-size:12px}
+.v69-frame-controls #v69Play{background:#22354c;color:white}
+.v69-frame-controls button:disabled,.v69-main-actions button:disabled,.v69-other-actions button:disabled{opacity:.47;cursor:not-allowed}
+.v69-fps{display:flex;gap:8px;align-items:center;font-size:11px;color:#64748b;padding:13px 2px 0;flex-wrap:wrap}
+.v69-fps select{width:auto!important;min-width:105px;padding:7px 26px 7px 9px!important;font-size:12px!important}
+.v69-frame-right{display:flex;flex-direction:column;gap:10px}.v69-frame-card>b{display:block;color:#334155;font-size:12px;margin-bottom:9px}
+.v69-capture-preview{background:#171a22;border-radius:11px;width:100%;min-height:130px;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;color:#aab5c5;font-size:12px;overflow:hidden}
+.v69-capture-preview img{width:100%;height:100%;object-fit:contain}.v69-capture-preview img[hidden]{display:none}
+.v69-note{font-size:11px;color:#64748b;line-height:1.55;margin:9px 1px}
+.v69-insert-label{display:block;font-size:11px;font-weight:700;color:#475569;margin:12px 0 6px}
+#v69Slot{margin-bottom:10px}.v69-main-actions{display:grid;grid-template-columns:0.8fr 1.2fr;gap:6px}.v69-other-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.v69-status{font-size:11px;line-height:1.55;background:#f7f9fb;padding:9px;border-radius:8px;color:#41607d;margin:10px 0 0}.v69-status.bad{color:#bd352a;background:#fff2ed}
+.v69-frame-help{padding:13px 14px;background:#f9f8f4}.v69-frame-help b{color:#b92f21}.v69-frame-help p{font-size:11.5px;line-height:1.65;color:#595d64;margin:7px 0 0}
+.v69-fp-extras{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}.v69-fp-extras button{background:#252b37;color:#fff;border-color:#434b59;font-size:11px;min-height:38px}.fp .head .v69-fp-extras .close{padding:9px 14px}
+@media(max-width:800px){.v69-frame-grid{grid-template-columns:minmax(0,1fr)}.v69-frame-head{flex-wrap:wrap}.v69-frame-head button{width:100%}.v69-frame-stage{min-height:175px}.v69-frame-left,.v69-frame-card,.v69-frame-help{padding:10px}.v69-frame-controls button{min-height:48px}.v69-main-actions button{min-height:51px}.v69-frame-help{margin-bottom:12px}.v69-fp-extras button{font-size:10px}}
+@media(max-width:430px){.v69-frame-head h2{font-size:19px}.v69-fps span{flex:1 1 100%}.v69-drop{font-size:11px}.v69-frame-controls{gap:4px}.v69-frame-controls button{font-size:11px;padding:7px 3px}.v69-other-actions button{font-size:11px;padding:9px 4px}}
+</style>
 </head>
 <body>
 
@@ -1402,6 +1445,7 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
   <div class="tabs">
     <button id="tabBtnImg" class="on">🖼 Tạo Ảnh</button>
     <button id="tabBtnVid">🎬 Dựng Video</button>
+    <button id="tabBtnFrame">🎞 DỰNG FRAME</button>
     <button id="tabBtnScript">📝 Kịch Bản</button>
     <button id="tabBtnAudio">🎙 Cắt Âm Thanh</button>
     <button id="tabBtnClip">✂ CLIP</button>
@@ -1635,6 +1679,57 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
 
     <div class="gobar" id="gobarVid" style="display:none"><button class="btn-go" id="btnGoVid">DỰNG VIDEO 🎬</button></div>
   </div><!-- /tabVid -->
+
+
+  <!-- ===== V69: DỰNG FRAME TỪ VIDEO AI HOẶC VIDEO NGƯỜI DÙNG TẢI TỪ MÁY ===== -->
+  <div id="tabFrame" style="display:none" class="v69-frame-tab">
+    <section class="v69-frame-head">
+      <div><span class="v69-eyebrow">IDECO · FRAME STUDIO</span><h2>🎞 DỰNG FRAME</h2><p>Tải video từ điện thoại/máy tính → chọn đúng khung hình → <b>INSERT</b> vào ảnh tham chiếu để dựng tiếp video AI.</p></div>
+      <button type="button" id="v69OpenFile" class="v69-primary">📂 TẢI VIDEO LÊN</button>
+    </section>
+    <input id="v69VideoFile" type="file" accept="video/*,.mp4,.mov,.m4v,.webm" hidden>
+    <div id="v69DropZone" class="v69-drop" tabindex="0" role="button" aria-label="Tải hoặc kéo thả video nguồn vào đây">📥 Kéo thả video MP4 / MOV / WebM vào đây, hoặc bấm để chọn file từ máy. Video chỉ mở trong trình duyệt, không tự tải lên máy chủ.</div>
+    <div class="v69-frame-grid">
+      <div class="v69-frame-left">
+        <div class="v69-frame-stage" id="v69Stage">
+          <div id="v69VideoPlaceholder" class="v69-video-placeholder"><span>🎬</span><b>Chưa có video nguồn</b><small>Chọn video từ máy hoặc bấm FRAME trên một video AI đã tạo.</small></div>
+          <video id="v69Video" playsinline webkit-playsinline muted preload="auto"></video>
+        </div>
+        <div id="v69VideoInfo" class="v69-source-info" aria-live="polite">Sẵn sàng nhận video nguồn</div>
+        <div class="v69-scrub">
+          <div class="v69-times"><span id="v69Current">00:00.000</span><span id="v69FrameIndex">Khung 0</span><span id="v69Duration">00:00.000</span></div>
+          <input id="v69Range" type="range" min="0" max="1" step="1" value="0" disabled aria-label="Tua chọn khung hình">
+          <div class="v69-frame-controls">
+            <button type="button" id="v69Prev5" disabled>−5f</button>
+            <button type="button" id="v69Prev1" disabled>−1f</button>
+            <button type="button" id="v69Play" disabled>▶ Phát</button>
+            <button type="button" id="v69Next1" disabled>+1f</button>
+            <button type="button" id="v69Next5" disabled>+5f</button>
+          </div>
+          <label class="v69-fps">Bước tua frame <select id="v69Fps"><option value="24">24 fps</option><option value="25">25 fps</option><option value="30" selected>30 fps</option><option value="50">50 fps</option><option value="60">60 fps</option></select><span>Điều chỉnh theo FPS nguồn để tua chính xác hơn.</span></label>
+        </div>
+      </div>
+      <div class="v69-frame-right">
+        <div class="v69-frame-card">
+          <b>ẢNH FRAME ĐÃ CHỌN</b>
+          <div class="v69-capture-preview" id="v69CapturePreview"><span>🖼 Chưa chụp frame</span><img id="v69CapturedImage" alt="Khung hình được chọn" hidden></div>
+          <div id="v69CapturedMeta" class="v69-note">Bấm INSERT để tự chụp đúng frame tại thanh tua và chuyển vào Dựng Video.</div>
+          <label for="v69Slot" class="v69-insert-label">Vị trí ảnh tham chiếu trong Dựng Video</label>
+          <select id="v69Slot" aria-label="Chọn ô ảnh tham chiếu"><option value="0">Ảnh 1 · Khung đầu</option><option value="1">Ảnh 2 · Khung cuối / bổ sung</option><option value="2">Ảnh 3</option><option value="3">Ảnh 4</option><option value="4">Ảnh 5</option></select>
+          <div class="v69-main-actions">
+            <button type="button" id="v69PreviewFrame" disabled>📸 Xem frame</button>
+            <button type="button" id="v69Insert" class="v69-primary" disabled>➕ INSERT → DỰNG VIDEO</button>
+          </div>
+          <div class="v69-other-actions">
+            <button type="button" id="v69Download" disabled>⬇ Lưu frame JPEG</button>
+            <button type="button" id="v69BackVideo">🎬 Mở Dựng Video</button>
+          </div>
+          <p id="v69Status" class="v69-status" role="status" aria-live="polite">Mở một video để bắt đầu.</p>
+        </div>
+        <div class="v69-frame-help"><b>Thao tác nhanh</b><p><b>1.</b> Tải MP4, MOV, WebM. <b>2.</b> Kéo thanh thời gian hoặc dùng −1f / +1f. <b>3.</b> Chọn ô Ảnh 1–5. <b>4.</b> Bấm INSERT. Ảnh sẽ tự nạp vào khung Dựng Video, không cần bấm tải lại.</p><p>Khung JPEG lấy trực tiếp từ video ở thiết bị. Nếu file MOV/HEVC không hiện hình, hãy chuyển video sang MP4 H.264 trước khi thử lại.</p></div>
+      </div>
+    </div>
+  </div><!-- /tabFrame -->
 
   <!-- ===== TAB KỊCH BẢN VIDEO ===== -->
   <div id="tabScript" style="display:none">
@@ -2121,7 +2216,7 @@ body.v45-export-lock .v46-export-modal{pointer-events:none!important}
 <div class="fp" id="fp">
   <div class="head">
     <div><b>✂ Chọn điểm nối video</b><small>Kéo thanh trượt / bấm ± chọn từng frame → bấm CẮT để lấy frame làm Ảnh 1</small></div>
-    <button class="close" id="fpClose">Đóng</button>
+    <div class="v69-fp-extras"><button type="button" id="v69FromPicker">📁 Video từ máy</button><button type="button" id="v69UseFrameTab">🎞 DỰNG FRAME</button><button class="close" id="fpClose">Đóng</button></div>
   </div>
   <div class="stage"><video id="fpVideo" playsinline muted preload="auto"></video></div>
   <div class="ctrl">
@@ -2926,6 +3021,7 @@ function switchTab(tab){
   if(tab === false || tab === undefined) tab = 'img';
   $('tabImg').style.display = tab === 'img' ? 'block' : 'none';
   $('tabVid').style.display = tab === 'vid' ? 'block' : 'none';
+  $('tabFrame').style.display = tab === 'frame' ? 'block' : 'none';
   $('tabScript').style.display = tab === 'script' ? 'block' : 'none';
   $('tabAudio').style.display = tab === 'audio' ? 'block' : 'none';
   $('tabClip').style.display = tab === 'clip' ? 'block' : 'none';
@@ -2935,6 +3031,7 @@ function switchTab(tab){
   $('gobarScript').style.display = tab === 'script' ? 'block' : 'none';
   $('tabBtnImg').classList.toggle('on', tab === 'img');
   $('tabBtnVid').classList.toggle('on', tab === 'vid');
+  $('tabBtnFrame').classList.toggle('on', tab === 'frame');
   $('tabBtnScript').classList.toggle('on', tab === 'script');
   $('tabBtnAudio').classList.toggle('on', tab === 'audio');
   $('tabBtnClip').classList.toggle('on', tab === 'clip');
@@ -2943,13 +3040,15 @@ function switchTab(tab){
   document.body.classList.toggle('clip-mode', tab === 'clip');
   document.body.classList.toggle('v67-music-workspace',tab === 'music');
   if(tab==='music' && typeof window.v67OpenMusic==='function')window.v67OpenMusic();
-  document.body.classList.toggle('workspace-wide', tab === 'vid' || tab === 'script' || tab === 'audio');
+  document.body.classList.toggle('workspace-wide', tab === 'vid' || tab === 'script' || tab === 'audio' || tab === 'frame');
+  document.body.classList.toggle('frame-workspace', tab === 'frame');
   document.body.classList.toggle('video-workspace', tab === 'vid');
   document.body.classList.toggle('script-workspace', tab === 'script');
   window.scrollTo({ top: 0 });
 }
 $('tabBtnImg').onclick = function(){ switchTab('img'); };
 $('tabBtnVid').onclick = function(){ switchTab('vid'); };
+$('tabBtnFrame').onclick = function(){ switchTab('frame'); };
 $('tabBtnScript').onclick = function(){ switchTab('script'); };
 $('tabBtnAudio').onclick = function(){ switchTab('audio'); };
 $('tabBtnClip').onclick = function(){ switchTab('clip'); clipRenderAll(); };
@@ -3617,6 +3716,7 @@ function renderVGallery(){
       '<div class="acts">' +
         '<button data-act="dl">⬇ Tải</button>' +
         '<button data-act="ext" class="ext">✂ Extension</button>' +
+        '<button data-act="frame" class="ext">🎞 Frame</button>' +
         '<button data-act="re">♻ Dựng lại</button>' +
         '<button data-act="clip" class="to-clip">➕ CHÈN CLIP DỰNG</button>' +
         '<button data-act="sel" class="sel">☑ Ghép</button>' +
@@ -3643,6 +3743,7 @@ function renderVGallery(){
     };
     card.querySelector('[data-act=dl]').onclick = function(){ downloadVideo(item.url); };
     card.querySelector('[data-act=ext]').onclick = function(){ openFramePicker(item); };
+    card.querySelector('[data-act=frame]').onclick = function(){ if(typeof window.v69OpenAiVideo==='function')window.v69OpenAiVideo(item); };
     card.querySelector('[data-act=clip]').onclick = function(){
       var btn=this;
       if(btn.classList.contains('loading')) return;
@@ -13056,5 +13157,98 @@ focus.onclick=function(){var on=document.body.classList.toggle('v68-focus');focu
 var info=document.getElementById('v68Tip');if(info)info.textContent='Thu âm SFX thật (WAV/MP3) cho kết quả tự nhiên nhất. Preset rain / whoosh / applause là âm thanh mô phỏng bằng thuật toán.';
 })();
 </script>
+
+<script id="v69-frame-script">
+(function(){
+'use strict';
+const by=id=>document.getElementById(id);
+const video=by('v69Video'),fileInput=by('v69VideoFile'),range=by('v69Range');
+if(!video||!fileInput||!range)return;
+let sourceUrl='',loadToken=0,ready=false,busy=false,framePreviewUrl='',lastFrameBlob=null,lastFrameTime=0,sourceName='';
+let currentSource='';
+const buttons=['v69Range','v69Prev5','v69Prev1','v69Play','v69Next1','v69Next5','v69PreviewFrame','v69Insert'];
+const fps=()=>Math.max(1,Number(by('v69Fps').value)||30);
+const duration=()=>Number.isFinite(video.duration)?Math.max(0,video.duration):0;
+const timeLabel=n=>{n=Math.max(0,Number(n)||0);return String(Math.floor(n/60)).padStart(2,'0')+':'+String(Math.floor(n%60)).padStart(2,'0')+'.'+String(Math.floor((n%1)*1000)).padStart(3,'0')};
+function status(msg,err){let el=by('v69Status');el.textContent=msg;el.classList.toggle('bad',!!err)}
+function setEnabled(on){buttons.forEach(id=>{let el=by(id);if(el)el.disabled=!on});by('v69Download').disabled=!lastFrameBlob}
+function clearCapture(){lastFrameBlob=null;lastFrameTime=0;let img=by('v69CapturedImage');img.hidden=true;img.removeAttribute('src');by('v69CapturePreview').querySelector('span').hidden=false;by('v69CapturedMeta').textContent='Bấm INSERT để chụp và nạp frame tại vạch thời gian.';by('v69Download').disabled=true}
+function updateClock(){let t=Math.max(0,Number(video.currentTime)||0);by('v69Current').textContent=timeLabel(t);by('v69FrameIndex').textContent='Khung ≈ '+Math.round(t*fps());by('v69Duration').textContent=timeLabel(duration());if(!range.matches(':active')){range.value=Math.min(Number(range.max),Math.round(t*fps()))};by('v69Play').textContent=video.paused?'▶ Phát':'⏸ Dừng'}
+function refreshRange(){range.max=String(Math.max(1,Math.round(duration()*fps())));updateClock()}
+function availableSlot(){return typeof vRefs!=='undefined'?Math.max(0,vRefs.findIndex(v=>!v)):0}
+function resetSlot(){by('v69Slot').value=String(availableSlot())}
+function setMedia(blob,name,origin){
+ if(!blob||!blob.size){status('Không có dữ liệu video hợp lệ.',true);return}
+ let token=++loadToken;
+ video.pause();video.removeAttribute('src');video.load();
+ if(sourceUrl)URL.revokeObjectURL(sourceUrl);
+ sourceUrl=URL.createObjectURL(blob);currentSource=origin||'local';sourceName=name||'Video nguồn';ready=false;clearCapture();setEnabled(false);
+ by('v69VideoPlaceholder').style.display='none';video.style.display='block';video.src=sourceUrl;video.load();
+ by('v69VideoInfo').textContent='Đang đọc '+sourceName+' · '+(blob.size/1048576).toFixed(1)+' MB…';
+ status('Đang tải thông số và khung hình của video…');
+ video.onloadedmetadata=function(){if(token!==loadToken)return;refreshRange();by('v69VideoInfo').textContent=sourceName+' · '+timeLabel(duration())+' · '+video.videoWidth+' × '+video.videoHeight+' · '+(blob.size/1048576).toFixed(1)+' MB';if(!duration()){status('Đã đọc video nhưng không xác định được thời lượng. Thử MP4 H.264 nếu không thể tua.',true)}};
+ video.onloadeddata=function(){if(token!==loadToken)return;ready=!!video.videoWidth;if(ready){setEnabled(true);resetSlot();updateClock();status('✓ Sẵn sàng. Tua tới khung hình mong muốn, sau đó bấm INSERT → DỰNG VIDEO.')}else status('Video chưa có hình. Kiểm tra codec hoặc định dạng nguồn.',true)};
+ video.onerror=function(){if(token!==loadToken)return;ready=false;setEnabled(false);status('Trình duyệt không đọc được codec video này. Hãy đổi sang MP4 H.264/AAC hoặc WebM VP8/VP9.',true)};
+}
+function openFile(){fileInput.value='';fileInput.click()}
+by('v69OpenFile').onclick=openFile;
+let drop=by('v69DropZone');drop.onclick=openFile;drop.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openFile()}};
+for(const ev of ['dragenter','dragover'])drop.addEventListener(ev,e=>{e.preventDefault();e.stopPropagation();drop.classList.add('drag-on')});
+for(const ev of ['dragleave','drop'])drop.addEventListener(ev,e=>{e.preventDefault();e.stopPropagation();drop.classList.remove('drag-on')});
+drop.addEventListener('drop',e=>{let f=Array.from(e.dataTransfer.files||[]).find(f=>/^video\//.test(f.type)||/\.(mp4|mov|webm|m4v)$/i.test(f.name));if(f)loadFile(f);else status('Chỉ nhận file video MP4 / MOV / WebM.',true)});
+function loadFile(file){if(!file)return;if(!/^video\//.test(file.type)&&!/\.(mp4|mov|webm|m4v)$/i.test(file.name)){status('Vui lòng chọn file video (MP4, MOV, WebM).',true);return}switchTab('frame');setMedia(file,file.name,'local')}
+fileInput.addEventListener('change',function(){let f=this.files&&this.files[0];if(f)loadFile(f)});
+window.v69OpenAiVideo=function(item){
+ if(!item||!item.url){status('Video AI này không còn liên kết hợp lệ.',true);return}
+ switchTab('frame');status('Đang tải video AI để chọn frame…');
+ fetchBlobSmart(item.url,blob=>{if(!blob||!blob.size){status('Video AI tải về rỗng.',true);return}setMedia(blob,'AI · '+(item.prompt||'Video AI').slice(0,75),'ai')},()=>status('Không tải được video AI. Link nguồn có thể đã hết hạn hoặc không hỗ trợ truy cập.',true),st=>status(st||'Đang tải video AI…'));
+};
+// Reuse existing Extension as an entry point to the external-video frame picker.
+if(by('v69FromPicker'))by('v69FromPicker').onclick=function(){by('fp').classList.remove('show');by('fpVideo').pause();switchTab('frame');openFile()};
+if(by('v69UseFrameTab'))by('v69UseFrameTab').onclick=function(){let it=typeof fpItem!=='undefined'?fpItem:null;by('fp').classList.remove('show');by('fpVideo').pause();if(it)window.v69OpenAiVideo(it);else switchTab('frame')};
+video.ontimeupdate=updateClock;video.onseeked=updateClock;video.onpause=updateClock;video.onplay=updateClock;
+by('v69Play').onclick=async function(){if(!ready)return;try{if(video.paused)await video.play();else video.pause()}catch(e){status('Thiết bị không cho phát video: '+(e.message||e),true)}updateClock()};
+function frameStep(n){if(!ready)return;video.pause();let val=Math.max(0,Math.min(Number(range.max),Math.round((video.currentTime||0)*fps())+n));range.value=val;seek(val/fps())}
+by('v69Prev5').onclick=()=>frameStep(-5);by('v69Prev1').onclick=()=>frameStep(-1);by('v69Next1').onclick=()=>frameStep(1);by('v69Next5').onclick=()=>frameStep(5);
+function seek(t){if(!ready)return;video.pause();let d=duration();let target=Math.min(Math.max(0,t),Math.max(0,d-.005));try{video.currentTime=target}catch(e){status('Không tua được đến thời điểm đã chọn.',true)}updateClock()}
+range.addEventListener('input',()=>seek(Number(range.value)/fps()));
+by('v69Fps').onchange=()=>{refreshRange();status('Đã chuyển bước tua sang '+fps()+' fps. Đây là FPS để tua, không phải FPS được đọc tự động từ video.')};
+async function settleVideo(){
+ if(!ready||!video.videoWidth||!video.videoHeight)throw new Error('Video chưa sẵn sàng để chụp frame');
+ // Wait for decoded seek target. Avoid capturing old frame after fast scrubbing.
+ if(video.seeking){await new Promise((resolve,reject)=>{let done=false;const clear=()=>{video.removeEventListener('seeked',finish);video.removeEventListener('error',fail);clearTimeout(timer)};function finish(){if(done)return;done=true;clear();resolve()}function fail(){if(done)return;done=true;clear();reject(new Error('Giải mã frame thất bại'))}let timer=setTimeout(()=>{if(done)return;done=true;clear();reject(new Error('Video chưa tua xong. Thử lại hoặc chuyển MP4 H.264.'))},4500);video.addEventListener('seeked',finish,{once:true});video.addEventListener('error',fail,{once:true});if(!video.seeking)finish()})}
+ if(video.readyState<2){await new Promise((resolve,reject)=>{let timer=setTimeout(()=>reject(new Error('Trình duyệt chưa giải mã được hình ảnh từ video')),3500);video.addEventListener('loadeddata',()=>{clearTimeout(timer);resolve()},{once:true})})}
+ await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+}
+async function captureBlob(type){
+ if(busy)throw new Error('Đang xử lý frame trước');busy=true;
+ try{video.pause();await settleVideo();const w=video.videoWidth,h=video.videoHeight;
+ const scale=Math.min(1,1920/Math.max(w,h));const c=document.createElement('canvas');c.width=Math.max(2,Math.round(w*scale));c.height=Math.max(2,Math.round(h*scale));let ctx=c.getContext('2d',{alpha:false});if(!ctx)throw new Error('Không thể tạo canvas chụp frame');ctx.drawImage(video,0,0,c.width,c.height);
+ const media=type==='png'?'image/png':'image/jpeg';const blob=await new Promise((resolve,reject)=>c.toBlob(b=>b?resolve(b):reject(new Error('Không lấy được frame từ video')) ,media,type==='png'?1:0.94));
+ if(framePreviewUrl)URL.revokeObjectURL(framePreviewUrl);framePreviewUrl=URL.createObjectURL(blob);lastFrameBlob=blob;lastFrameTime=video.currentTime||0;
+ const img=by('v69CapturedImage');img.src=framePreviewUrl;img.hidden=false;by('v69CapturePreview').querySelector('span').hidden=true;by('v69CapturedMeta').textContent='Đã chọn: '+timeLabel(lastFrameTime)+' · '+c.width+'×'+c.height+' · '+(blob.size/1024).toFixed(0)+' KB';by('v69Download').disabled=false;
+ return blob
+ }catch(e){throw e}finally{busy=false}
+}
+by('v69PreviewFrame').onclick=async function(){if(!ready||busy)return;this.disabled=true;try{await captureBlob('jpeg');status('✓ Đã chọn và xem frame '+timeLabel(lastFrameTime)+'. Bấm INSERT để đưa vào Dựng Video.')}catch(e){status('Không chụp được frame: '+(e.message||e),true)}finally{this.disabled=false}};
+async function toDataUrl(blob){return new Promise((resolve,reject)=>{let f=new FileReader();f.onload=()=>resolve(f.result);f.onerror=()=>reject(new Error('Không đọc được ảnh frame'));f.readAsDataURL(blob)})}
+by('v69Insert').onclick=async function(){if(!ready||busy)return;let button=this;button.disabled=true;let idx=Number(by('v69Slot').value);
+ try{
+  if(vRefs[idx]&&!window.confirm('Ô Ảnh '+(idx+1)+' đang có ảnh tham chiếu. Thay ảnh này bằng frame vừa chọn?'))return;
+  // Always capture current playhead; never silently insert stale preview from prior position.
+  const blob=await captureBlob('jpeg');const dataUrl=await toDataUrl(blob);
+  vRefs[idx]={dataUrl:dataUrl,uploadedUrl:null};renderVSlots();switchTab('vid');
+  by('vRefs').scrollIntoView({behavior:'smooth',block:'center'});
+  let slot=by('vRefs').querySelector('.slot[data-i="'+idx+'"]');if(slot){slot.style.boxShadow='0 0 0 3px #e6452d';setTimeout(()=>{slot.style.boxShadow=''},1800)}
+  resetSlot();status('✓ Đã INSERT frame '+timeLabel(lastFrameTime)+' vào Ảnh '+(idx+1)+' của Dựng Video.');
+  toast('✓ Đã INSERT frame vào Ảnh '+(idx+1)+' — sẵn sàng DỰNG VIDEO!');
+ }catch(e){status('Lỗi INSERT frame: '+(e.message||e),true);toast('Không INSERT được frame: '+(e.message||e),true)}finally{button.disabled=!ready}
+};
+by('v69Download').onclick=function(){if(!lastFrameBlob)return;let url=URL.createObjectURL(lastFrameBlob),a=document.createElement('a');a.href=url;a.download='IDECO_FRAME_'+timeLabel(lastFrameTime).replace(/[:.]/g,'_')+'_'+Date.now()+'.jpg';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),12000)};
+by('v69BackVideo').onclick=()=>switchTab('vid');
+window.addEventListener('pagehide',()=>{video.pause();if(sourceUrl)URL.revokeObjectURL(sourceUrl);if(framePreviewUrl)URL.revokeObjectURL(framePreviewUrl)},{once:true});
+})();
+</script>
+
 </body>
 </html>
