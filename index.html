@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2212%22%20fill%3D%22%23ee3a23%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2243%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%20font-size%3D%2231%22%20font-weight%3D%22800%22%20fill%3D%22white%22%3EI%3C%2Ftext%3E%3C%2Fsvg%3E">
-<title>IDECO AI-AGENT FILM & MUSIC STUDIO V73 · MOBILE PRO</title>
+<title>IDECO AI-AGENT FILM & MUSIC STUDIO V74 · GITHUB LOGIN FIX</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
@@ -1433,6 +1433,83 @@ body.frame-workspace #app{max-width:1300px!important}
     <div id="lockErr"></div>
   </div>
 </div>
+
+<style id="idecoV74LoginFixStyles">
+/* Authentication must remain above every workspace overlay, on every device. */
+#lock{z-index:2147483000!important;isolation:isolate;overscroll-behavior:contain;touch-action:pan-y;pointer-events:auto!important;min-height:100dvh!important}
+#lock .box,#lock .box *{pointer-events:auto!important}
+#lock #pw{display:block!important;position:relative!important;z-index:2!important;visibility:visible!important;opacity:1!important;user-select:text!important;-webkit-user-select:text!important;touch-action:manipulation!important;font-size:17px!important;min-height:54px!important}
+#lock #btnUnlock{position:relative!important;z-index:2!important;min-height:52px!important;touch-action:manipulation!important}
+#lock .remember input{min-height:18px!important}
+body:not(.clip-mode) #v73MobileDock{display:none!important}
+body:not(.clip-mode) #v73MobileExport,body:not(.clip-mode) #v73MobileProgress{display:none!important}
+@media(max-width:600px){#lock{padding:18px!important}#lock .box{max-width:360px!important}}
+</style>
+<script id="idecoV74EarlyLoginScript">
+(function(){
+  'use strict';
+  var pw=document.getElementById('pw'), button=document.getElementById('btnUnlock');
+  var screen=document.getElementById('lock'),err=document.getElementById('lockErr');
+  if(!pw||!button||!screen)return;
+  // Password validation runs before the large editor initializes. This is not server-side authentication.
+  var SHA256 = 'b8a57977041c2b2ba8baab472c1f0240a30b671a9fb027f9e4d73b52818b0b29';
+  function sha256ascii(ascii){
+    // Small synchronous SHA-256 for the legacy local-only lock: no HTTPS / crypto.subtle dependency.
+    var p=Math.pow,max=4294967296,words=[],n=ascii.length,hash=[],k=[],prime=2;
+    function isPrime(x){for(var q=2;q*q<=x;q++)if(x%q===0)return false;return true}
+    while(k.length<64){if(isPrime(prime)){if(hash.length<8)hash.push((p(prime,0.5)%1*max)|0);k.push((p(prime,1/3)%1*max)|0)}prime++}
+    ascii+='\x80';while(ascii.length%64!==56)ascii+='\x00';
+    for(var j=0;j<ascii.length;j++){var c=ascii.charCodeAt(j);if(c>255)return '';words[j>>2]|=c<<((3-j)%4)*8}
+    words[words.length]=(n*8/max)|0;words[words.length]=n*8;
+    for(j=0;j<words.length;j+=16){var w=words.slice(j,j+16),old=hash.slice();
+      for(var i=0;i<64;i++){
+        var s=w[i-15],t=w[i-2];
+        if(i>=16)w[i]=(w[i-16]+(((s>>>7)|(s<<25))^((s>>>18)|(s<<14))^(s>>>3))+w[i-7]+(((t>>>17)|(t<<15))^((t>>>19)|(t<<13))^(t>>>10)))|0;
+        var a=hash[0],b=hash[1],c=hash[2],d=hash[3],e=hash[4],f=hash[5],g=hash[6],h=hash[7],
+        z1=(h+(((e>>>6)|(e<<26))^((e>>>11)|(e<<21))^((e>>>25)|(e<<7)))+((e&f)^(~e&g))+k[i]+w[i])|0,
+        z2=((((a>>>2)|(a<<30))^((a>>>13)|(a<<19))^((a>>>22)|(a<<10)))+((a&b)^(a&c)^(b&c)))|0;
+        hash=[(z1+z2)|0,a,b,c,(d+z1)|0,e,f,g];
+      }
+      for(i=0;i<8;i++)hash[i]=(hash[i]+old[i])|0;
+    }
+    return hash.map(function(v){return ('00000000'+(v>>>0).toString(16)).slice(-8)}).join('');
+  }
+  function reveal(){
+    screen.style.display='none';screen.setAttribute('aria-hidden','true');
+    var a=document.getElementById('app');if(a)a.classList.add('on');
+    document.documentElement.classList.add('ideco-v74-authenticated');
+  }
+  function remember(){
+    try{sessionStorage.setItem('taoanh_unlocked','1')}catch(_){}
+    try{
+      if(document.getElementById('rememberLogin')?.checked){
+        var now=Date.now();localStorage.setItem('taoanh_remembered_device',JSON.stringify({ok:1,savedAt:now,expiresAt:now+180*86400000}));
+      }else{localStorage.removeItem('taoanh_remembered_device')}
+    }catch(_){}
+  }
+  function run(ev){
+    if(ev){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation()}
+    if(sha256ascii(pw.value.trim())===SHA256){err.textContent='';remember();reveal();
+      // Defer any API and heavy editor initialization until after the lock has disappeared.
+      setTimeout(function(){try{if(typeof refreshCredits==='function')refreshCredits()}catch(e){console.warn('Credits startup:',e)}},100);
+    }else{err.textContent='Mật khẩu không đúng. Hãy nhập lại.';pw.focus();pw.select()}
+  }
+  button.setAttribute('type','button');button.addEventListener('click',run,true);
+  pw.addEventListener('keydown',function(ev){if(ev.key==='Enter')run(ev)},true);
+  function prior(){
+    try{
+      var j=localStorage.getItem('taoanh_remembered_device');
+      if(j){if(j==='1')return true;var v=JSON.parse(j);if(v&&v.ok===1&&v.expiresAt>Date.now())return true}
+    }catch(_){}
+    try{return sessionStorage.getItem('taoanh_unlocked')==='1'}catch(_){return false}
+  }
+  if(prior()){
+    document.documentElement.classList.add('ideco-v74-authenticated');
+    // #app may not be parsed yet; DOMContentLoaded is the second-safe path.
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',reveal,{once:true});else reveal();
+  }
+})();
+</script>
 
 <!-- ===== APP ===== -->
 <div id="app">
@@ -11408,6 +11485,8 @@ refreshCacheBar('vid');
 renderGallery();
 try{ if(sessionStorage.getItem(LOGIN_SESSION_KEY) === '1' || hasRememberedLogin()) refreshCredits(); }catch(_){ if(hasRememberedLogin()) refreshCredits(); }
 </script>
+<script data-ideco-v74-init-boundary>void 0;</script>
+
 
 <div class="v46-export-modal" id="v46ExportModal" aria-hidden="true">
   <div class="v46-export-card" role="dialog" aria-modal="true" aria-labelledby="v46ExportTitle">
@@ -11850,6 +11929,8 @@ try{ if(sessionStorage.getItem(LOGIN_SESSION_KEY) === '1' || hasRememberedLogin(
   console.log('[IDECO V60] WAV preview engine ready');
 })();
 </script>
+<script data-ideco-v74-init-boundary>void 0;</script>
+
 
 
 <!-- ================= V61 PROJECT SAVE + WIDE TIMELINE + TIKTOK EDGE TRIM ================= -->
@@ -12052,10 +12133,14 @@ body.clip-mode.v61-timeline-wide .clip-stage{padding-top:4px!important;padding-b
   console.log('[IDECO V61] Project Save/Open + Wide Timeline + Edge Trim ready');
 })();
 </script>
+<script data-ideco-v74-init-boundary>void 0;</script>
+
 
 <script>
 console.log('[IDECO] V9.10 FAST: GPT Image 2.5 + parallel ref upload + immediate/1s polling');
 </script>
+<script data-ideco-v74-init-boundary>void 0;</script>
+
 
 
 <!-- ================= V62: PREVIEW/EXPORT ASPECT + MAGNET JOIN ================= -->
@@ -12160,6 +12245,8 @@ body.v45-export-lock #clipMagnetJoin{opacity:.45!important;pointer-events:none!i
   console.log('[IDECO V62] Preview/Export aspect 1:1 9:16 16:9 3:2 2:3 + Magnet Join ready');
 })();
 </script>
+<script data-ideco-v74-init-boundary>void 0;</script>
+
 
 <!-- ================= V63: PRIVACY METADATA CONTROL ================= -->
 <script id="v63PrivacyMetadataScript">
@@ -12185,6 +12272,8 @@ body.v45-export-lock #clipMagnetJoin{opacity:.45!important;pointer-events:none!i
   console.log('[IDECO V63] Privacy metadata export control ready');
 })();
 </script>
+<script data-ideco-v74-init-boundary>void 0;</script>
+
 
 <style id="v100Style">
 #sbPanel{border:1px solid #e34c39;border-radius:14px;padding:16px;margin:12px 0;background:#fff7f3;color:#292323}
@@ -12279,6 +12368,8 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')document.bod
 $('clipImageFile').onchange=async function(){var files=Array.from(this.files||[]);this.value='';for(var f of files){var u=URL.createObjectURL(f);try{await new Promise(function(resolve,reject){var im=new Image();im.onload=function(){clipObjectUrls.push(u);var it={id:clipUid(),track:'visual',type:'image',name:f.name,url:u,img:im,start:clipInsertStart('visual'),duration:3,scale:100,x:0,y:0,fit:'contain',effect:'none'};clipTracks.visual.push(it);clipSelectedId=it.id;clipRenderAll();resolve()};im.onerror=reject;im.src=u})}catch(_){URL.revokeObjectURL(u);toast('Không đọc được ảnh '+f.name,true)}}clipMaybeAutoFit()};
 })();
 </script>
+<script data-ideco-v74-init-boundary>void 0;</script>
+
 
 <style>
 #v101RefBox{border:1px solid #d74430;background:#fff8f3;border-radius:14px;padding:16px;margin:12px 0}
@@ -12320,6 +12411,8 @@ body.sb-running #v101Attach{pointer-events:none;opacity:.5}
   window.v101ImageCommands={expand:commandPrompt};
 })();
 </script>
+<script data-ideco-v74-init-boundary>void 0;</script>
+
 
 
 <style id="v64IndependentExportStyle">
@@ -12341,6 +12434,8 @@ body.v64-export-running .clip-playbar,body.v64-export-running .clip-toptools,bod
   console.log('[IDECO V64] NO-FLASH + independent Preview/background export ready');
 })();
 </script>
+<script data-ideco-v74-init-boundary>void 0;</script>
+
 
 <style id="v65DecodeRecoveryStyle">
 .v65-recovery-note{display:inline-flex;align-items:center;gap:5px;border:1px solid #8a6a28;background:#2f2814;color:#ffd76a;border-radius:999px;padding:4px 8px;font-size:8px;font-weight:900;white-space:nowrap}
@@ -12352,6 +12447,8 @@ body.v64-export-running .clip-playbar,body.v64-export-running .clip-toptools,bod
   console.log('[IDECO V65.1] Nonstop decode + cooldown retry + silent-audio fallback ready');
 })();
 </script>
+<script data-ideco-v74-init-boundary>void 0;</script>
+
 
 <script id="v651NonStopDiagnostic">
 (function(){
@@ -12359,6 +12456,8 @@ body.v64-export-running .clip-playbar,body.v64-export-running .clip-toptools,bod
   console.log('[IDECO V65.1] Export will not abort on transient frame/audio decode failures');
 })();
 </script>
+<script data-ideco-v74-init-boundary>void 0;</script>
+
 
 
 <style id="v66FilmWorkflowStyle">
@@ -12498,6 +12597,8 @@ body.v64-export-running .clip-playbar,body.v64-export-running .clip-toptools,bod
   console.log('[IDECO V66] AI Film Studio workflow ready');
 })();
 </script>
+<script data-ideco-v74-init-boundary>void 0;</script>
+
 
 
 <style id="v663EasyWorkflowStyle">
@@ -12597,6 +12698,8 @@ body.v64-export-running .clip-playbar,body.v64-export-running .clip-toptools,bod
   setTimeout(enhanceEasy,0);window.V663EasyFilm={enhance:enhanceEasy,saveScene:saveScene};console.log('[IDECO V66.3] Easy Film Workflow ready');
 })();
 </script>
+<script data-ideco-v74-init-boundary>void 0;</script>
+
 
 <style id="v664AudioStyle">
 .v664-audio-intro{font-size:12.5px;line-height:1.6;color:#68645d;margin-bottom:11px}.v664-big-btn{width:100%;border:0;border-radius:12px;background:#5b4be8;color:#fff;font-weight:900;padding:13px;font-size:13px}.v664-audio-info{margin:9px 0;padding:9px 11px;border:1px solid var(--line);background:#fdfcfa;border-radius:10px;font-size:11.5px;color:#666}.v664-cut-row{display:grid;grid-template-columns:1fr auto;gap:9px;align-items:end}.v664-cut-row label{display:block;font-size:10.5px;color:#777;margin-bottom:5px;font-weight:800}.v664-cut-row select{min-width:220px}.v664-cut-row button{border:0;background:var(--red);color:#fff;border-radius:10px;padding:11px 14px;font-weight:900}.v664-note{margin-top:10px;background:#fff7df;border:1px solid #ead7a7;border-radius:10px;padding:9px 11px;color:#7a5a13;font-size:10.8px;line-height:1.5}.v664-result-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}.v664-result-head button{border:0;border-radius:9px;background:#2f8f5b;color:#fff;padding:9px 11px;font-size:10.5px;font-weight:900}.v664-cut-list{display:flex;flex-direction:column;gap:8px}.v664-seg{border:1px solid var(--line);border-radius:11px;padding:10px;background:#fdfcfa}.v664-seg-top{display:flex;gap:8px;align-items:center}.v664-seg-num{background:#24262d;color:#fff;border-radius:999px;padding:3px 8px;font-size:9px;font-weight:900}.v664-seg-name{flex:1;font-size:11.5px;font-weight:800}.v664-seg-time{font-size:10.5px;color:#777}.v664-seg audio{width:100%;margin:8px 0;height:34px}.v664-seg-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.v664-seg-actions button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 5px;font-size:9.5px;font-weight:800}.v664-seg-actions .add{border-color:#3a8a5f;color:#27734c}.v664-seg-actions .use{border-color:#6559cb;color:#5344c0}.v664-scene-audio-box{margin:9px 0;padding:10px;border:1px solid #4c466d;background:#171725;border-radius:10px}.v664-scene-audio-box>b{display:block;color:#e8e6ff;font-size:11px;margin-bottom:3px}.v664-scene-audio-help{display:block;color:#9895b6;font-size:9.8px;line-height:1.45;margin-bottom:8px}.v664-scene-audio-box input[type=file]{width:100%;font-size:10px;color:#c9c7d7}.v664-scene-audio-info{margin-top:7px;color:#9da3af;font-size:10px}.v664-mini-actions{display:flex;gap:6px;margin-top:7px}.v664-mini-actions button{flex:1;border:1px solid #45435f;background:#222235;color:#ddd;border-radius:8px;padding:7px 5px;font-size:9px;font-weight:800}.v664-video-audio-box{margin-top:8px;border:1px solid var(--line);border-radius:12px;padding:10px;background:#fdfcfa}.v664-video-audio-box .row{display:flex;gap:7px;align-items:center}.v664-video-audio-box button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 10px;font-size:10.5px;font-weight:800}.v664-video-audio-box small{display:block;color:#777;margin-top:6px;line-height:1.45}@media(max-width:620px){.v664-cut-row{grid-template-columns:1fr}.v664-cut-row button{width:100%}.v664-seg-actions{grid-template-columns:1fr}.v664-result-head{align-items:stretch;flex-direction:column}.v664-result-head button{width:100%}}
@@ -12622,6 +12725,8 @@ body.v64-export-running .clip-playbar,body.v64-export-running .clip-toptools,bod
   console.log('[IDECO V66.4] Audio Lip-sync + Cutter ready');
 })();
 </script>
+<script data-ideco-v74-init-boundary>void 0;</script>
+
 
 
 <!-- ===== IDECO V67: MUSIC + TOUCH TRANSITIONS + MP4 QUICK PRESETS ===== -->
@@ -12871,6 +12976,8 @@ body.v67-music-expanded #v67MusicFullscreen{position:fixed;right:16px;top:14px;z
   console.info('[IDECO V67] Full Music V6 embedded; touch transitions; frame decode and export presets active');
 })();
 </script>
+<script data-ideco-v74-init-boundary>void 0;</script>
+
 
 <style id="v68ProWorkspaceStyles">
 /* V68 non-destructive workstation — Film and Music functions remain unchanged */
@@ -13147,6 +13254,8 @@ body.v68-resizing{cursor:grabbing!important;user-select:none!important}body.v68-
   console.info('[IDECO V68] Resize panels, proportional timeline zoom, natural rain canvas + 44.1kHz ambience ready');
 })();
 </script>
+<script data-ideco-v74-init-boundary>void 0;</script>
+
 <style id="v68MobileCompactFinal">
 /* One-screen-first editing on phones; an accessible Timeline Focus toggle gives the entire lower area to editing. */
 @media(max-width:900px){
@@ -13198,6 +13307,8 @@ focus.onclick=function(){var on=document.body.classList.toggle('v68-focus');focu
 var info=document.getElementById('v68Tip');if(info)info.textContent='Thu âm SFX thật (WAV/MP3) cho kết quả tự nhiên nhất. Preset rain / whoosh / applause là âm thanh mô phỏng bằng thuật toán.';
 })();
 </script>
+<script data-ideco-v74-init-boundary>void 0;</script>
+
 
 <script id="v69-frame-script">
 (function(){
@@ -13290,6 +13401,8 @@ by('v69BackVideo').onclick=()=>switchTab('vid');
 window.addEventListener('pagehide',()=>{video.pause();if(sourceUrl)URL.revokeObjectURL(sourceUrl);if(framePreviewUrl)URL.revokeObjectURL(framePreviewUrl)},{once:true});
 })();
 </script>
+<script data-ideco-v74-init-boundary>void 0;</script>
+
 
 <script id="v70-detach-audio">
 /* IDECO V70: Non-destructive timeline audio detachment + per-clip context menu.
@@ -13450,6 +13563,8 @@ window.addEventListener('pagehide',()=>{video.pause();if(sourceUrl)URL.revokeObj
 })();
 
 </script>
+<script data-ideco-v74-init-boundary>void 0;</script>
+
 <style id="v71MultiLayerStyle">
 /* V71: genuine visual stacking of clips without forcing overlapping blocks onto one line */
 body.clip-mode #v71LayerToolbar{display:flex;flex-wrap:wrap;gap:7px;align-items:center;padding:8px 9px;background:#14242c;border:1px solid #32505f;border-radius:11px;color:#e8f5ff;margin:4px 0 7px;font:600 11px 'Be Vietnam Pro',system-ui,sans-serif}
@@ -13612,6 +13727,8 @@ body.clip-mode #v71LayerToolbar .v71-kind{font-size:12px}
  console.info('[IDECO V71] multi-layer timeline + reliable save destination + fast draft preset');
 })();
 </script>
+<script data-ideco-v74-init-boundary>void 0;</script>
+
 
 <style id="idecoV72SimpleEditorStyle">
 /* V72: single focused timeline toolbar; never remove legacy button functionality. */
@@ -13741,11 +13858,19 @@ window.clipRenderTimeline=function(){const r=base.apply(this,arguments);for(cons
 try{clipRenderTimeline()}catch(e){console.warn('V72 timeline initialization',e)}
 // Sidebar is a drawer, not a persistent third column; hide it again when leaving Clip mode.
 function applyMode(){body.classList.toggle('v72-editor',body.classList.contains('clip-mode'));if(!body.classList.contains('clip-mode'))panelClose()}
-new MutationObserver(applyMode).observe(body,{attributes:true,attributeFilter:['class']});applyMode();
+// V74: avoid observing and rewriting body.class in the same mutation checkpoint.
+// This was susceptible to a class-change feedback loop with other editor modules.
+if(typeof switchTab==='function'){
+ const priorV74SwitchTab=switchTab;
+ window.switchTab=function(){const result=priorV74SwitchTab.apply(this,arguments);applyMode();return result};
+}
+applyMode();
 window.IDECO_V72={plus,minus,panelOpen,panelClose,closeMenus};
 console.info('[IDECO V72] Clean workspace, inline +/- layers, compact import, on-demand inspector');
 })();
 </script>
+<script data-ideco-v74-init-boundary>void 0;</script>
+
 
 <style id="idecoV73MobileStyle">
 /* V73: Android/mobile tool reach, scrollable timeline and thumb-sized actions. */
@@ -13943,5 +14068,7 @@ console.info('[IDECO V72] Clean workspace, inline +/- layers, compact import, on
  console.info('[IDECO V73] Android dock, thumb-sized timeline, codec fallback, save/share');
 })();
 </script>
+<script data-ideco-v74-init-boundary>void 0;</script>
+
 </body>
 </html>
