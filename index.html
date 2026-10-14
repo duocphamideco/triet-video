@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2212%22%20fill%3D%22%23ee3a23%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2243%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%20font-size%3D%2231%22%20font-weight%3D%22800%22%20fill%3D%22white%22%3EI%3C%2Ftext%3E%3C%2Fsvg%3E">
-<title>IDECO AI-AGENT FILM & MUSIC STUDIO V68 · PRO EDITOR</title>
+<title>IDECO AI-AGENT FILM & MUSIC STUDIO V73 · MOBILE PRO</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
@@ -2019,7 +2019,7 @@ body.frame-workspace #app{max-width:1300px!important}
   <div id="tabClip" style="display:none">
     <div class="clip-head">
       <button class="clip-exit" id="clipExit">← Thoát CLIP</button>
-      <div><b>✂ CLIP · Timeline Editor V62 FRAME + MAGNET</b><small>CORE V61 + V62 · KHUNG PREVIEW/XUẤT · KẾT DÍNH CLIP · LƯU/MỞ DỰ ÁN</small></div>
+      <div><b>🎬 IDECO · DỰNG CLIP V73</b><small>CORE V61 + V62 · KHUNG PREVIEW/XUẤT · KẾT DÍNH CLIP · LƯU/MỞ DỰ ÁN</small></div>
       <span class="clip-badge">CAPCUT STYLE</span>
     </div>
 
@@ -7473,6 +7473,7 @@ if(clipNv){
   var oldClear=$('clipClear')&&$('clipClear').onclick;
   if($('clipClear'))$('clipClear').onclick=function(e){proHideVisualVideos(null);if(oldClear)return oldClear.call(this,e)};
 
+  window.IDECO_V73_RECORD_FALLBACK = proExportProject;
   toast('V30 GITHUB VIDEO LAYER FIX: canh cắt theo frame + HD/FHD/2K + FX/SFX kéo-thả');
 })();
 
@@ -13484,7 +13485,7 @@ body.clip-mode #v71LayerToolbar .v71-kind{font-size:12px}
  const unit=()=>Math.max(35,Math.min(72,Number.parseFloat(getComputedStyle(document.body).getPropertyValue('--v68-track-h'))||54));
  const tracks=['visual','overlay','text','effect','audio','sfx'];
  const names={visual:'VIDEO / ẢNH',overlay:'OVERLAY',text:'CHỮ',effect:'HIỆU ỨNG',audio:'ÂM THANH',sfx:'SFX'};
- const state={target:'audio',preferred:0};
+ const state={target:'audio',preferred:0};window.IDECO_V71_LAYER_STATE=state;
  const toolbar=document.createElement('div');toolbar.id='v71LayerToolbar';
  toolbar.innerHTML='<b>▤ TIMELINE NHIỀU LỚP</b><label for="v71TrackTarget">Thêm vào nhóm</label><select id="v71TrackTarget"><option value="visual">🎬 VIDEO / ẢNH</option><option value="overlay">🖼 OVERLAY</option><option value="audio" selected>🎵 AUDIO</option><option value="sfx">🔊 SFX</option><option value="text">📝 CHỮ</option><option value="effect">✨ FX</option></select><button type="button" id="v71AddLayer">＋ LỚP MỚI</button><button type="button" id="v71CompactLayers">▤ GỌN LỚP</button><span class="v71-target" id="v71TargetDisplay"></span><span class="v71-small">Thêm clip sẽ tự xuống hàng khi trùng thời gian. Kéo block lên/xuống đổi lớp; kéo ngang đổi thời điểm.</span>';
  const tl= document.querySelector('.clip-timeline-wrap');
@@ -13503,7 +13504,7 @@ body.clip-mode #v71LayerToolbar .v71-kind{font-size:12px}
      // Prefer row zero for non-overlapping items, but preserve manual track placement.
      it.v71Layer=l;used[l].push(it);
    }
-   return Math.max(1,...arr.map(it=>layerNum(it)+1),track===state.target?state.preferred+1:1);
+   return Math.max(1,...arr.map(it=>layerNum(it)+1),track===state.target?state.preferred+1:1,(window.IDECO_V72_RESERVE_LAYERS||{})[track]||1);
  }
  function refreshTarget(){get('v71TargetDisplay').textContent='LỚP '+(state.preferred+1)+' · '+names[state.target]}
  group.onchange=()=>{state.target=group.value;state.preferred=0;refreshTarget()};
@@ -13527,7 +13528,7 @@ body.clip-mode #v71LayerToolbar .v71-kind{font-size:12px}
    const result=baseRender.apply(this,arguments),h=unit();
    for(const tr of tracks){
      const lane=document.querySelector('#clipScroll > .clip-track > .clip-lane[data-track="'+tr+'"]');if(!lane)continue;
-     const n=Math.max(1,...(clipTracks[tr]||[]).map(x=>layerNum(x)+1),tr===state.target?state.preferred+1:1);
+     const n=Math.max(1,...(clipTracks[tr]||[]).map(x=>layerNum(x)+1),tr===state.target?state.preferred+1:1,(window.IDECO_V72_RESERVE_LAYERS||{})[tr]||1);
      lane.classList.add('v71-stacked');lane.style.setProperty('--v71-unit',h+'px');lane.style.setProperty('--v71-height',(n*h)+'px');
      for(const b of lane.querySelectorAll('.clip-block[data-id]')){
        const f=clipFind(b.dataset.id);if(!f)continue;
@@ -13612,5 +13613,335 @@ body.clip-mode #v71LayerToolbar .v71-kind{font-size:12px}
 })();
 </script>
 
+<style id="idecoV72SimpleEditorStyle">
+/* V72: single focused timeline toolbar; never remove legacy button functionality. */
+body.clip-mode.v72-editor .clip-layout{display:flex!important;flex-direction:column!important;grid-template-columns:none!important;gap:0!important;min-height:0!important;min-width:0;width:100%;height:calc(100dvh - 84px)!important;overflow:hidden!important}
+body:not(.clip-mode) #clipInspector{display:none!important}
+body.clip-mode.v72-editor:not(.v45-export-lock) #v45ExportTopbar{display:none!important}
+body.clip-mode.v72-editor:not(.v45-export-lock) .clip-layout{height:calc(100dvh - 49px)!important}
+body.clip-mode.v72-editor .clip-exportbar select#clipAspect{display:none!important}
+body.clip-mode.v72-editor .clip-exportbar select#clipRes{width:auto!important;min-width:108px!important;max-width:145px!important;flex:0 0 auto!important;padding:6px 8px!important}
+body.clip-mode.v72-editor .clip-exportbar .clip-export{min-width:110px!important;max-height:37px!important;min-height:34px!important;white-space:nowrap!important;font-size:11px!important;padding:7px 13px!important;display:inline-flex!important;align-items:center;justify-content:center;line-height:1.15!important}
+body.clip-mode.v72-editor #clipVideoFile,body.clip-mode.v72-editor #clipImageFile,body.clip-mode.v72-editor #clipOverlayFile,body.clip-mode.v72-editor #clipAudioFile,body.clip-mode.v72-editor #clipSfxFile{display:none!important}
+body.clip-mode.v72-editor #v68ColGrip{display:none!important}
+body.clip-mode.v72-editor .clip-preview-card{display:flex!important;flex-direction:column!important;width:100%!important;height:100%!important;min-height:0!important;flex:1 1 auto!important;overflow:hidden!important}
+body.clip-mode.v72-editor .clip-stage{min-width:0;flex:0 0 auto;padding:5px 7px 6px!important}
+body.clip-mode.v72-editor .clip-preview-surface{margin:0 auto!important}
+body.clip-mode.v72-editor .clip-timeline-wrap{flex:1 1 auto!important;min-height:180px!important;height:auto!important;overflow:hidden!important;margin-top:4px!important;width:100%!important}
+body.clip-mode.v72-editor #clipScroll{flex:1 1 auto!important;min-height:110px!important;height:auto!important}
+body.clip-mode.v72-editor #clipInspector{position:fixed!important;z-index:351!important;right:0!important;top:0!important;bottom:0!important;left:auto!important;display:flex!important;flex-direction:column!important;transform:translateX(105%);opacity:0;visibility:hidden;pointer-events:none;width:min(420px,94vw)!important;min-width:0!important;height:100dvh!important;max-height:100dvh!important;margin:0!important;border:1px solid #475168!important;border-radius:14px 0 0 14px!important;background:#181b24!important;box-shadow:-14px 0 42px #0009!important;transition:transform .22s ease,opacity .22s ease,visibility .22s!important;overflow:auto!important;padding:0!important}
+body.clip-mode.v72-editor.v72-panel-open #clipInspector{transform:translateX(0)!important;opacity:1!important;visibility:visible!important;pointer-events:auto!important}
+body.clip-mode.v72-editor #clipInspector .clip-side-tabs{position:sticky;top:47px;z-index:15;background:#1a1d26}
+body.clip-mode.v72-editor #clipInspector .clip-side-library,body.clip-mode.v72-editor #clipSideProps{overflow:auto;min-height:0}
+body.clip-mode.v72-editor #v68Dock,body.clip-mode.v72-editor #v71LayerToolbar,body.clip-mode.v72-editor .clip-tl-toolbar,body.clip-mode.v72-editor #v41Workbar,body.clip-mode.v72-editor #v70DetachHint,body.clip-mode.v72-editor .v67-editor-help,body.clip-mode.v72-editor .v67-transitions,body.clip-mode.v72-editor .clip-toptools,body.clip-mode.v72-editor .clip-presetbar,body.clip-mode.v72-editor .clip-fx-palette{display:none!important}
+body.clip-mode.v72-editor .clip-head{height:39px!important;min-height:39px!important;gap:9px;padding:5px 9px!important}
+body.clip-mode.v72-editor .clip-head .clip-badge,body.clip-mode.v72-editor .clip-head small{display:none!important}
+body.clip-mode.v72-editor .clip-head b{font-size:12px!important;line-height:1.2}
+body.clip-mode.v72-editor .v45-export-topbar{min-height:35px!important;padding:3px 9px!important}
+body.clip-mode.v72-editor #v68RowGrip{height:8px!important;min-height:8px!important;flex-basis:8px!important;margin:2px 0!important}
+body.clip-mode.v72-editor #v68RowGrip::after{content:'⋯'!important;font-size:13px!important;line-height:5px!important}
+body.clip-mode.v72-editor .clip-overview{max-height:19px!important;min-height:19px!important;flex-basis:19px!important}
+body.clip-mode.v72-editor .clip-exportbar{padding:4px 8px!important;gap:6px;min-height:38px}
+body.clip-mode.v72-editor #clipScroll .clip-track .v71-tag,body.clip-mode.v72-editor #clipScroll .clip-track .v71-layer-btn,body.clip-mode.v72-editor #clipScroll .clip-track .v71-count{display:none!important}
+body.clip-mode.v72-editor #clipScroll .clip-track-label{position:sticky!important;left:0!important;display:flex!important;align-items:center!important;gap:3px!important;flex-wrap:wrap;padding:3px!important;overflow:hidden;background:#1b1d26;z-index:8!important}
+body.clip-mode.v72-editor #clipScroll .clip-track-label>.v41-track-grab{display:none!important}
+body.clip-mode.v72-editor #clipScroll .clip-track-label>.v41-track-main{flex:1 1 35px!important;min-width:32px!important;overflow:hidden}
+body.clip-mode.v72-editor #clipScroll .clip-track-label .v41-track-main b{font-size:9px}
+body.clip-mode.v72-editor #clipScroll .clip-track-label .v41-track-main small{display:none}
+body.clip-mode.v72-editor .v72-layer-actions{display:flex!important;align-items:center;gap:2px;margin-left:auto}
+body.clip-mode.v72-editor .v72-layer-actions button{min-width:21px;min-height:24px;padding:1px 3px;border:1px solid #53616f;background:#25303a;border-radius:5px;color:#d7e8f1;font:800 15px/1 system-ui;cursor:pointer;touch-action:manipulation}
+body.clip-mode.v72-editor .v72-layer-actions button:active{background:#306989}
+body.clip-mode.v72-editor .v72-layer-actions .v72-num{font:700 9px system-ui;color:#98adc1;min-width:12px;text-align:center}
+#v72MainBar{display:flex;align-items:center;gap:5px;flex:0 0 auto!important;min-height:44px;max-height:46px;padding:4px 7px;background:#1c212b;border-bottom:1px solid #323946;color:#e9edf5;position:relative;z-index:31}
+#v72MainBar button{flex:0 0 auto;min-height:34px;border:1px solid #434a57;border-radius:7px;padding:6px 10px;background:#282d37;color:#e8edf6;font:700 11px system-ui;cursor:pointer;white-space:nowrap}
+#v72MainBar button:hover{background:#38414f;border-color:#6ca9da}
+#v72MainBar button.v72-primary{background:#ca472e;color:#fff;border-color:#e36653}
+#v72MainBar button:disabled{opacity:.38;cursor:not-allowed}
+#v72MainBar .v72-space{flex:1 1 auto}
+#v72MainBar .v72-zoom-wrap{display:flex;align-items:center;gap:4px;max-width:min(265px,28vw);min-width:112px;flex:1 1 150px}
+#v72MainBar .v72-zoom-wrap input{width:100%;min-width:35px;accent-color:#ff725c}
+#v72MainBar .v72-zoom-wrap button{padding:4px 7px;font-size:14px}
+#v72AddMenu,#v72MoreMenu{display:none;position:fixed;z-index:501;background:#222a35;border:1px solid #4d5b6d;border-radius:12px;padding:7px;width:min(255px,calc(100vw - 18px));box-shadow:0 15px 36px #0009;grid-template-columns:1fr 1fr;gap:5px}
+#v72AddMenu.open,#v72MoreMenu.open{display:grid}
+#v72AddMenu button,#v72MoreMenu button{min-height:42px;padding:8px 6px;background:#303b48;border:1px solid #495568;border-radius:7px;color:#e9f3ff;font:700 11px system-ui;cursor:pointer}
+#v72AddMenu button:active,#v72MoreMenu button:active{background:#3a627e}
+#v72DrawerBackdrop{display:none;position:fixed;inset:0;background:#0009;z-index:350}
+body.v72-panel-open #v72DrawerBackdrop{display:block}
+#v72DrawerHead{position:sticky;top:0;z-index:20;height:47px;min-height:47px;display:flex;align-items:center;gap:7px;background:#212734;border-bottom:1px solid #434a58;padding:6px 12px;color:#eef5ff;font:800 13px system-ui}
+#v72DrawerHead button{margin-left:auto;border:1px solid #566073;background:#374052;color:#fff;border-radius:8px;padding:8px 12px;font-weight:800}
+@media(max-width:900px){
+ body.clip-mode.v72-editor{overflow:hidden!important}
+ body.clip-mode.v72-editor #tabClip{height:100dvh!important;min-height:0!important;overflow:hidden!important;padding:0 4px 3px!important}
+ body.clip-mode.v72-editor .clip-layout{height:calc(100dvh - 45px)!important;overflow:hidden!important}
+ body.clip-mode.v72-editor.v45-export-lock .clip-layout{height:calc(100dvh - 80px)!important}
+ body.clip-mode.v72-editor .clip-preview-card{height:100%!important;flex:1 1 auto!important;overflow:hidden!important}
+ body.clip-mode.v72-editor .clip-preview-surface{height:min(28dvh,245px)!important;max-height:min(28dvh,245px)!important;width:min(100%,calc(min(28dvh,245px) * var(--preview-ratio,0.5625)))!important}
+ body.clip-mode.v72-editor .clip-timeline-wrap{height:auto!important;flex:1 1 auto!important;min-height:165px!important}
+ body.clip-mode.v72-editor #v68RowGrip{display:block!important}
+ body.clip-mode.v72-editor .v45-export-topbar{height:35px!important;overflow:hidden}
+ body.clip-mode.v72-editor .v45-top-progress{display:none!important}
+ body.clip-mode.v72-editor .clip-head{height:38px!important;min-height:38px!important}
+ body.clip-mode.v72-editor .clip-exit{font-size:10px;padding:5px!important}
+ #v72MainBar{gap:3px;padding:4px;min-height:45px}
+ #v72MainBar button{min-height:34px;padding:5px 7px;font-size:10px}
+ #v72MainBar .v72-zoom-wrap{min-width:78px;max-width:125px}
+ #v72MainBar #v72QuickDelete,#v72MainBar #v72QuickSplit{display:none}
+ body.clip-mode.v72-editor .clip-exportbar select{max-width:84px;font-size:9px;padding:6px 2px}
+ body.clip-mode.v72-editor .clip-exportbar .clip-progress{min-width:0!important;flex:1;overflow:hidden;white-space:nowrap;font-size:9px}
+ body.clip-mode.v72-editor .clip-export{padding:8px 9px;font-size:10px;white-space:nowrap}
+ body.clip-mode.v72-editor #clipScroll .clip-track-label{min-width:0}
+}
+@media(max-width:390px){#v72MainBar #v72BtnFit{display:none}}
+</style>
+<script id="idecoV72SimpleEditorScript">
+(function(){
+'use strict';
+const get=id=>document.getElementById(id),body=document.body,tl=document.querySelector('.clip-timeline-wrap'),ins=get('clipInspector'),scroll=get('clipScroll');
+if(!tl||!ins||!scroll||!get('v71AddLayer'))return;
+const keys=['visual','overlay','text','effect','audio','sfx'];
+const reserved=window.IDECO_V72_RESERVE_LAYERS=Object.assign({visual:1,overlay:1,text:1,effect:1,audio:1,sfx:1},(()=>{try{return JSON.parse(localStorage.getItem('ideco.v72.reserve')||'{}')}catch(e){return {}}})());
+function persist(){try{localStorage.setItem('ideco.v72.reserve',JSON.stringify(reserved))}catch(e){}}
+function tell(t,bad){if(typeof toast==='function')toast(t,!!bad);else console.log(t)}
+const bar=document.createElement('div');bar.id='v72MainBar';
+bar.innerHTML='<button type="button" class="v72-primary" id="v72Add">＋ THÊM ▾</button><button id="v72QuickSplit" title="Cắt tại vị trí đang xem (S)">✂ Cắt</button><button id="v72QuickDelete" title="Xóa clip đã chọn">⌫ Xóa</button><button id="v72BtnFit" title="Nhìn toàn bộ dự án">⛶ Fit</button><div class="v72-space"></div><div class="v72-zoom-wrap"><button id="v72ZoomOut" aria-label="Thu nhỏ timeline">−</button><input id="v72Zoom" type="range" min="2" max="400" value="65" aria-label="Phóng to thu nhỏ timeline"><button id="v72ZoomIn" aria-label="Phóng to timeline">＋</button></div><button id="v72Inspector" title="Mở thuộc tính clip được chọn">⚙ Chỉnh</button><button id="v72More" title="Công cụ khác">⋯</button>';
+tl.insertBefore(bar,tl.firstChild);
+const menu=document.createElement('div');menu.id='v72AddMenu';menu.setAttribute('role','menu');
+menu.innerHTML='<button data-action="visual" data-click="clipAddVideo">🎬 Video</button><button data-action="visual" data-click="clipAddImage">🖼 Ảnh</button><button data-action="audio" data-click="clipAddAudio">🎵 Âm thanh</button><button data-action="sfx" data-click="clipAddSfx">🔊 SFX file</button><button data-action="overlay" data-click="clipAddOverlay">▣ Overlay</button><button data-action="text" data-click="clipAddText">T⁺ Chữ</button>';
+const more=document.createElement('div');more.id='v72MoreMenu';more.setAttribute('role','menu');
+more.innerHTML='<button data-click="v70DetachBtn">🎧 Tách tiếng</button><button data-click="v71CompactLayers">☷ Gọn lớp</button><button data-click="v68Compact">≡ Track gọn</button><button data-click="v68Fit">⛶ Toàn bộ clip</button><button data-panel="fx">✨ Hiệu ứng</button><button data-panel="sfx">🔊 Thư viện SFX</button><button data-click="clipClear">♻ Dự án mới</button><button data-panel="props">⚙ Thuộc tính</button>';
+document.body.append(menu,more);
+const shade=document.createElement('div');shade.id='v72DrawerBackdrop';document.body.append(shade);
+/* Move the inspector out of the transformed #tabClip stacking context: backdrop remains behind. */document.body.appendChild(ins);
+const head=document.createElement('div');head.id='v72DrawerHead';head.innerHTML='<span>⚙ CHỈNH SỬA CLIP</span><button type="button" id="v72ClosePanel" aria-label="Đóng bảng công cụ">✕ Đóng</button>';ins.insertBefore(head,ins.firstChild);
+function closeMenus(){menu.classList.remove('open');more.classList.remove('open')}
+function position(p,trigger){const r=trigger.getBoundingClientRect();p.style.left=Math.min(innerWidth-p.offsetWidth-8,Math.max(8,r.left))+'px';const above=r.bottom+8+p.offsetHeight>innerHeight; p.style.top=(above?Math.max(8,r.top-p.offsetHeight-8):r.bottom+7)+'px'}
+function toggleMenu(p,btn){const was=p.classList.contains('open');closeMenus();if(was)return;p.classList.add('open');position(p,btn)}
+get('v72Add').onclick=e=>{e.stopPropagation();toggleMenu(menu,e.currentTarget)};
+get('v72More').onclick=e=>{e.stopPropagation();toggleMenu(more,e.currentTarget)};
+document.addEventListener('pointerdown',e=>{if(!menu.contains(e.target)&&!more.contains(e.target)&&!e.target.closest('#v72Add,#v72More'))closeMenus()});
+function panelOpen(side='props'){closeMenus();body.classList.add('v72-panel-open');body.classList.remove('m100-open');if(side==='fx'||side==='sfx'){const b=ins.querySelector('.clip-side-tabs [data-side="'+side+'"]');if(b)b.click()}else{const b=ins.querySelector('.clip-side-tabs [data-side="props"]');if(b)b.click()}}
+function panelClose(){body.classList.remove('v72-panel-open')}
+get('v72Inspector').onclick=()=>panelOpen('props'); get('v72ClosePanel').onclick=panelClose;shade.onclick=panelClose;
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeMenus();panelClose()}});
+function target(tr){const state=window.IDECO_V71_LAYER_STATE,g=get('v71TrackTarget');if(!state||!g)return;state.target=tr;g.value=tr;const num=Math.max(1,Number(reserved[tr])||1);state.preferred=Math.max(0,num-1);const d=get('v71TargetDisplay');if(d)d.textContent='LỚP '+num+' · '+tr.toUpperCase()}
+menu.addEventListener('click',e=>{const b=e.target.closest('button[data-click]');if(!b)return;closeMenus();target(b.dataset.action);get(b.dataset.click)?.click()});
+more.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;closeMenus();if(b.dataset.click)get(b.dataset.click)?.click();if(b.dataset.panel)panelOpen(b.dataset.panel)});
+get('v72QuickSplit').onclick=()=>get('clipQuickSplit')?.click();get('v72QuickDelete').onclick=()=>get('clipQuickDelete')?.click();
+get('v72BtnFit').onclick=()=>get('v68Fit')?.click();get('v72ZoomOut').onclick=()=>get('v68ZoomOut')?.click();get('v72ZoomIn').onclick=()=>get('v68ZoomIn')?.click();
+const slider=get('v72Zoom');slider.value=String(window.clipTimelinePx||65);slider.oninput=()=>{const original=get('v68Zoom');if(!original)return;original.value=slider.value;original.dispatchEvent(new Event('input',{bubbles:true}))};
+function syncZoom(){slider.value=String(window.clipTimelinePx||65)}
+get('v68ZoomIn')?.addEventListener('click',syncZoom);get('v68ZoomOut')?.addEventListener('click',syncZoom);get('v68Fit')?.addEventListener('click',syncZoom);
+const state={};
+function groupCount(tr){const a=(window.clipTracks&&window.clipTracks[tr])||[];return Math.max(1,Number(reserved[tr])||1,...a.map(it=>Math.max(1,Math.floor(Number(it.v71Layer)||0)+1)))}
+function plus(tr){const count=groupCount(tr);if(count>=20){tell('Tối đa 20 lớp cho mỗi nhóm',true);return}reserved[tr]=count+1;target(tr);persist();clipRenderTimeline();tell('Đã thêm lớp '+reserved[tr]+' vào '+tr.toUpperCase())}
+function minus(tr){const total=groupCount(tr);if(total<=1){tell('Cần giữ ít nhất 1 lớp '+tr.toUpperCase());return}const arr=(window.clipTracks&&window.clipTracks[tr])||[];const busy=arr.some(it=>Math.max(0,Math.floor(Number(it.v71Layer)||0))===total-1);if(busy){tell('Lớp '+total+' đang có clip. Hãy dời clip khỏi lớp này trước khi bớt.',true);return}reserved[tr]=total-1;const s=window.IDECO_V71_LAYER_STATE;if(s?.target===tr)s.preferred=Math.min(s.preferred,total-2);persist();clipRenderTimeline();tell('Đã bớt lớp trống '+total+' của '+tr.toUpperCase())}
+// Add controls inside the existing track labels after every timeline rerender.
+const base=window.clipRenderTimeline;
+window.clipRenderTimeline=function(){const r=base.apply(this,arguments);for(const tr of keys){const lane=get('clipScroll')?.querySelector('.clip-lane[data-track="'+tr+'"]');if(!lane)continue;const label=lane.parentElement?.querySelector('.clip-track-label');if(!label)continue;let actions=label.querySelector('.v72-layer-actions');if(!actions){actions=document.createElement('div');actions.className='v72-layer-actions';actions.innerHTML='<button type="button" data-op="minus" title="Bớt lớp trống">−</button><span class="v72-num" aria-label="Số lớp">1</span><button type="button" data-op="plus" title="Thêm lớp">＋</button>';label.append(actions);actions.querySelector('[data-op=plus]').onclick=e=>{e.stopPropagation();plus(tr)};actions.querySelector('[data-op=minus]').onclick=e=>{e.stopPropagation();minus(tr)}}actions.querySelector('.v72-num').textContent=groupCount(tr)}return r};
+try{clipRenderTimeline()}catch(e){console.warn('V72 timeline initialization',e)}
+// Sidebar is a drawer, not a persistent third column; hide it again when leaving Clip mode.
+function applyMode(){body.classList.toggle('v72-editor',body.classList.contains('clip-mode'));if(!body.classList.contains('clip-mode'))panelClose()}
+new MutationObserver(applyMode).observe(body,{attributes:true,attributeFilter:['class']});applyMode();
+window.IDECO_V72={plus,minus,panelOpen,panelClose,closeMenus};
+console.info('[IDECO V72] Clean workspace, inline +/- layers, compact import, on-demand inspector');
+})();
+</script>
+
+<style id="idecoV73MobileStyle">
+/* V73: Android/mobile tool reach, scrollable timeline and thumb-sized actions. */
+#v73MobileDock,#v73MobileExport,#v73MobileProgress,#v73MobileShare{display:none}
+@media(max-width:900px),(pointer:coarse) and (max-width:1100px){
+ body.clip-mode.v72-editor{overscroll-behavior:none;overflow:hidden!important}
+ body.clip-mode.v72-editor #tabClip{padding:0!important;height:100dvh!important;overflow:hidden!important}
+ body.clip-mode.v72-editor .clip-head{height:42px!important;min-height:42px!important;padding:5px 9px!important}
+ body.clip-mode.v72-editor .clip-head b{font-size:13px!important}
+ body.clip-mode.v72-editor .clip-exit{min-height:36px!important;min-width:56px!important;font-size:12px!important}
+ body.clip-mode.v72-editor .clip-layout{height:calc(100dvh - 42px - 68px - env(safe-area-inset-bottom))!important;min-height:0!important;overflow:hidden!important}
+ body.clip-mode.v72-editor .clip-preview-card{flex:1 1 auto!important;display:flex!important;min-height:0!important;overflow:hidden!important}
+ body.clip-mode.v72-editor .clip-stage{padding:2px 5px 0!important;flex:0 0 auto!important;min-width:0!important}
+ body.clip-mode.v72-editor .clip-preview-surface{height:min(27dvh,205px)!important;max-height:min(27dvh,205px)!important;width:min(100%,calc(min(27dvh,205px) * var(--preview-ratio,0.5625)))!important;max-width:100%!important;touch-action:manipulation}
+ body.clip-mode.v72-editor .v62-framebar{min-height:28px!important;padding:1px!important;margin-bottom:1px!important;gap:3px!important;overflow-x:auto}
+ body.clip-mode.v72-editor .v62-framebar .v62-frame-label,body.clip-mode.v72-editor #v62FrameSize{display:none!important}
+ body.clip-mode.v72-editor .v62-aspect-buttons{gap:4px!important}
+ body.clip-mode.v72-editor .v62-aspect-buttons button{min-width:48px;min-height:28px!important;padding:4px!important;font-size:11px!important}
+ body.clip-mode.v72-editor .clip-playbar{margin:2px 1px 3px!important;display:grid!important;grid-template-columns:43px 39px minmax(0,1fr) auto!important;gap:6px!important;align-items:center!important}
+ body.clip-mode.v72-editor .clip-playbar button{height:40px!important;min-width:39px!important;font-size:16px!important;padding:4px!important}
+ body.clip-mode.v72-editor #clipSeek{width:100%!important;min-width:0;min-height:37px;accent-color:#ff6e59;touch-action:pan-x}
+ body.clip-mode.v72-editor #clipTime{font-size:10px!important;white-space:nowrap}
+ body.clip-mode.v72-editor .clip-timeline-wrap{min-height:180px!important;flex:1 1 auto!important;margin-top:0!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}
+ body.clip-mode.v72-editor #v68RowGrip{height:12px!important;min-height:12px!important;flex-basis:12px!important;touch-action:none}
+ body.clip-mode.v72-editor #v72MainBar{min-height:43px!important;max-height:43px!important;gap:5px!important;padding:3px 6px!important}
+ body.clip-mode.v72-editor #v72MainBar button{min-height:36px!important;font-size:12px!important;padding:5px 9px!important}
+ body.clip-mode.v72-editor #v72MainBar #v72Inspector{display:none!important}
+ body.clip-mode.v72-editor #v72MainBar #v72More{display:inline-flex!important;align-items:center;justify-content:center;min-width:38px!important;padding:5px!important}
+ body.clip-mode.v72-editor #v72MainBar .v72-zoom-wrap{min-width:100px!important;max-width:170px!important;flex:1 1 110px!important}
+ body.clip-mode.v72-editor #v72MainBar .v72-zoom-wrap button{min-width:35px!important;padding:4px!important;font-size:17px!important}
+ body.clip-mode.v72-editor #v72MainBar #v72BtnFit{display:none!important}
+ body.clip-mode.v72-editor #clipOverview{max-height:15px!important;min-height:15px!important;flex-basis:15px!important}
+ body.clip-mode.v72-editor #clipScroll{height:auto!important;min-height:80px!important;flex:1 1 auto!important;overflow:auto!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}
+ body.clip-mode.v72-editor #clipScroll .clip-track-label{min-width:96px!important;width:96px!important;max-width:96px!important;position:sticky!important;left:0!important;z-index:12!important;padding:3px!important}
+ body.clip-mode.v72-editor #clipScroll .clip-track-label .v41-track-main b{font-size:10px!important}
+ body.clip-mode.v72-editor #clipScroll .clip-track-label .v72-layer-actions button{min-width:25px!important;min-height:27px!important;padding:1px 3px!important}
+ body.clip-mode.v72-editor #clipScroll .clip-block,body.clip-mode.v72-editor #clipScroll .clip-item{touch-action:pan-y;min-height:32px}
+ body.clip-mode.v72-editor .clip-exportbar{display:none!important}
+ body.clip-mode.v72-editor #v45ExportTopbar{display:none!important}
+ #v73MobileDock{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;position:fixed;bottom:0;left:0;right:0;z-index:320;height:calc(68px + env(safe-area-inset-bottom));padding:5px 6px calc(6px + env(safe-area-inset-bottom));background:#161c25;border-top:1px solid #455161;box-shadow:0 -5px 18px #0008;align-items:stretch}
+ #v73MobileDock button{border:0;border-radius:10px;background:transparent;color:#e5edf7;min-width:0;font:700 10px/1.18 'Be Vietnam Pro',system-ui;display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;touch-action:manipulation}
+ #v73MobileDock button .ico{font-size:22px;line-height:1}
+ #v73MobileDock button.emphasis{background:#e44e32;color:#fff}
+ #v73MobileDock button:active{background:#38546a}
+ #v73MobileExport{display:none;position:fixed;inset:0;z-index:650;background:#000a;padding:10px;align-items:flex-end;justify-content:center}
+ #v73MobileExport.open{display:flex}
+ #v73MobileExport .box{width:min(100%,540px);max-height:calc(100dvh - 25px);overflow-y:auto;border-radius:18px 18px 12px 12px;background:#202836;border:1px solid #455268;color:#eaf1fd;padding:16px 15px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -20px 55px #0008}
+ #v73MobileExport .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-weight:800;font-size:16px}
+ #v73MobileExport button{min-height:47px;touch-action:manipulation}
+ #v73MobileExport .close{border:1px solid #53617b;background:#334052;color:#fff;border-radius:9px;padding:7px 13px}
+ #v73MobileExport .format{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+ #v73MobileExport .format button{border:1px solid #4c5872;background:#2b3645;border-radius:11px;color:#fff;padding:10px;text-align:left;font-size:13px;line-height:1.6}
+ #v73MobileExport .format button.selected{border:2px solid #ff775e;background:#3b2e32}
+ #v73MobileExport .note{font-size:12px;color:#cbd5e1;line-height:1.55;min-height:25px}
+ #v73MobileExport .go{display:block;width:100%;border:0;border-radius:11px;background:#e84d30;color:#fff;font-size:15px;font-weight:800;margin-top:14px}
+ body.clip-mode.v72-editor #clipInspector{position:fixed!important;top:auto!important;bottom:0!important;left:0!important;right:0!important;width:100vw!important;height:min(75dvh,650px)!important;max-height:min(75dvh,650px)!important;border-radius:16px 16px 0 0!important;transform:translateY(105%)!important;overscroll-behavior:contain}
+ body.clip-mode.v72-editor.v72-panel-open #clipInspector{transform:translateY(0)!important}
+ body.clip-mode.v72-editor #v72DrawerHead{height:52px!important;min-height:52px!important;touch-action:pan-y}
+ body.clip-mode.v72-editor #clipInspector button,body.clip-mode.v72-editor #clipInspector select{min-height:38px}
+ body.clip-mode.v72-editor #clipInspector input[type=range]{min-height:30px}
+ body.clip-mode.v72-editor.v73-timeline-focus .clip-stage{display:none!important}
+ body.clip-mode.v72-editor.v73-timeline-focus .clip-timeline-wrap{min-height:60%!important}
+ body.clip-mode.v72-editor.v73-preview-focus .clip-preview-surface{height:min(51dvh,410px)!important;max-height:min(51dvh,410px)!important;width:min(100%,calc(min(51dvh,410px) * var(--preview-ratio,0.5625)))!important}
+ body.clip-mode.v72-editor.v73-preview-focus .clip-timeline-wrap{min-height:135px!important}
+ #v73MobileProgress{display:none;position:fixed;left:8px;right:8px;bottom:calc(72px + env(safe-area-inset-bottom));z-index:640;padding:10px 12px;border-radius:12px;background:#1e2b3d;border:1px solid #5b7899;color:#fff;box-shadow:0 8px 22px #0008;font-size:12px;gap:7px;align-items:center}
+ body.v64-export-running #v73MobileProgress{display:flex}
+ #v73MobileProgress span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ #v73MobileProgress button{flex:0 0 auto;padding:8px;border-radius:8px;border:1px solid #ad5f5f;background:#633c47;color:#fff;font-weight:800}
+ #v73MobileShare{position:fixed;left:8px;right:8px;bottom:calc(72px + env(safe-area-inset-bottom));z-index:640;padding:9px;border-radius:12px;background:#1e352e;border:1px solid #2c9c73;color:#fff;align-items:center;gap:7px;font-size:12px}
+ #v73MobileShare.open{display:flex}
+ #v73MobileShare span{flex:1;min-width:0}
+ #v73MobileShare button{border:1px solid #69baa1;background:#235c4e;color:#fff;padding:8px;border-radius:8px;font-weight:800;min-height:38px}
+}
+</style>
+<script id="idecoV73AndroidMobileScript">
+(function(){
+ 'use strict';
+ const by=id=>document.getElementById(id);
+ if(!by('tabClip')||!by('v72MainBar'))return;
+ const mobile=()=>matchMedia('(max-width:900px)').matches || (matchMedia('(pointer:coarse)').matches&&matchMedia('(max-width:1100px)').matches);
+ const android=()=>/Android/i.test(navigator.userAgent);
+ const msg=(s,bad)=>{if(typeof toast==='function')toast(s,!!bad);else console.log(s)};
+ const dock=document.createElement('nav');dock.id='v73MobileDock';dock.setAttribute('aria-label','Công cụ dựng video di động');
+ dock.innerHTML='<button id="v73Add"><span class="ico">＋</span>Thêm</button><button id="v73Split"><span class="ico">✂</span>Cắt</button><button id="v73Play"><span class="ico">▶</span>Phát</button><button id="v73Edit"><span class="ico">⚙</span>Chỉnh</button><button class="emphasis" id="v73Export"><span class="ico">⬇</span>Xuất</button>';
+ document.body.appendChild(dock);
+ by('v73Add').onclick=()=>by('v72Add')?.click();
+ by('v73Split').onclick=()=>by('v72QuickSplit')?.click();
+ by('v73Play').onclick=()=>by('clipPreviewBtn')?.click();
+ by('v73Edit').onclick=()=>window.IDECO_V72?.panelOpen('props');
+ const bar=by('v72MainBar');
+ let focus=document.createElement('button');focus.type='button';focus.id='v73Focus';focus.textContent='◧ Timeline';focus.title='Ưu tiên Timeline / Xem đầy đủ Preview';
+ bar.insertBefore(focus,bar.querySelector('.v72-space'));
+ let state=0;
+ focus.onclick=()=>{state=(state+1)%3;document.body.classList.toggle('v73-timeline-focus',state===1);document.body.classList.toggle('v73-preview-focus',state===2);focus.textContent=state===0?'◧ Timeline':state===1?'▣ Dựng rộng':'◩ Xem lớn'};
+ // Pinch timeline, no interception for one-finger scroll or dragging clips.
+ const scroll=by('clipScroll');let pinch0=0,px0=65;
+ if(scroll){
+  const pt=new Map();
+  scroll.addEventListener('pointerdown',e=>{if(e.pointerType!=='touch')return;pt.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pt.size===2){let p=[...pt.values()];pinch0=Math.hypot(p[1].x-p[0].x,p[1].y-p[0].y);px0=+by('v72Zoom')?.value||65}},{passive:true});
+  scroll.addEventListener('pointermove',e=>{if(!pt.has(e.pointerId))return;pt.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pt.size!==2||pinch0<20)return;let p=[...pt.values()],d=Math.hypot(p[1].x-p[0].x,p[1].y-p[0].y);let slider=by('v72Zoom');if(!slider)return;slider.value=Math.max(+slider.min,Math.min(+slider.max,Math.round(px0*d/pinch0)));slider.dispatchEvent(new Event('input',{bubbles:true}))},{passive:true});
+  for(const event of ['pointerup','pointercancel','pointerleave'])scroll.addEventListener(event,e=>pt.delete(e.pointerId),{passive:true});
+ }
+ const sheet=document.createElement('div');sheet.id='v73MobileExport';sheet.setAttribute('role','dialog');sheet.setAttribute('aria-label','Xuất video Android');
+ sheet.innerHTML='<div class="box"><div class="head"><span>⬇ Xuất video</span><button class="close" id="v73ExportClose">Đóng</button></div><div class="format"><button id="v73ExportQuick" class="selected">⚡ HD 720p<br><small>24 FPS · nhẹ, phù hợp điện thoại</small></button><button id="v73ExportFine">🎬 Full HD<br><small>1080p · 30 FPS · chất lượng đẹp</small></button></div><div class="note" id="v73EngineNote">Đang kiểm tra khả năng mã hóa trên thiết bị…</div><button class="go" id="v73Go">⬇ XUẤT VÀ LƯU VỀ MÁY</button><p class="note">Giữ màn hình sáng và không chuyển tab trong lúc xuất. Android lưu ở mục Tải xuống hoặc hiện lựa chọn nơi lưu theo trình duyệt.</p></div>';
+ document.body.appendChild(sheet);
+ let quality='720';
+ const setQuality=(v)=>{quality=v;by('v73ExportQuick').classList.toggle('selected',v==='720');by('v73ExportFine').classList.toggle('selected',v==='1080')};
+ by('v73ExportQuick').onclick=()=>setQuality('720');by('v73ExportFine').onclick=()=>setQuality('1080');
+ by('v73ExportClose').onclick=()=>sheet.classList.remove('open');
+ sheet.addEventListener('click',e=>{if(e.target===sheet)sheet.classList.remove('open')});
+ async function engineCheck(){
+  if(!window.VideoEncoder || !window.AudioEncoder || !window.VideoFrame || !window.AudioData) return 'Máy này thiếu WebCodecs đầy đủ. Ứng dụng sẽ dùng chế độ ghi video tương thích.';
+  try{
+   const v=await VideoEncoder.isConfigSupported({codec:'avc1.42001f',width:720,height:1280,bitrate:2500000,framerate:24});
+   const a=await AudioEncoder.isConfigSupported({codec:'mp4a.40.2',sampleRate:48000,numberOfChannels:2,bitrate:128000});
+   if(!v?.supported || !a?.supported)return 'Thiết bị không hỗ trợ đầy đủ H.264/AAC qua WebCodecs. Có chế độ ghi dự phòng.';
+   return '✓ Thiết bị có thể xuất H.264/AAC bằng WebCodecs. Nếu gặp lỗi codec, sẽ thử chế độ ghi tương thích.';
+  }catch(_){return 'Không kiểm tra được codec phần cứng; sẽ dùng phương án tương thích khi cần.'}
+ }
+ by('v73Export').onclick=()=>{
+  if(document.body.classList.contains('v64-export-running')){msg('Video đang xuất, vui lòng kiểm tra thanh tiến trình.');return}
+  sheet.classList.add('open');
+  by('v73EngineNote').textContent='Đang kiểm tra mã hóa...';
+  engineCheck().then(t=>{if(sheet.classList.contains('open'))by('v73EngineNote').textContent=t});
+ };
+ by('v73Go').onclick=()=>{
+  if(!window.clipTracks?.visual?.length){msg('Hãy thêm video/ảnh vào timeline trước khi xuất.',true);return}
+  const set=(id,val)=>{let e=by(id);if(e){e.value=String(val);e.dispatchEvent(new Event('change',{bubbles:true}))}};
+  set('v46Resolution',quality);set('clipRes',quality);set('v46Fps',quality==='720'?'24':'30');set('v46BitratePreset',quality==='720'?'economy':'recommended');set('v46RenderMode','turbo');set('v46VideoCodec','auto');set('v46AudioCodec','auto');set('v71SaveDestination','download');
+  if(by('v46FileName')&&!by('v46FileName').value.trim())by('v46FileName').value='IDECO_MOBILE_VIDEO';
+  sheet.classList.remove('open');
+  by('v46DialogExport')?.click();
+ };
+ const status=document.createElement('div');status.id='v73MobileProgress';status.innerHTML='<span id="v73ProgressText">Đang chuẩn bị video…</span><button id="v73Cancel">Dừng</button>';document.body.appendChild(status);
+ by('v73Cancel').onclick=()=>by('v45TopCancel')?.click();
+ if(by('clipProgress'))new MutationObserver(()=>{by('v73ProgressText').textContent=by('clipProgress').textContent}).observe(by('clipProgress'),{characterData:true,childList:true,subtree:true});
+ const saved=document.createElement('div');saved.id='v73MobileShare';saved.innerHTML='<span id="v73SavedInfo">Video đã tạo</span><button id="v73SaveAgain">Lưu lại</button><button id="v73Share">Chia sẻ</button><button id="v73SavedClose">✕</button>';document.body.appendChild(saved);
+ by('v73SavedClose').onclick=()=>saved.classList.remove('open');
+ let last=null;function saveBlob(){if(!last)return;const u=URL.createObjectURL(last.blob);const a=document.createElement('a');a.href=u;a.download=last.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000)}
+ by('v73SaveAgain').onclick=saveBlob;
+ by('v73Share').onclick=async()=>{if(!last)return;try{const file=new File([last.blob],last.name,{type:last.blob.type});if(navigator.canShare&&!navigator.canShare({files:[file]})){msg('Trình duyệt không hỗ trợ chia sẻ file này. Hãy chọn Lưu lại.');return}if(!navigator.share)throw Error('Không có chức năng chia sẻ hệ thống');await navigator.share({files:[file],title:last.name})}catch(e){if(e.name!=='AbortError')msg('Không thể chia sẻ: '+e.message,true)}};
+ // Keep V72 film logic: only enhance export orchestration and fallback codec path.
+ if(typeof clipRunProject==='function'){
+  const originalExport=clipRunProject;
+  clipRunProject=async function(record){
+   if(!record)return originalExport.apply(this,arguments);
+   let result=null,rtError=null;
+   let missingWebCodecs=!(window.VideoEncoder&&window.VideoFrame&&window.AudioEncoder&&window.AudioData);
+   // Check H.264 / AAC support before starting render: Android often exposes WebCodecs partially.
+   if(mobile()&&!missingWebCodecs){
+    try{
+     const cv=by('clipCanvas');
+     let w=Math.max(2,Math.floor(cv?.width||720)),h=Math.max(2,Math.floor(cv?.height||1280));w-=w%2;h-=h%2;
+     const v=await VideoEncoder.isConfigSupported({codec:Math.max(w,h)>1280?'avc1.42E028':'avc1.42E01F',width:w,height:h,bitrate:2500000,framerate:Number(by('v46Fps')?.value)||24});
+     const a=await AudioEncoder.isConfigSupported({codec:'mp4a.40.2',numberOfChannels:2,sampleRate:48000,bitrate:128000});
+     missingWebCodecs=!(v?.supported&&a?.supported);
+    }catch(_){missingWebCodecs=true}
+   }
+   if(missingWebCodecs){rtError=new Error('Thiết bị không hỗ trợ bộ mã hóa MP4 WebCodecs');}
+   else try{result=await originalExport.apply(this,arguments)}catch(e){rtError=e}
+   if(!result){
+    const reason=String(rtError?.message||rtError||'');
+    const codecIssue=missingWebCodecs||/webcodecs|audioencoder|videoencoder|codec|encode|not supported|không hỗ trợ|bộ đóng gói|muxer|mp4 chuẩn|configure|isConfigSupported|aborterror/i.test(reason);
+    const realtime=window.IDECO_V73_RECORD_FALLBACK;
+    if(!codecIssue || typeof realtime!=='function')throw rtError||new Error('Không xuất được video');
+    if(typeof MediaRecorder==='undefined'||typeof HTMLCanvasElement.prototype.captureStream!=='function')throw new Error('Android này không hỗ trợ WebCodecs hoặc ghi canvas. Hãy cập nhật Chrome, mở ứng dụng qua HTTPS và thử lại. Nguyên nhân: '+reason);
+    msg('⚠ MP4 trực tiếp chưa hỗ trợ trên máy này. Đang dùng chế độ ghi tương thích — cần giữ tab mở.');
+    document.body.classList.add('v64-export-running');
+    for(const id of ['clipExport','v45TopExport','v73Export']){const b=by(id);if(b)b.disabled=true}
+    const p=by('clipProgress');if(p)p.textContent='📱 Ghi tương thích: chuẩn bị âm thanh và video…';
+    try{result=await realtime()}finally{
+     for(const id of ['clipExport','v45TopExport','v73Export']){const b=by(id);if(b)b.disabled=false}
+    }
+    if(!result?.blob?.size)throw Error('Trình ghi tương thích không tạo được video');
+    result.videoCodec=result.ext==='mp4'?'H.264 / Recorder':'WebM / Recorder';result.audioCodec=result.audioCodec||'Audio Recorder';
+   }
+   if(result&&result.blob&&mobile()){
+    const n=((by('v46FileName')?.value||'IDECO_MOBILE_VIDEO').replace(/[^a-zA-Z0-9_\-]/g,'_').slice(0,64)||'IDECO_MOBILE_VIDEO')+'.'+result.ext;
+    last={blob:result.blob,name:n};
+    by('v73SavedInfo').textContent='✓ '+(result.ext==='mp4'?'MP4':'WebM')+' '+(result.blob.size/1048576).toFixed(1)+' MB';
+    by('v73Share').style.display=(navigator.share&&navigator.canShare)?'':'none';
+    saved.classList.add('open');
+   }
+   return result;
+  };
+ }
+ // Update misleading "MP4" label for fallback without rewriting the original renderer.
+ if(by('clipProgress'))new MutationObserver(()=>{
+  const p=by('clipProgress');if(last&&last.name.endsWith('.webm')&&/^✅ ĐÃ TẢI MP4/.test(p.textContent))p.textContent=p.textContent.replace('ĐÃ TẢI MP4','ĐÃ TẢI WEBM (tương thích Android)');
+ }).observe(by('clipProgress'),{childList:true,subtree:true,characterData:true});
+ const originalPanel=window.IDECO_V72;
+ if(originalPanel&&typeof originalPanel.panelOpen==='function'){
+   // Inspector bottom sheet, preserve existing setting tabs.
+ }
+ console.info('[IDECO V73] Android dock, thumb-sized timeline, codec fallback, save/share');
+})();
+</script>
 </body>
 </html>
