@@ -1522,6 +1522,7 @@ body:not(.clip-mode) #v73MobileExport,body:not(.clip-mode) #v73MobileProgress{di
   <div class="tabs">
     <button id="tabBtnImg" class="on">🖼 Tạo Ảnh</button>
     <button id="tabBtnVid">🎬 Dựng Video</button>
+    <button id="tabBtnLip">🎙 Nhép Miệng</button>
     <button id="tabBtnFrame">🎞 DỰNG FRAME</button>
     <button id="tabBtnScript">📝 Kịch Bản</button>
     <button id="tabBtnAudio">🎙 Cắt Âm Thanh</button>
@@ -1529,6 +1530,15 @@ body:not(.clip-mode) #v73MobileExport,body:not(.clip-mode) #v73MobileProgress{di
     <button id="tabBtnMusic">🎵 ÂM NHẠC</button>
   </div>
 
+  <div id="tabLip" style="display:none;max-width:900px;margin:0 auto;padding:16px">
+    <div class="sec"><h2>🎙 TẠO VIDEO NHÉP MIỆNG</h2><p>Đưa ảnh nhân vật và giọng nói vào để tạo video chuyển động theo âm thanh.</p>
+      <details><summary>⚙ Cài đặt model</summary><label class="lbl" for="lipModel">Model nhép miệng</label><select id="lipModel"><option value="omnihuman-2-0">OmniHuman 2.0 · Kie.ai</option></select><p class="ref-hint">Dùng chung API key Kie.ai của ứng dụng.</p></details>
+    </div>
+    <div class="sec"><label class="lbl">1. Ảnh nhân vật</label><input id="lipImage" type="file" accept="image/*"><p class="ref-hint" id="lipImageName">Chọn ảnh rõ khuôn mặt, nhìn thấy miệng.</p><img id="lipPreview" alt="Ảnh nhân vật" style="display:none;max-width:100%;max-height:300px;border-radius:12px"></div>
+    <div class="sec"><label class="lbl">2. Âm thanh giọng nói</label><input id="lipAudio" type="file" accept="audio/*,.mp3,.wav,.m4a"><p class="ref-hint" id="lipAudioName">Chọn tệp âm thanh từ thiết bị.</p><audio id="lipAudioPreview" controls style="display:none;width:100%"></audio></div>
+    <div class="sec"><label class="lbl" for="lipPrompt">3. Mô tả chuyển động (không bắt buộc)</label><textarea id="lipPrompt" placeholder="Ví dụ: Nhân vật nhìn vào máy quay, nói tự nhiên, nét mặt thân thiện, cử động nhẹ nhàng."></textarea><label style="display:block;margin:12px 0"><input id="lipWatermark" type="checkbox"> Bật watermark</label><button id="lipGo" class="go" type="button">🎬 TẠO VIDEO NHÉP MIỆNG</button><p id="lipStatus" role="status" style="margin:12px 0;overflow-wrap:anywhere">Sẵn sàng. Ảnh và âm thanh được tải đồng thời; thời gian xử lý phụ thuộc máy chủ Kie.</p><button id="lipResume" type="button" style="display:none">↻ Kiểm tra lại tác vụ</button></div>
+    <div class="sec" id="lipResult" style="display:none"><h3>✅ Video nhép miệng</h3><video id="lipVideo" controls playsinline style="width:100%;max-height:500px;background:#000;border-radius:12px"></video><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><a id="lipDownload" target="_blank" rel="noopener" download="IDECO_nhep_mieng.mp4">⬇ Tải video</a><button id="lipOpenVideo" type="button">🎬 Xem trong Dựng Video</button></div></div>
+  </div>
   <div id="tabImg">
 
   <div class="sec">
@@ -2988,7 +2998,8 @@ function renderGallery(){
         '<button data-act="dl">⬇ Tải</button>' +
         '<button data-act="edit">✏ Edit</button>' +
         '<button data-act="re">↻ Tạo lại</button>' +
-        '<button data-act="vid" style="flex:0 0 44px">🎬</button>' +
+        '<button data-act="vid" style="flex:0 0 44px" title="Đưa vào dựng video">🎬</button>' +
+        '<button data-act="lip" title="Đưa ảnh vào Nhép Miệng">🎙 Nhép miệng</button>' +
         '<button data-act="del" style="flex:0 0 40px">🗑</button>' +
       '</div>';
     var im = card.querySelector('img');
@@ -3011,6 +3022,7 @@ function renderGallery(){
     card.querySelector('[data-act=dl]').onclick = function(){ downloadImg(item.url); };
     card.querySelector('[data-act=edit]').onclick = function(){ loadImageForEdit(item.url, item.prompt); };
     card.querySelector('[data-act=vid]').onclick = function(){ sendToVideo(item.url); };
+    card.querySelector('[data-act=lip]').onclick = function(){ lipFromGallery(item.url); };
     card.querySelector('[data-act=re]').onclick = function(){
       $('prompt').value = item.prompt;
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -3096,6 +3108,8 @@ var FPS = 30; // bước frame khi tua
 function switchTab(tab){
   if(tab === true) tab = 'vid';
   if(tab === false || tab === undefined) tab = 'img';
+  $('tabLip').style.display = tab === 'lip' ? 'block' : 'none';
+  $('tabBtnLip').classList.toggle('on', tab === 'lip');
   $('tabImg').style.display = tab === 'img' ? 'block' : 'none';
   $('tabVid').style.display = tab === 'vid' ? 'block' : 'none';
   $('tabFrame').style.display = tab === 'frame' ? 'block' : 'none';
@@ -3125,6 +3139,7 @@ function switchTab(tab){
 }
 $('tabBtnImg').onclick = function(){ switchTab('img'); };
 $('tabBtnVid').onclick = function(){ switchTab('vid'); };
+$('tabBtnLip').onclick = function(){ switchTab('lip'); };
 $('tabBtnFrame').onclick = function(){ switchTab('frame'); };
 $('tabBtnScript').onclick = function(){ switchTab('script'); };
 $('tabBtnAudio').onclick = function(){ switchTab('audio'); };
@@ -14069,6 +14084,31 @@ console.info('[IDECO V72] Clean workspace, inline +/- layers, compact import, on
 })();
 </script>
 <script data-ideco-v74-init-boundary>void 0;</script>
+
+
+<script>
+(function(){
+'use strict';
+var imageData='', audioData='', imageName='', audioName='', timer=null, running=false, resultUrl='';
+var pendingKey='ideco_omnihuman_pending', uploaded={};
+function el(id){return document.getElementById(id)}
+function status(t){el('lipStatus').textContent=t}
+function read(file){return new Promise(function(resolve,reject){var r=new FileReader();r.onload=function(){resolve(r.result)};r.onerror=function(){reject(new Error('Không đọc được tệp'))};r.readAsDataURL(file)})}
+function setImage(data,name){imageData=data;imageName=name;el('lipPreview').src=data;el('lipPreview').style.display='block';el('lipImageName').textContent=name}
+window.lipFromGallery=function(url){status('Đang nạp ảnh từ thư viện...');resolveMedia(url,function(src){fetch(src).then(function(r){if(!r.ok)throw Error('Ảnh không còn truy cập được');return r.blob()}).then(read).then(function(d){setImage(d,'Ảnh từ thư viện tạo ảnh');switchTab('lip');status('Đã nạp ảnh. Chọn âm thanh để tiếp tục.');toast('Đã đưa ảnh vào Nhép Miệng')}).catch(function(e){toast('Không nạp được ảnh: '+e.message,true)})})};
+el('lipImage').onchange=async function(){var f=this.files[0];if(!f)return;try{setImage(await read(f),f.name)}catch(e){status(e.message)}};
+el('lipAudio').onchange=async function(){var f=this.files[0];if(!f)return;try{audioData=await read(f);audioName=f.name;el('lipAudioName').textContent=f.name+' · '+fmtBytes(f.size);el('lipAudioPreview').src=audioData;el('lipAudioPreview').style.display='block'}catch(e){status(e.message)}};
+async function request(url,options){var r=await fetch(url,options),d;try{d=await r.json()}catch(e){throw Error('Máy chủ trả về dữ liệu không hợp lệ (HTTP '+r.status+')')}if(!r.ok||d.code && Number(d.code)!==200)throw Error(d.msg||d.message||('HTTP '+r.status));return d}
+async function upload(data,name,kind){var cached=uploaded[kind];if(cached&&cached.data===data&&Date.now()-cached.time<1200000)return cached.url;var safe=(name||kind).replace(/[^a-zA-Z0-9._-]/g,'_');var d=await request(UPLOAD_URL,{method:'POST',headers:headers(),body:JSON.stringify({base64Data:data,uploadPath:'ideco/lipsync',fileName:Date.now()+'_'+safe})});var u=d.data&&(d.data.downloadUrl||d.data.fileUrl||d.data.url);if(!u)throw Error('Không nhận được đường dẫn '+kind+' sau khi tải lên');uploaded[kind]={data:data,url:u,time:Date.now()};return u}
+function setRunning(v){running=v;el('lipGo').disabled=v;el('lipGo').textContent=v?'⏳ ĐANG XỬ LÝ...':'🎬 TẠO VIDEO NHÉP MIỆNG'}
+function finish(url,id,prompt){resultUrl=url;el('lipVideo').src=url;el('lipDownload').href=url;el('lipResult').style.display='block';el('lipResume').style.display='none';localStorage.removeItem(pendingKey);setRunning(false);status('✅ Tạo video hoàn tất. Anh có thể xem và tải video.');var h=loadVHist();h.unshift({url:url,prompt:prompt||'Nhép miệng OmniHuman 2.0',t:Date.now(),taskId:id,engine:'OmniHuman 2.0'});saveVHist(h);renderVGallery();cacheMedia(url,'vid',{prompt:prompt,engine:'OmniHuman 2.0',taskId:id},function(){});refreshCredits()}
+async function poll(id,prompt){var attempts=0,errors=0,started=Date.now();setRunning(true);el('lipResume').style.display='none';async function check(){try{var d=await request(API_BASE+'/api/v1/jobs/recordInfo?taskId='+encodeURIComponent(id),{headers:headers()});var x=d.data||{};errors=0;if(x.state==='success'){var obj=typeof x.resultJson==='string'?JSON.parse(x.resultJson||'{}'):(x.resultJson||{});if(!obj.resultUrls||!obj.resultUrls.length)throw Error('Tác vụ hoàn tất nhưng chưa có link video');finish(obj.resultUrls[0],id,prompt);return}if(x.state==='fail'||x.state==='failed') {localStorage.removeItem(pendingKey);throw Error(x.failMsg||x.failCode||'Tạo video thất bại')}attempts++;status('⏳ Đang xử lý: '+(x.state||'chờ xử lý')+(x.progress?' · '+x.progress+'%':'')+' · Đã chờ '+Math.floor((Date.now()-started)/1000)+' giây · Mã tác vụ: '+id);if(Date.now()-started>=1200000)throw Error('Đã dừng chờ. Bấm kiểm tra lại tác vụ để tiếp tục.');timer=setTimeout(check,3000)}catch(e){errors++;if(errors<3&&Date.now()-started<1200000){status('Đang kết nối lại: '+e.message);timer=setTimeout(check,5000);return}setRunning(false);el('lipResume').style.display=localStorage.getItem(pendingKey)?'inline-block':'none';status('⚠ '+e.message)}}check()}
+el('lipGo').onclick=async function(){if(running)return;if(!imageData||!audioData){status('⚠ Vui lòng chọn cả ảnh và âm thanh.');return}setRunning(true);el('lipResult').style.display='none';try{status('Đang tải đồng thời ảnh và âm thanh lên Kie (tệp vừa dùng có thể được dùng lại)...');var files=await Promise.all([upload(imageData,imageName||'image.png','ảnh'),upload(audioData,audioName||'audio.wav','âm thanh')]);var prompt=el('lipPrompt').value.trim();status('Đang gửi yêu cầu tạo video...');var input={image_urls:[files[0]],audio_url:files[1],enable_watermark:el('lipWatermark').checked};if(prompt)input.prompt=prompt;var d=await request(API_BASE+'/api/v1/jobs/createTask',{method:'POST',headers:headers(),body:JSON.stringify({model:el('lipModel').value,input:input})});var id=d.data&&d.data.taskId;if(!id)throw Error('Không nhận được mã tác vụ');localStorage.setItem(pendingKey,JSON.stringify({id:id,prompt:prompt}));poll(id,prompt)}catch(e){setRunning(false);status('⚠ '+(e.message==='Failed to fetch'?'Không kết nối được Kie. Kiểm tra mạng hoặc quyền CORS của trình duyệt.':e.message))}};
+el('lipResume').onclick=function(){try{var p=JSON.parse(localStorage.getItem(pendingKey));if(p&&p.id)poll(p.id,p.prompt)}catch(e){status('Không đọc được tác vụ đã lưu.')}};
+el('lipOpenVideo').onclick=function(){switchTab('vid');toast('Video nhép miệng đã có trong lịch sử Dựng Video')};
+try{var p=JSON.parse(localStorage.getItem(pendingKey)||'null');if(p&&p.id){el('lipResume').style.display='inline-block';status('Có tác vụ trước chưa hoàn tất: '+p.id+'. Bấm kiểm tra lại tác vụ.')}}catch(e){}
+})();
+</script>
 
 </body>
 </html>
