@@ -10797,7 +10797,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
 
     var encoderError=null;
     var enc=new AudioEncoder({
-      output:function(chunk,meta){muxer.addAudioChunk(chunk,meta)},
+      output:function(chunk,meta){muxer.addAudioChunk(chunk,meta);window.IDECO_EXPORT_STATUS?.chunk(chunk.byteLength)},
       error:function(e){encoderError=e;console.error('[V43 AudioEncoder]',e)}
     });
     enc.configure(cfg);
@@ -10917,7 +10917,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
       var videoError=null;
 
       videoEncoder=new VideoEncoder({
-        output:function(chunk,meta){muxer.addVideoChunk(chunk,meta)},
+        output:function(chunk,meta){muxer.addVideoChunk(chunk,meta);window.IDECO_EXPORT_STATUS?.chunk(chunk.byteLength)},
         error:function(e){videoError=e;console.error('[V43 VideoEncoder]',e)}
       });
       videoEncoder.configure(videoChoice.encoderConfig);
@@ -11168,6 +11168,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
       return
     }
 
+    window.IDECO_EXPORT_STATUS.start();
     /* V64: giữ nguyên Preview/playhead hiện tại. Export chụp snapshot riêng và chạy độc lập. */
     v45SetLock(true);
 
@@ -11183,7 +11184,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
 
     try{
       var result=await clipRunProject(true);
-      if(!result)return;
+      if(!result||!result.blob||!result.blob.size)throw new Error('Không tạo được file video. Vui lòng thử lại.');
 
       var baseName=v46SafeName($('v46FileName')&&$('v46FileName').value);
       var v71SavedToDisk=false;
@@ -11199,6 +11200,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
         }
       }
       if(!v71SavedToDisk)v71DownloadBlob(result.blob,baseName,result.ext);
+      window.IDECO_EXPORT_STATUS.done(result.blob,baseName+'.'+result.ext,v71SavedToDisk);
 
       if(p)p.textContent=
         (v71SavedToDisk?'✅ ĐÃ LƯU VÀO Ổ ĐĨA · ':'✅ ĐÃ TẢI MP4 · ')+(result.blob.size/1048576).toFixed(1)+
@@ -11212,6 +11214,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     }
     catch(e){
       var msg=(e&&e.message)||'Lỗi xuất video';
+      window.IDECO_EXPORT_STATUS.error(msg);
       if(/hủy xuất/i.test(msg)){
         if(p)p.textContent='⏹ Đã hủy xuất · có thể chỉnh sửa và xuất lại';
         toast('Đã hủy xuất video. Bạn có thể chỉnh sửa rồi xuất lại.')
@@ -14277,5 +14280,26 @@ window.IDECO_DRAW_STYLED_TEXT=function(ctx,it,fs,maxWidth){
  ctx.fillStyle=it.color||'#ffffff';ctx.strokeStyle=it.strokeColor||'#000000';ctx.lineWidth=(it.strokeWidth||0)*fs/(it.size||54)*2;ctx.lineJoin='round';
  lines.forEach((line,i)=>{const y=(i-(lines.length-1)/2)*lh;if(ctx.lineWidth>0&&it.strokeWidth)ctx.strokeText(line,x,y,maxWidth);ctx.fillText(line,x,y,maxWidth)})
 };
+})();
+</script>
+
+<style>
+#idecoExportStatus{display:none;position:fixed;z-index:200000;right:16px;bottom:16px;width:min(440px,calc(100vw - 32px));background:#fff;color:#172033;border:2px solid #2563eb;border-radius:14px;box-shadow:0 8px 36px #0004;padding:16px;font:14px Arial;box-sizing:border-box}#idecoExportStatus.show{display:block!important}#idecoExportStatus p{margin:10px 0;line-height:1.5;color:#334155;overflow-wrap:anywhere}#idecoExportStatus progress{width:100%;height:18px;accent-color:#2563eb}#idecoExportStatus button,#idecoExportStatus a{display:inline-block;background:#2563eb;color:#fff;border:0;border-radius:7px;padding:9px;margin:5px 6px 0 0;text-decoration:none;cursor:pointer}#idecoExportStatus [hidden]{display:none!important}#idecoExportStatus small{display:block;color:#526174;line-height:1.5}
+#v46ExportModal .v46-export-stats,#v46EstimateMB,#v46Duration,#v46FrameCount{color:#172033!important}
+</style>
+<script id="ideco-export-v10">
+(function(){
+const by=id=>document.getElementById(id),box=document.createElement('section');box.id='idecoExportStatus';box.setAttribute('role','status');box.innerHTML='<strong id="exTitle">Đang xuất video</strong><p id="exStage"></p><progress id="exBar" max="100"></progress><p id="exNumbers"></p><small id="exHint"></small><button id="exCancel">Hủy xuất</button><a id="exDownload" hidden>Tải lại video</a><button id="exClose" hidden>Đóng thông báo</button>';document.body.append(box);
+let active=false,start=0,bytes=0,last=0,pct=0,url=null,timer=null;
+const size=n=>(n/1048576).toFixed(2)+' MB';
+function display(){if(!active)return;const seconds=Math.floor((Date.now()-start)/1000),idle=Math.floor((Date.now()-last)/1000);by('exNumbers').textContent='Đã chạy: '+Math.floor(seconds/60)+' phút '+seconds%60+' giây · Dữ liệu mã hóa: '+size(bytes);by('exHint').textContent=idle>30?'Chưa có cập nhật mới trong '+idle+' giây. Tác vụ chưa báo hoàn tất; anh có thể chờ thêm hoặc bấm Hủy xuất.':'Dung lượng mã hóa đang tăng chưa phải dung lượng file cuối. Vui lòng giữ trang mở.'}
+function stage(){if(!active)return;const message=by('clipProgress').textContent;by('exStage').textContent=message;last=Date.now();const m=message.match(/(\d+(?:\.\d+)?)%/);if(m){pct=Math.max(pct,Math.min(98,Number(m[1])));by('exBar').value=pct}else if(/hoàn tất H.264|nhận audio/.test(message)){pct=Math.max(pct,80);by('exBar').value=pct}else if(/mã hóa/.test(message)){pct=Math.max(pct,85);by('exBar').value=pct}else if(/đóng gói|ghi MP4|✅/.test(message)){pct=Math.max(pct,98);by('exBar').value=pct}display()}
+window.IDECO_EXPORT_STATUS={
+ start(){active=true;start=last=Date.now();bytes=0;pct=0;if(url){URL.revokeObjectURL(url);url=null}clearInterval(timer);box.classList.add('show');by('exTitle').textContent='⏳ ĐANG XUẤT VIDEO';by('exBar').removeAttribute('value');by('exStage').textContent='Đang chuẩn bị… Dung lượng dự kiến: '+(by('v46EstimateMB')?.textContent||'đang tính');by('exCancel').hidden=false;by('exCancel').disabled=false;by('exDownload').hidden=true;by('exClose').hidden=true;display();timer=setInterval(display,1000)},
+ chunk(n){if(active){bytes+=n;last=Date.now()}},
+ done(blob,name,saved){active=false;clearInterval(timer);url=URL.createObjectURL(blob);by('exTitle').textContent='✅ XUẤT VIDEO HOÀN TẤT';by('exBar').value=100;by('exStage').textContent=name;by('exNumbers').textContent='Dung lượng thực tế: '+size(blob.size)+' · Thời gian xuất: '+Math.round((Date.now()-start)/1000)+' giây';by('exHint').textContent=saved?'Đã ghi file vào nơi anh chọn.':'Đã gửi file tới trình duyệt để tải xuống. Nếu chưa thấy file, bấm Tải lại video.';by('exDownload').href=url;by('exDownload').download=name;by('exDownload').hidden=false;by('exCancel').hidden=true;by('exClose').hidden=false},
+ error(message){active=false;clearInterval(timer);by('exTitle').textContent=/hủy/i.test(message)?'⏹ ĐÃ HỦY XUẤT':'❌ XUẤT VIDEO CHƯA THÀNH CÔNG';by('exStage').textContent=message;by('exHint').textContent='Chưa tạo được file video hoàn chỉnh.';by('exCancel').hidden=true;by('exClose').hidden=false;by('exBar').value=pct}
+};
+by('exCancel').onclick=()=>{by('exCancel').disabled=true;by('exStage').textContent='Đang yêu cầu hủy xuất…';by('v45TopCancel').click()};by('exClose').onclick=()=>box.classList.remove('show');new MutationObserver(stage).observe(by('clipProgress'),{childList:true,subtree:true,characterData:true});
 })();
 </script>
