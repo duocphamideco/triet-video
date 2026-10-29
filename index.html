@@ -7925,7 +7925,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     var s=v24Eval(it,v24RenderTime);ctx.save();
     var fs=Math.max(16,(s.size||it.size||54)*(cw/1080)),scale=Math.max(.05,(s.scale||100)/100),cx=cw/2+(s.x||0)/100*cw/2,cy=ch/2+(s.y||0)/100*ch/2;
     ctx.globalAlpha=Math.max(0,Math.min(1,(s.opacity==null?100:s.opacity)/100));ctx.translate(cx,cy);ctx.rotate((Number(s.rotation)||0)*Math.PI/180);ctx.scale(scale,scale);
-    ctx.font='800 '+fs+'px "Be Vietnam Pro",Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=it.color||'#fff';ctx.shadowColor='rgba(0,0,0,.85)';ctx.shadowBlur=fs*.13;ctx.fillText(it.text||it.name,0,0,cw*.9/scale);ctx.restore();
+    window.IDECO_DRAW_STYLED_TEXT(ctx,it,fs,cw*.9/scale);ctx.restore();
   };
   clipDrawAt=function(t,live){v24RenderTime=t;var r=v24BaseDrawAt(t,live);requestAnimationFrame(v24UpdateTransformBox);return r};
   window.clipRenderExportFrame=function(canvas,t){
@@ -8690,8 +8690,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     var cx=cw/2+(Number(st.x)||0)/100*cw/2,cy=ch/2+(Number(st.y)||0)/100*ch/2;
     ctx.save();ctx.globalAlpha=Math.max(0,Math.min(1,(st.opacity==null?100:Number(st.opacity))/100));
     ctx.translate(cx,cy);ctx.rotate((Number(st.rotation)||0)*Math.PI/180);ctx.scale(sc,sc);
-    ctx.font='800 '+fs+'px "Be Vietnam Pro",Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=it.color||'#fff';
-    ctx.shadowColor='rgba(0,0,0,.85)';ctx.shadowBlur=fs*.13;ctx.fillText(it.text||it.name,0,0,cw*.9/sc);ctx.restore()
+    window.IDECO_DRAW_STYLED_TEXT(ctx,it,fs,cw*.9/sc);ctx.restore()
   }
   function drawOverlayOnly(t,live){
     var c=$('clipCanvas'),ctx=c&&c.getContext('2d');if(!ctx)return;
@@ -14224,3 +14223,59 @@ window.IDECO_MUSIC_TO_CUT=async function(file){
 };
 </script></body>
 </html>
+<style>
+#idecoTextEditor{display:none;position:fixed;right:12px;top:65px;bottom:24px;width:min(350px,calc(100vw - 24px));overflow:auto;z-index:100100;background:#fff;color:#172033;border:1px solid #cbd5e1;border-radius:14px;padding:16px;box-shadow:0 12px 45px #14213d44;font:14px Arial;box-sizing:border-box}
+body.clip-mode #idecoTextEditor.open{display:block}
+#idecoTextEditor *{box-sizing:border-box}#idecoTextEditor label{display:block;margin:12px 0 5px;color:#334155;font-weight:600}#idecoTextEditor input,#idecoTextEditor select,#idecoTextEditor textarea{background:#f8fafc!important;color:#172033!important;border:1px solid #cbd5e1!important;border-radius:7px;padding:8px;width:100%;font:14px Arial;user-select:text!important;pointer-events:auto!important}#idecoTextEditor textarea{min-height:110px;resize:vertical;line-height:1.5}#idecoTextEditor input[type=color]{height:40px;padding:3px}#idecoTextEditor button{background:#edf2f7!important;color:#172033!important;border:1px solid #cbd5e1;border-radius:7px;padding:8px;cursor:pointer}#idecoTextEditor .tx-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}#idecoTextEditor .tx-head{display:flex;align-items:center;justify-content:space-between;gap:8px}#idecoTextEditor p{font-size:12px;color:#526174;line-height:1.5}#idecoTextEditor .tx-presets{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+body.clip-mode.tx-editing #clipInspector,body.clip-mode.tx-editing #v72DrawerBackdrop{display:none!important}
+body.clip-mode #clipScroll .clip-block.text .clip-handle{display:block!important;position:absolute!important;top:0!important;bottom:0!important;width:12px!important;min-width:12px!important;z-index:20!important;background:#2563eb!important;opacity:1!important;cursor:ew-resize!important;touch-action:none!important;border:0!important}
+body.clip-mode #clipScroll .clip-block.text .clip-handle.l{left:0!important;right:auto!important}body.clip-mode #clipScroll .clip-block.text .clip-handle.r{right:0!important;left:auto!important}body.clip-mode #clipScroll .clip-block.text .clip-handle:after{content:'⋮';position:absolute;top:8px;left:2px;color:white}body.clip-mode #clipScroll .clip-block.text{min-width:30px!important}body.clip-mode #clipScroll .clip-block.text .bt{padding-left:14px;padding-right:14px}
+#idecoAddTextQuick{background:#2563eb!important;color:#fff!important;white-space:nowrap}
+</style>
+<script id="ideco-text-v9">
+(function(){
+'use strict';
+const panel=document.createElement('section');panel.id='idecoTextEditor';panel.setAttribute('aria-label','Chỉnh sửa văn bản');panel.innerHTML=`
+<div class="tx-head"><strong>VĂN BẢN</strong><button id="txClose">Ẩn bảng ✕</button></div>
+<p>Chọn đoạn chữ trên timeline để sửa. Kéo hai mép xanh để đổi thời lượng; kéo giữa đoạn để di chuyển.</p>
+<label for="txContent">Nội dung (Enter để xuống dòng)</label><textarea id="txContent" placeholder="Nhập chữ tiếng Việt…"></textarea>
+<label for="txFont">Phông chữ</label><select id="txFont"><option value="Be Vietnam Pro">Be Vietnam Pro</option><option>Arial</option><option>Verdana</option><option>Georgia</option><option>Times New Roman</option><option>Courier New</option><option>Tahoma</option></select>
+<div class="tx-grid"><div><label for="txSize">Cỡ chữ</label><input id="txSize" type="number" min="12" max="300"></div><div><label for="txColor">Màu chữ</label><input id="txColor" type="color"></div></div>
+<div class="tx-grid"><div><label for="txWeight">Độ đậm</label><select id="txWeight"><option value="400">Thường</option><option value="700">Đậm</option><option value="900">Rất đậm</option></select></div><div><label for="txItalic">Kiểu chữ</label><select id="txItalic"><option value="0">Đứng</option><option value="1">Nghiêng</option></select></div></div>
+<label for="txAlign">Căn chữ</label><select id="txAlign"><option value="left">Trái</option><option value="center">Giữa</option><option value="right">Phải</option></select>
+<label>Mẫu nhanh</label><div class="tx-presets"><button data-preset="plain">Cơ bản</button><button data-preset="subtitle">Phụ đề</button><button data-preset="title">Tiêu đề vàng</button><button data-preset="label">Nền xanh</button></div>
+<div class="tx-grid"><div><label for="txStroke">Viền chữ (px)</label><input id="txStroke" type="number" min="0" max="15"></div><div><label for="txStrokeColor">Màu viền</label><input id="txStrokeColor" type="color"></div></div>
+<div class="tx-grid"><div><label for="txBgOn">Nền chữ</label><select id="txBgOn"><option value="0">Không nền</option><option value="1">Có nền</option></select></div><div><label for="txBg">Màu nền</label><input id="txBg" type="color"></div></div>
+<div class="tx-grid"><div><label for="txStart">Bắt đầu (giây)</label><input id="txStart" type="number" min="0" step="0.1"></div><div><label for="txDuration">Thời lượng (giây)</label><input id="txDuration" type="number" min="0.1" step="0.1"></div></div>
+<div class="tx-grid"><div><label for="txX">Vị trí ngang</label><input id="txX" type="range" min="-90" max="90"></div><div><label for="txY">Vị trí dọc</label><input id="txY" type="range" min="-90" max="90"></div></div>
+<p>Thay đổi áp dụng ngay trên hình xem trước và video xuất.</p><div class="tx-grid"><button id="txDuplicate">Nhân bản chữ</button><button id="txNew">＋ Thêm chữ mới</button></div>`;
+document.body.append(panel);const el=id=>document.getElementById(id);let active=null,drag=null;
+function item(){const f=clipFind(active);return f&&f.it.type==='text'?f.it:null}
+function sync(){const it=item();if(!it)return;const values={txContent:it.text||'',txFont:it.fontFamily||'Be Vietnam Pro',txSize:it.size||54,txColor:it.color||'#ffffff',txWeight:it.fontWeight||'700',txItalic:it.italic?'1':'0',txAlign:it.textAlign||'center',txStroke:it.strokeWidth||0,txStrokeColor:it.strokeColor||'#000000',txBgOn:it.textBackground?'1':'0',txBg:it.textBackground||'#000000',txStart:Number(it.start.toFixed(2)),txDuration:Number(it.duration.toFixed(2)),txX:it.x||0,txY:it.y||0};Object.entries(values).forEach(([id,v])=>{if(document.activeElement!==el(id))el(id).value=v})}
+function open(it,focus){active=it.id;panel.classList.add('open');document.body.classList.add('tx-editing');sync();if(focus){el('txContent').focus();el('txContent').select()}}
+function close(){panel.classList.remove('open');document.body.classList.remove('tx-editing')}
+el('txClose').onclick=close;
+const baseSelect=clipSelectId;clipSelectId=function(id){const out=baseSelect.apply(this,arguments),f=clipFind(id);if(f&&f.it.type==='text'){open(f.it,false);if(clipCurrentTime<f.it.start||clipCurrentTime>=f.it.start+f.it.duration)clipSetCurrentTime(f.it.start)}else close();return out};
+const baseLoad=clipLoadInspector;clipLoadInspector=function(){const out=baseLoad.apply(this,arguments);if(panel.classList.contains('open'))sync();return out};
+const baseAdd=clipAddTextAt;clipAddTextAt=function(t){baseAdd(t);const f=clipFind(clipSelectedId);if(f){clipLastSelectedId=f.it.id;clipSetCurrentTime(f.it.start);open(f.it,true);setTimeout(()=>{if(active===f.it.id&&panel.classList.contains('open')){el('txContent').focus();el('txContent').select()}},80)}};
+function refresh(){clipRenderTimeline();clipLoadInspector();clipDrawAt(clipCurrentTime,false)}
+panel.addEventListener('input',e=>{const it=item();if(!it)return;const id=e.target.id,v=e.target.value;const numberFields={txSize:'size',txStroke:'strokeWidth',txX:'x',txY:'y'};if(id==='txContent'){it.text=v;it.name=v||'Văn bản'}else if(numberFields[id]){if(v===''||!Number.isFinite(Number(v)))return;it[numberFields[id]]=Math.max(id==='txSize'?12:id==='txStroke'?0:-90,Math.min(id==='txSize'?300:id==='txStroke'?15:90,Number(v)))}else if(id==='txStart'||id==='txDuration'){if(v===''||!Number.isFinite(Number(v)))return;it[id==='txStart'?'start':'duration']=Math.max(id==='txStart'?0:.1,Number(v))}else if(id==='txFont')it.fontFamily=v;else if(id==='txColor')it.color=v;else if(id==='txWeight')it.fontWeight=v;else if(id==='txItalic')it.italic=v==='1';else if(id==='txAlign')it.textAlign=v;else if(id==='txStrokeColor')it.strokeColor=v;else if(id==='txBgOn'||id==='txBg')it.textBackground=el('txBgOn').value==='1'?el('txBg').value:null;refresh()});
+panel.addEventListener('click',e=>{const b=e.target.closest('[data-preset]'),it=item();if(!b||!it)return;const presets={plain:{color:'#ffffff',size:54,fontWeight:'400',strokeWidth:0,textBackground:null},subtitle:{color:'#ffffff',size:54,fontWeight:'700',strokeWidth:3,strokeColor:'#000000',textBackground:null,y:65},title:{color:'#facc15',size:90,fontWeight:'900',strokeWidth:3,strokeColor:'#171717',textBackground:null,y:0},label:{color:'#ffffff',size:60,fontWeight:'700',strokeWidth:0,textBackground:'#2563eb'}};Object.assign(it,presets[b.dataset.preset]);sync();refresh()});
+el('txNew').onclick=()=>clipAddTextAt(clipCurrentTime);el('txDuplicate').onclick=()=>{const it=item();if(!it)return;const copy=JSON.parse(JSON.stringify(it));copy.id=clipUid();copy.start=it.start+it.duration;clipTracks.text.push(copy);clipSelectedId=copy.id;clipLastSelectedId=copy.id;clipRenderAll();clipSetCurrentTime(copy.start);open(copy,true)};
+const quick=document.createElement('button');quick.id='idecoAddTextQuick';quick.textContent='T＋ Thêm chữ';quick.onclick=()=>clipAddTextAt(clipCurrentTime);(el('v72MainBar')||document.querySelector('.clip-head')).append(quick);
+// Capture text drags before legacy handlers; retain pointer capture on the stable lane.
+document.addEventListener('pointerdown',e=>{const b=e.target.closest('.clip-block.text');if(!b||e.button!==0)return;const f=clipFind(b.dataset.id);if(!f)return;e.preventDefault();e.stopImmediatePropagation();clipSelectId(f.it.id);const edge=e.target.closest('.clip-handle'),sc=el('clipScroll');drag={id:f.it.id,pointer:e.pointerId,x:e.clientX,start:f.it.start,duration:f.it.duration,edge:edge?edge.dataset.resize:null,scroll:sc.scrollLeft,px:clipTimelinePx};clipDrag=null;sc.setPointerCapture(e.pointerId)},true);
+window.addEventListener('pointermove',e=>{if(!drag||drag.pointer!==e.pointerId)return;e.preventDefault();e.stopImmediatePropagation();const f=clipFind(drag.id);if(!f)return;const sc=el('clipScroll'),dx=(e.clientX-drag.x+sc.scrollLeft-drag.scroll)/drag.px,it=f.it;let delta=Math.round(dx*30)/30;if(drag.edge==='r')it.duration=Math.max(.1,drag.duration+delta);else if(drag.edge==='l'){it.start=Math.max(0,Math.min(drag.start+drag.duration-.1,drag.start+delta));it.duration=drag.start+drag.duration-it.start}else it.start=Math.max(0,drag.start+delta);refresh()},true);
+function end(e){if(!drag||drag.pointer!==e.pointerId)return;const sc=el('clipScroll');if(sc.hasPointerCapture(e.pointerId))sc.releasePointerCapture(e.pointerId);drag=null;clipDrag=null;sync()}
+window.addEventListener('pointerup',end,true);window.addEventListener('pointercancel',end,true);
+window.IDECO_DRAW_STYLED_TEXT=function(ctx,it,fs,maxWidth){
+ ctx.font=(it.italic?'italic ':'')+(it.fontWeight||'800')+' '+fs+'px "'+(it.fontFamily||'Be Vietnam Pro')+'",Arial';
+ const lines=[];String(it.text==null?it.name||'':it.text).split('\n').forEach(paragraph=>{let line='';for(const word of paragraph.split(' ')){const next=line?line+' '+word:word;if(line&&ctx.measureText(next).width>maxWidth){lines.push(line);line=word}else line=next}lines.push(line)});
+ const widths=lines.map(l=>Math.min(maxWidth,ctx.measureText(l).width)),width=Math.max(0,...widths),lh=fs*1.3,h=lines.length*lh,align=it.textAlign||'center',x=align==='left'?-width/2:align==='right'?width/2:0;
+ ctx.textAlign=align;ctx.textBaseline='middle';ctx.shadowBlur=0;
+ if(it.textBackground){ctx.fillStyle=it.textBackground;ctx.fillRect(-width/2-fs*.2,-h/2-fs*.1,width+fs*.4,h+fs*.2)}
+ ctx.fillStyle=it.color||'#ffffff';ctx.strokeStyle=it.strokeColor||'#000000';ctx.lineWidth=(it.strokeWidth||0)*fs/(it.size||54)*2;ctx.lineJoin='round';
+ lines.forEach((line,i)=>{const y=(i-(lines.length-1)/2)*lh;if(ctx.lineWidth>0&&it.strokeWidth)ctx.strokeText(line,x,y,maxWidth);ctx.fillText(line,x,y,maxWidth)})
+};
+})();
+</script>
