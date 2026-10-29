@@ -11168,6 +11168,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
       return
     }
 
+    if($('v11PausePreview')&&$('v11PausePreview').checked)v45StopPreviewBeforeExport();
     window.IDECO_EXPORT_STATUS.start();
     /* V64: giữ nguyên Preview/playhead hiện tại. Export chụp snapshot riêng và chạy độc lập. */
     v45SetLock(true);
@@ -14184,7 +14185,7 @@ window.IDECO_SEND_MUSIC_AUDIO=async file=>{switchTab('audioStudio');const f=docu
 const io=window.IDECO_PROJECT_IO,id='ideco_autosave_4days',ttl=4*86400000;let saving=false,last='',ready=false;
 const label=t=>document.getElementById('idecoSaveState').textContent=t;
 function signature(){return JSON.stringify(clipTracks,(k,v)=>['video','audio','img','file','blob'].includes(k)||k.startsWith('_')?undefined:v)}
-async function save(){if(!ready||saving||window.clipExporting)return;let sig;try{sig=signature()}catch(e){return}if(sig===last)return;saving=true;try{const rec=await io.serialize('Phiên dựng tự lưu · 4 ngày',id);if(rec.missing)throw Error('Có media chưa tải được để lưu');rec.expiresAt=Date.now()+ttl;await io.put(rec);localStorage.setItem(id,JSON.stringify({updatedAt:rec.updatedAt,expiresAt:rec.expiresAt}));last=sig;label('✓ Tự lưu lúc '+new Date().toLocaleTimeString('vi-VN')+' · giữ 4 ngày')}catch(e){label('⚠ Chưa lưu được: '+e.message)}finally{saving=false}}
+async function save(){if(!ready||saving||window.clipExporting||document.body.classList.contains('v42-exporting'))return;let sig;try{sig=signature()}catch(e){return}if(sig===last)return;saving=true;try{const rec=await io.serialize('Phiên dựng tự lưu · 4 ngày',id);if(rec.missing)throw Error('Có media chưa tải được để lưu');rec.expiresAt=Date.now()+ttl;await io.put(rec);localStorage.setItem(id,JSON.stringify({updatedAt:rec.updatedAt,expiresAt:rec.expiresAt}));last=sig;label('✓ Tự lưu lúc '+new Date().toLocaleTimeString('vi-VN')+' · giữ 4 ngày')}catch(e){label('⚠ Chưa lưu được: '+e.message)}finally{saving=false}}
 (async()=>{try{const rec=await io.get(id);if(rec&&rec.expiresAt>Date.now()&&Object.values(clipTracks).every(a=>!a.length)){await io.restore(rec);label('✓ Đã khôi phục phiên dựng trên máy')}else if(rec&&rec.expiresAt<=Date.now()){await io.remove(id);label('Phiên tự lưu cũ đã hết hạn 4 ngày')}else label('Tự lưu phiên dựng mỗi 15 giây · giữ 4 ngày');last=signature()}catch(e){label('⚠ Không đọc được phiên lưu: '+e.message)}ready=true})();
 setInterval(save,15000);document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});window.addEventListener('beforeunload',e=>{if(saving||ready&&signature()!==last){e.preventDefault();e.returnValue=''}});
 })();
@@ -14301,5 +14302,50 @@ window.IDECO_EXPORT_STATUS={
  error(message){active=false;clearInterval(timer);by('exTitle').textContent=/hủy/i.test(message)?'⏹ ĐÃ HỦY XUẤT':'❌ XUẤT VIDEO CHƯA THÀNH CÔNG';by('exStage').textContent=message;by('exHint').textContent='Chưa tạo được file video hoàn chỉnh.';by('exCancel').hidden=true;by('exClose').hidden=false;by('exBar').value=pct}
 };
 by('exCancel').onclick=()=>{by('exCancel').disabled=true;by('exStage').textContent='Đang yêu cầu hủy xuất…';by('v45TopCancel').click()};by('exClose').onclick=()=>box.classList.remove('show');new MutationObserver(stage).observe(by('clipProgress'),{childList:true,subtree:true,characterData:true});
+})();
+</script>
+
+<style>
+body.clip-mode .clip-head #idecoExportStatus{display:block!important;position:static!important;flex:1 1 100%;width:100%!important;max-width:none!important;margin:4px 0 0;padding:8px 12px!important;box-shadow:none!important;border:1px solid #b6cdf3!important;border-radius:8px!important;font-size:12px!important;background:#eff6ff!important;z-index:auto!important}
+body.clip-mode .clip-head #idecoExportStatus p{margin:3px 0!important;font-size:12px!important}body.clip-mode .clip-head #idecoExportStatus progress{display:block;height:14px!important;margin:4px 0;width:100%}body.clip-mode .clip-head #idecoExportStatus small{font-size:11px}body.clip-mode .clip-head #idecoExportStatus button,body.clip-mode .clip-head #idecoExportStatus a{padding:5px 9px!important;font-size:11px!important}#exClose{display:none!important}
+#v11SpeedBox{padding:12px;background:#eff6ff;color:#172033;border:1px solid #b6cdf3;border-radius:9px;margin-bottom:12px}#v11SpeedBox button{background:#2563eb;color:white;border:0;border-radius:7px;padding:9px;margin:0 8px 8px 0;cursor:pointer}#v11SpeedBox label{display:block;background:transparent!important}#v11SpeedBox input{width:auto!important}#v11SpeedBox p{color:#334155;font-size:12px;margin:4px 0}
+</style>
+<script>
+(function(){const by=id=>document.getElementById(id),head=document.querySelector('.clip-head'),status=by('idecoExportStatus');if(head&&status){head.append(status);status.classList.add('show');by('exTitle').textContent='XUẤT VIDEO · Sẵn sàng';by('exStage').textContent='Bấm Xuất video ở phía trên để chọn chất lượng và bắt đầu.';by('exBar').value=0;by('exCancel').hidden=true;by('exHint').textContent='Tiến độ render và dung lượng sẽ hiển thị ngay tại đây.'}
+const body=by('v46ExportModal')?.querySelector('.v46-export-body');if(!body)return;const box=document.createElement('div');box.id='v11SpeedBox';box.innerHTML='<button type="button" id="v11Fast">⚡ Xuất nhanh · 720p / 24fps</button><button type="button" id="v11Quality">Full HD · 1080p / 30fps</button><label><input id="v11PausePreview" type="checkbox" checked> Tạm dừng xem trước khi xuất để dành tài nguyên cho render</label><p id="v11PresetInfo">Chọn Xuất nhanh để giảm khối lượng render và dung lượng file gửi đi. Chất lượng sẽ thấp hơn Full HD.</p>';body.prepend(box);
+function preset(fast){const values={v46Resolution:fast?'720':'1080',v46Fps:fast?'24':'30',v46BitratePreset:fast?'economy':'recommended',v46RenderMode:'turbo'};Object.entries(values).forEach(([id,value])=>{const e=by(id);if(e){e.value=value;e.dispatchEvent(new Event('change',{bubbles:true}))}});by('v11PresetInfo').textContent=fast?'Đã chọn 720p / 24fps / tiết kiệm dung lượng. Bấm Bắt đầu xuất để render.':'Đã chọn Full HD 1080p / 30fps. Bấm Bắt đầu xuất để render.'}
+by('v11Fast').onclick=()=>preset(true);by('v11Quality').onclick=()=>preset(false);
+})();
+</script>
+
+<style id="ideco-v12-workspace">
+body.clip-mode.v72-editor #v72DrawerBackdrop{display:none!important;pointer-events:none!important}
+body.clip-mode.v72-editor .clip-head{height:auto!important;flex-wrap:wrap!important;flex-shrink:0!important}
+body.clip-mode.v72-editor.v12-progress-hidden .clip-head #idecoExportStatus{display:none!important}
+#v12ProgressToggle{border:1px solid #b6cdf3!important;background:#eff6ff!important;color:#173c72!important;border-radius:7px;padding:7px 10px;cursor:pointer;font-size:12px;white-space:nowrap}
+body.clip-mode.v72-editor .clip-layout,body.clip-mode.v72-editor:not(.v45-export-lock) .clip-layout,body.clip-mode.v72-editor.v45-export-lock .clip-layout{height:var(--v12-work-height,65dvh)!important;max-height:var(--v12-work-height,65dvh)!important;min-height:0!important}
+@media(min-width:901px){
+body.clip-mode.v72-editor.v12-docked #tabClip{left:0!important;right:auto!important;width:calc(100% - var(--v12-panel-width,350px))!important;max-width:calc(100% - var(--v12-panel-width,350px))!important;box-sizing:border-box!important;transform:none!important}
+body.clip-mode.v72-editor #clipInspector{width:var(--v12-panel-width,350px)!important;max-width:var(--v12-panel-width,350px)!important;box-shadow:-2px 0 10px #16243b22!important}
+body.clip-mode.v72-editor #idecoTextEditor{right:0!important;top:0!important;bottom:0!important;height:100dvh!important;max-height:100dvh!important;width:var(--v12-panel-width,350px)!important;border-radius:0!important;box-shadow:-2px 0 10px #16243b22!important}
+}
+@media(max-width:900px){
+body.clip-mode.v72-editor #clipInspector,body.clip-mode.v72-editor #idecoTextEditor{position:fixed!important;left:0!important;right:0!important;top:auto!important;bottom:0!important;width:100%!important;height:32dvh!important;max-height:32dvh!important;border-radius:12px 12px 0 0!important;box-shadow:0 -2px 8px #16243b22!important}
+body.clip-mode.v72-editor .clip-preview-surface{height:min(22dvh,180px)!important;max-height:min(22dvh,180px)!important}
+body.clip-mode.v72-editor.v12-docked .clip-timeline-wrap{min-height:120px!important}
+body.clip-mode.v72-editor.v12-docked #clipScroll{min-height:70px!important}
+}
+</style>
+<script id="ideco-v12-workspace-script">
+(function(){
+const by=id=>document.getElementById(id),body=document.body,head=document.querySelector('.clip-head'),layout=document.querySelector('#tabClip .clip-layout'),status=by('idecoExportStatus');if(!head||!layout||!status)return;
+const button=document.createElement('button');button.id='v12ProgressToggle';button.type='button';button.setAttribute('aria-controls','idecoExportStatus');const exportButton=by('v45TopExport');if(exportButton?.parentElement===head)exportButton.insertAdjacentElement('afterend',button);else head.append(button);
+let hidden=false;try{hidden=localStorage.getItem('ideco.progress.hidden')==='1'}catch(_){}
+function label(){body.classList.toggle('v12-progress-hidden',hidden);button.setAttribute('aria-expanded',String(!hidden));let suffix='';const title=by('exTitle')?.textContent||'',bar=by('exBar');if(/ĐANG XUẤT/.test(title))suffix=bar?.hasAttribute('value')?' · '+Math.round(bar.value)+'%':' · đang chuẩn bị';else if(/HOÀN TẤT/.test(title))suffix=' · đã xong';else if(/CHƯA THÀNH CÔNG/.test(title))suffix=' · có lỗi';else if(/ĐÃ HỦY/.test(title))suffix=' · đã hủy';button.textContent=(hidden?'▤ Hiện tiến độ':'▴ Ẩn tiến độ')+suffix}
+button.onclick=()=>{hidden=!hidden;try{localStorage.setItem('ideco.progress.hidden',hidden?'1':'0')}catch(_){}label();schedule()};
+let queued=false;function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;resize()})}
+function resize(){if(!body.classList.contains('clip-mode'))return;const textOpen=body.classList.contains('tx-editing')&&by('idecoTextEditor')?.classList.contains('open'),dock=textOpen||body.classList.contains('v72-panel-open');if(body.classList.contains('v12-docked')!==!!dock)body.classList.toggle('v12-docked',!!dock);const viewport=window.visualViewport?.height||innerHeight;document.documentElement.style.setProperty('--v12-panel-width',Math.max(310,Math.min(390,Math.round(innerWidth*.27)))+'px');const reserve=dock&&innerWidth<=900?innerHeight*.32:0;const height=Math.max(100,Math.floor(viewport-layout.getBoundingClientRect().top-reserve-8));const value=height+'px';if(document.documentElement.style.getPropertyValue('--v12-work-height')!==value)document.documentElement.style.setProperty('--v12-work-height',value)}
+new MutationObserver(()=>{label();schedule()}).observe(status,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['value']});
+new MutationObserver(schedule).observe(body,{attributes:true,attributeFilter:['class']});if(window.ResizeObserver){new ResizeObserver(schedule).observe(head)}window.addEventListener('resize',schedule);window.visualViewport?.addEventListener('resize',schedule);label();schedule();
 })();
 </script>
