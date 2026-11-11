@@ -10798,6 +10798,16 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     }
     return ctx.images.get(it.url)
   }
+  /* V85: arm frame notification before seeking so seeked cannot outrun it. */
+  function v85FrameSignal(v){
+    var done=false,id=null,timer=null,finish=null;
+    var promise=new Promise(function(resolve){finish=function(){if(done)return;done=true;clearTimeout(timer);if(id!==null&&v.cancelVideoFrameCallback){try{v.cancelVideoFrameCallback(id)}catch(_){}}resolve()}});
+    if(typeof v.requestVideoFrameCallback==='function'){
+      try{id=v.requestVideoFrameCallback(finish)}catch(_){finish()}
+    }else finish();
+    return {wait:function(ms){if(!done)timer=setTimeout(finish,ms);return promise},cancel:finish};
+  }
+
   async function seekExact(v,target,opt){
     opt=opt||{};
     var fps=Math.max(1,Number(opt.fps)||FPS||30);
@@ -10812,19 +10822,18 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
     var changed=false;
     if(drift>Math.max(.004,frameDur*.16)){
       changed=true;
+      var signal=(opt.safe || !v.__v67FramePrimed)?v85FrameSignal(v):null;
       try{
         if(typeof v.fastSeek==='function' && opt.fast && drift>1.2)v.fastSeek(target);
         else v.currentTime=target;
-      }catch(e){throw e}
-      await exportWait(v,function(){return !v.seeking&&v.readyState>=2&&v.videoWidth>0&&v.videoHeight>0},['seeked','loadeddata','canplay','timeupdate'],'Không giải mã được khung hình tại '+target.toFixed(2)+' giây',12000);
+        await exportWait(v,function(){return !v.seeking&&v.readyState>=2&&v.videoWidth>0&&v.videoHeight>0},['seeked','loadeddata','canplay','timeupdate'],'Không giải mã được khung hình tại '+target.toFixed(2)+' giây',12000);
+        if(signal)await signal.wait(opt.safe?180:90);
+      }finally{if(signal)signal.cancel()}
     }
     if(v.seeking||v.readyState<2||!v.videoWidth||!v.videoHeight)throw new Error('Video chưa có khung hình hợp lệ');
     /* V67: frame không thay đổi thì KHÔNG chờ rVFC 220ms. Tiết kiệm hàng nghìn lần chờ.
        Chế độ Chính xác và frame đầu mỗi video chờ compositor, Turbo dùng seeked+readyState. */
-    if(changed){
-      if(opt.safe || !v.__v67FramePrimed){await waitFrame(v,opt.safe?180:90)}
-      else await sleep(0);
-    }
+    // The export loop yields in batches; no per-frame timer in Turbo.
     v.__v67FramePrimed=true;
     return true
   }
@@ -10882,11 +10891,11 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
       return n>0&&dark/n>.965
     }catch(e){ctx.blackProbeDisabled=true;return false}
   }
-  function v64GuardFrame(ctx){
+  function v64GuardFrame(ctx,probe){
     if(!ctx.holdCanvas){
       ctx.holdCanvas=document.createElement('canvas');ctx.holdCanvas.width=ctx.canvas.width;ctx.holdCanvas.height=ctx.canvas.height;ctx.holdCtx=ctx.holdCanvas.getContext('2d');ctx.hasGoodFrame=false;ctx.heldFrames=0
     }
-    var black=v64FrameMostlyBlack(ctx);
+    var black=probe!==false && v64FrameMostlyBlack(ctx);
     if(black&&ctx.hasGoodFrame){
       var dc=ctx.canvas.getContext('2d');dc.save();dc.setTransform(1,0,0,1,0,0);dc.globalAlpha=1;dc.filter='none';dc.globalCompositeOperation='source-over';dc.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);dc.drawImage(ctx.holdCanvas,0,0);dc.restore();ctx.heldFrames++;return true
     }
@@ -10936,7 +10945,9 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
       var liveTracks=clipTracks;
       try{clipTracks=tracks;window.clipRenderExportFrame(ctx.canvas,t)}
       finally{clipTracks=liveTracks}
-      v64GuardFrame(ctx);
+      var guardKey=it?(it.id||it.url):'empty';
+      var probe=v44Mode()==='safe'||ctx.v85GuardKey!==guardKey||!!decodeErr;
+      v64GuardFrame(ctx,probe);ctx.v85GuardKey=guardKey;
       return {held:false,recovered:!!decodeErr}
     }catch(e){
       /* Một lỗi vẽ/overlay thoáng qua cũng được phép dùng frame trước thay vì làm hỏng toàn file. */
@@ -10984,7 +10995,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
               return {
                 encoderConfig:r.config||cfg,
                 muxerCodec:'avc',
-                label:'H.264/AVC',
+                label:'H.264/AVC'+(hwModes[hwi]==='prefer-hardware'?' · ưu tiên phần cứng':''),
                 fileExt:'mp4'
               }
             }
@@ -11434,6 +11445,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
         VIDEO: mỗi frame timeline được lấy độc lập.
         Không video.play(), không MediaRecorder, không phụ thuộc realtime.
       */
+      var v85RenderStarted=performance.now();
       for(var i=0;i<frameCount;i++){
         if(cancelExport)
           throw new Error('Đã hủy xuất video');
@@ -11454,14 +11466,13 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
 
         var vf=new VideoFrame(canvas,{
           timestamp:Math.round(i/FPS*1000000),
-          duration:Math.round(1000000/FPS),
+          duration:Math.round(Math.min(total,(i+1)/FPS)*1000000)-Math.round(i/FPS*1000000),
           alpha:'discard'
         });
 
-        videoEncoder.encode(vf,{
+        try{videoEncoder.encode(vf,{
           keyFrame:(i===0||i%(FPS*2)===0)
-        });
-        vf.close();
+        })}finally{vf.close()};
 
         /*
           V44: cho encoder làm việc song song sâu hơn.
@@ -11480,7 +11491,7 @@ var clipRenderAll=function(){clipRenderTimeline();clipLoadInspector();clipSetCur
           $('clipProgress').textContent=
             (v44Mode()==='turbo'?'⚡ TURBO ':'🛡 CHÍNH XÁC ')+
             videoChoice.label+' · Frame '+(i+1)+'/'+frameCount+
-            ' · '+pct+'%'+
+            ' · '+pct+'% · '+((i+1)/Math.max(.001,(performance.now()-v85RenderStarted)/1000)).toFixed(1)+' khung/s'+
             (decoderCtx.heldDecodeFrames?' · 🩹 '+decoderCtx.heldDecodeFrames+' frame tự phục hồi':'');
           /* V64: không di chuyển playhead Preview khi exporter tiến frame. */
         }
@@ -14824,8 +14835,9 @@ body.clip-mode .clip-head #idecoExportStatus p{margin:3px 0!important;font-size:
 </style>
 <script>
 (function(){const by=id=>document.getElementById(id),head=document.querySelector('.clip-head'),status=by('idecoExportStatus');if(head&&status){head.append(status);status.classList.add('show');by('exTitle').textContent='XUẤT VIDEO · Sẵn sàng';by('exStage').textContent='Bấm Xuất video ở phía trên để chọn chất lượng và bắt đầu.';by('exBar').value=0;by('exCancel').hidden=true;by('exHint').textContent='Tiến độ render và dung lượng sẽ hiển thị ngay tại đây.'}
-const body=by('v46ExportModal')?.querySelector('.v46-export-body');if(!body)return;const box=document.createElement('div');box.id='v11SpeedBox';box.innerHTML='<button type="button" id="v11Fast">⚡ Xuất nhanh · 720p / 24fps</button><button type="button" id="v11Quality">Full HD · 1080p / 30fps</button><label><input id="v11PausePreview" type="checkbox" checked> Tạm dừng xem trước khi xuất để dành tài nguyên cho render</label><p id="v11PresetInfo">Chọn Xuất nhanh để giảm khối lượng render và dung lượng file gửi đi. Chất lượng sẽ thấp hơn Full HD.</p>';body.prepend(box);
+const body=by('v46ExportModal')?.querySelector('.v46-export-body');if(!body)return;const box=document.createElement('div');box.id='v11SpeedBox';box.innerHTML='<button type="button" id="v85FastSame">⚡ Tăng tốc · giữ chất lượng đã chọn</button><button type="button" id="v11Fast">⚡ Xuất nhanh · 720p / 24fps</button><button type="button" id="v11Quality">Full HD · 1080p / 30fps</button><label><input id="v11PausePreview" type="checkbox" checked> Tạm dừng xem trước khi xuất để dành tài nguyên cho render</label><p id="v11PresetInfo">Chọn Xuất nhanh để giảm khối lượng render và dung lượng file gửi đi. Chất lượng sẽ thấp hơn Full HD.</p>';body.prepend(box);
 function preset(fast){const values={v46Resolution:fast?'720':'1080',v46Fps:fast?'24':'30',v46BitratePreset:fast?'economy':'recommended',v46RenderMode:'turbo'};Object.entries(values).forEach(([id,value])=>{const e=by(id);if(e){e.value=value;e.dispatchEvent(new Event('change',{bubbles:true}))}});by('v11PresetInfo').textContent=fast?'Đã chọn 720p / 24fps / tiết kiệm dung lượng. Bấm Bắt đầu xuất để render.':'Đã chọn Full HD 1080p / 30fps. Bấm Bắt đầu xuất để render.'}
+by('v85FastSame').onclick=()=>{const mode=by('v46RenderMode');if(mode){mode.value='turbo';mode.dispatchEvent(new Event('change',{bubbles:true}))}const pause=by('v11PausePreview');if(pause)pause.checked=true;by('v11PresetInfo').textContent='Đã bật tăng tốc và tạm dừng xem trước khi xuất. Giữ nguyên độ phân giải, FPS, bitrate và codec đang chọn.'};
 by('v11Fast').onclick=()=>preset(true);by('v11Quality').onclick=()=>preset(false);
 })();
 </script>
