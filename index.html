@@ -13317,11 +13317,11 @@ body.v64-export-running .clip-playbar,body.v64-export-running .clip-toptools,bod
   function audioDuration(f){return new Promise(function(resolve,reject){var u=URL.createObjectURL(f),a=new Audio();a.preload='metadata';a.onloadedmetadata=function(){var d=a.duration;URL.revokeObjectURL(u);resolve(d)};a.onerror=function(){URL.revokeObjectURL(u);reject(new Error('Không đọc được thời lượng audio'))};a.src=u})}
   function wavBlob(buf,startSec,endSec){var sr=buf.sampleRate,start=Math.floor(startSec*sr),end=Math.min(buf.length,Math.floor(endSec*sr)),frames=Math.max(0,end-start),ch=Math.min(2,buf.numberOfChannels),bytes=frames*ch*2,ab=new ArrayBuffer(44+bytes),v=new DataView(ab),o=0;function str(x){for(var i=0;i<x.length;i++)v.setUint8(o++,x.charCodeAt(i))}function u16(x){v.setUint16(o,x,true);o+=2}function u32(x){v.setUint32(o,x,true);o+=4}str('RIFF');u32(36+bytes);str('WAVE');str('fmt ');u32(16);u16(1);u16(ch);u32(sr);u32(sr*ch*2);u16(ch*2);u16(16);str('data');u32(bytes);var data=[];for(var c=0;c<ch;c++)data[c]=buf.getChannelData(c);for(var i=0;i<frames;i++)for(var c=0;c<ch;c++){var x=Math.max(-1,Math.min(1,data[c][start+i]||0));v.setInt16(o,x<0?x*32768:x*32767,true);o+=2}return new Blob([ab],{type:'audio/wav'})}
   async function choose(f){sourceFile=f;segments=[];sourceBuffer=null;$('v664CutResult').style.display='none';if(!f)return;try{$('v664AudioInfo').textContent='Đang đọc '+f.name+'...';var ab=await f.arrayBuffer(),AC=window.AudioContext||window.webkitAudioContext,ac=new AC();sourceBuffer=await ac.decodeAudioData(ab.slice(0));try{ac.close()}catch(_){};$('v664AudioInfo').innerHTML='<b>'+escHtml(f.name)+'</b> · '+fmt(sourceBuffer.duration)+' · '+Math.round(f.size/1024)+' KB'}catch(e){$('v664AudioInfo').textContent='Không đọc được audio';toast('Không đọc được MP3/WAV này',true)}}
-  function render(){var list=$('v664CutList');list.innerHTML='';$('v664CutResult').style.display=segments.length?'block':'none';$('v664CutTitle').textContent='Đã cắt '+segments.length+' đoạn';segments.forEach(function(seg,i){var d=document.createElement('div');d.className='v664-seg';d.innerHTML='<div class="v664-seg-top"><span class="v664-seg-num">ĐOẠN '+(i+1)+'</span><span class="v664-seg-name">'+escHtml(seg.file.name)+'</span><span class="v664-seg-time">'+fmt(seg.start)+' → '+fmt(seg.end)+' · '+fmt(seg.duration)+'</span></div><audio controls src="'+seg.url+'"></audio><div class="v664-seg-actions"><button data-act="download" data-i="'+i+'">⬇ TẢI WAV</button><button data-act="wan30" data-i="'+i+'">🎙 CHÈN WAN 30s</button><button data-act="video" data-i="'+i+'">📎 ĐÍNH KÈM DỰNG VIDEO</button><button class="add" data-act="add" data-i="'+i+'">＋ ADD VÀO DỰNG VIDEO</button><button class="use" data-act="use" data-i="'+i+'">🎙 CHỌN LÀM AUDIO LIP-SYNC</button></div>';list.appendChild(d)})}
+  function render(){var list=$('v664CutList');list.innerHTML='';$('v664CutResult').style.display=segments.length?'block':'none';$('v664CutTitle').textContent='Đã cắt '+segments.length+' đoạn';segments.forEach(function(seg,i){var d=document.createElement('div');d.className='v664-seg';d.innerHTML='<div class="v664-seg-top"><span class="v664-seg-num">ĐOẠN '+(i+1)+'</span><span class="v664-seg-name">'+escHtml(seg.file.name)+'</span><span class="v664-seg-time">'+fmt(seg.start)+' → '+fmt(seg.end)+' · '+fmt(seg.duration)+'</span></div><audio controls src="'+seg.url+'"></audio><div class="v664-seg-actions"><button data-act="download" data-i="'+i+'">⬇ TẢI WAV</button><button data-act="wan30" data-i="'+i+'">🎙 CHÈN WAN 30s</button><button data-act="wan60" data-i="'+i+'">🎙 CHÈN WAN 60s</button><button data-act="video" data-i="'+i+'">📎 ĐÍNH KÈM DỰNG VIDEO</button><button class="add" data-act="add" data-i="'+i+'">＋ ADD VÀO DỰNG VIDEO</button><button class="use" data-act="use" data-i="'+i+'">🎙 CHỌN LÀM AUDIO LIP-SYNC</button></div>';list.appendChild(d)})}
   function cut(){if(!sourceBuffer){toast('Hãy chọn MP3/WAV trước',true);return}var len=Number($('v664CutLen').value)||15,dur=sourceBuffer.duration;segments.forEach(function(x){try{URL.revokeObjectURL(x.url)}catch(_){}});segments=[];for(var st=0,idx=1;st<dur-.01;st+=len,idx++){var en=Math.min(dur,st+len),blob=wavBlob(sourceBuffer,st,en),name=(sourceFile.name.replace(/\.[^.]+$/,'')||'audio')+'_part_'+String(idx).padStart(2,'0')+'_'+Math.round(en-st)+'s.wav',file=new File([blob],name,{type:'audio/wav'});segments.push({start:st,end:en,duration:en-st,file:file,url:URL.createObjectURL(blob),dataUrl:null})}render();toast('Đã cắt '+segments.length+' đoạn âm thanh')}
   async function selectSeg(seg){if(!seg.dataUrl)seg.dataUrl=await fileToDataUrl(seg.file);window.V664SelectedCutAudio={dataUrl:seg.dataUrl,name:seg.file.name,duration:seg.duration,file:seg.file,uploadedUrl:''};window.V664VideoAudioRef=window.V664SelectedCutAudio;toast('Đã chọn '+seg.file.name+' làm audio lip-sync')}
   function addSeg(seg){try{var it=clipAddAudioFile(seg.file,'audio');if(it){it.start=Math.max(0,clipCurrentTime||0);it.duration=seg.duration;it.sourceDuration=seg.duration}switchTab('clip');clipRenderAll();toast('Đã thêm '+seg.file.name+' vào track AUDIO tại vạch thời gian hiện tại')}catch(e){toast('Không add được audio: '+(e.message||e),true)}}
-  $('v664PickAudio').onclick=function(){$('v664AudioFile').click()};$('v664AudioFile').onchange=function(){choose(this.files&&this.files[0])};$('v664CutNow').onclick=cut;$('v664CutList').addEventListener('click',function(e){var b=e.target.closest('button[data-act]');if(!b)return;var seg=segments[Number(b.dataset.i)];if(!seg)return;if(b.dataset.act==='download'){var a=document.createElement('a');a.href=seg.url;a.download=seg.file.name;a.click()}else if(b.dataset.act==='wan30'){window.IDECO_WAN30_IMPORT(seg.file).catch(function(e){toast(e.message,true)})}else if(b.dataset.act==='video'){window.IDECO_IMPORT_VIDEO_AUDIO(seg.file).catch(function(e){toast(e.message,true)})}else if(b.dataset.act==='add')addSeg(seg);else selectSeg(seg)});$('v664AddAllAudio').onclick=function(){if(!segments.length)return;var pos=typeof clipLastEnd==='function'?clipLastEnd('audio'):0;segments.forEach(function(seg){var it=clipAddAudioFile(seg.file,'audio');if(it){it.start=pos;it.duration=seg.duration;it.sourceDuration=seg.duration}pos+=seg.duration});clipSetCurrentTime(Math.max(0,pos-(segments[segments.length-1].duration||0)));switchTab('clip');clipRenderAll();toast('Đã nối '+segments.length+' đoạn liên tiếp vào track AUDIO')};
+  $('v664PickAudio').onclick=function(){$('v664AudioFile').click()};$('v664AudioFile').onchange=function(){choose(this.files&&this.files[0])};$('v664CutNow').onclick=cut;$('v664CutList').addEventListener('click',function(e){var b=e.target.closest('button[data-act]');if(!b)return;var seg=segments[Number(b.dataset.i)];if(!seg)return;if(b.dataset.act==='download'){var a=document.createElement('a');a.href=seg.url;a.download=seg.file.name;a.click()}else if(b.dataset.act==='wan30'){window.IDECO_WAN30_IMPORT(seg.file,{seconds:30}).catch(function(e){toast(e.message,true)})}else if(b.dataset.act==='wan60'){window.IDECO_WAN30_IMPORT(seg.file,{seconds:60}).catch(function(e){toast(e.message,true)})}else if(b.dataset.act==='video'){window.IDECO_IMPORT_VIDEO_AUDIO(seg.file).catch(function(e){toast(e.message,true)})}else if(b.dataset.act==='add')addSeg(seg);else selectSeg(seg)});$('v664AddAllAudio').onclick=function(){if(!segments.length)return;var pos=typeof clipLastEnd==='function'?clipLastEnd('audio'):0;segments.forEach(function(seg){var it=clipAddAudioFile(seg.file,'audio');if(it){it.start=pos;it.duration=seg.duration;it.sourceDuration=seg.duration}pos+=seg.duration});clipSetCurrentTime(Math.max(0,pos-(segments[segments.length-1].duration||0)));switchTab('clip');clipRenderAll();toast('Đã nối '+segments.length+' đoạn liên tiếp vào track AUDIO')};
   function installMain(){var m=$('vModel');if(!m||$('v664MainVideoAudio'))return;var host=m.closest('.sec')||m.parentNode,box=document.createElement('div');box.id='v664MainVideoAudio';box.className='v664-video-audio-box';box.innerHTML='<b style="font-size:11px">🎙 Audio / Lipsync · Seedance 2.5 Flash / Wan / Grok</b><div class="row"><input id="v664MainAudioFile" type="file" accept="audio/mpeg,audio/mp3,audio/wav,audio/x-wav,.mp3,.wav" style="flex:1;font-size:10px"><button id="v664MainAudioClear">Bỏ audio</button></div><div id="v664MainAudioInfo" style="font-size:10px;color:#777;margin-top:6px">Chưa gắn file thoại</div><small>Seedance 2.5 Flash: MP3/WAV 2–30s, tối đa 15 MB. Wan/Grok: tối đa 15s. Audio đính kèm sẽ được gửi cùng ảnh để yêu cầu khớp khẩu hình.</small>';host.appendChild(box);$('v664MainAudioFile').onchange=async function(){var f=this.files&&this.files[0];if(!f)return;var d=await audioDuration(f),data=await fileToDataUrl(f);window.V664VideoAudioRef={dataUrl:data,name:f.name,duration:d,uploadedUrl:''};$('v664MainAudioInfo').textContent=f.name+' · '+fmt(d)};$('v664MainAudioClear').onclick=function(){window.V664VideoAudioRef=null;$('v664MainAudioFile').value='';$('v664MainAudioInfo').textContent='Chưa gắn file thoại'}}setTimeout(installMain,0);
   async function setScene(i,f){var x=window.V66FilmStudio&&window.V66FilmStudio.state.items[i];if(!x||!f)return;var d=await audioDuration(f),data=await fileToDataUrl(f);x.audioDataUrl=data;x.audioName=f.name;x.audioDuration=d;x.audioUploadedUrl='';updateScene(i);toast('Đã gắn audio cho Cảnh '+(i+1))}
   function updateScene(i){var x=window.V66FilmStudio&&window.V66FilmStudio.state.items[i],el=document.querySelector('.v664-scene-audio-info[data-i="'+i+'"]');if(!x||!el)return;el.textContent=x.audioDataUrl?((x.audioName||'audio')+' · '+fmt(x.audioDuration||0)+(x.audioDuration>15.05?' · ⚠ dài hơn 15s':'')):'Chưa gắn file thoại'}
@@ -14718,7 +14718,7 @@ try{var p=JSON.parse(localStorage.getItem(pendingKey)||'null');if(p&&p.id){el('l
 </script>
 
 <script id="ideco-audio-editor-v1">
-(()=>{function boot(){const host=document.createElement('div');document.getElementById('tabAudioProcess').append(host);const r=host.attachShadow({mode:'open'});r.innerHTML=`<style>:host{font:15px Arial;color:#172333}*{box-sizing:border-box}button,input{font:inherit}button{cursor:pointer;padding:11px;border:1px solid #ccd5e2;border-radius:9px;background:white}.launch{display:none}.panel{position:relative;background:#f3f5f9;padding:20px;border-radius:14px}.panel[hidden]{display:none}.wrap{max-width:1000px;margin:auto}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.card{padding:18px;background:white;border-radius:12px;margin:15px 0}.stage{height:180px;position:relative;margin:25px 15px;touch-action:none;background:#eff3fa}canvas{width:100%;height:100%}.sel{position:absolute;top:0;height:100%;background:#dc262625;pointer-events:none}.handle{position:absolute;top:-10px;bottom:-10px;width:26px;padding:0;background:#b91c1c;color:white;transform:translateX(-50%);touch-action:none}.note{font-size:13px;color:#627086;line-height:1.6}input[type=number]{width:120px;padding:10px}.primary{background:#b91c1c;color:white}audio{width:100%}a{display:inline-block;padding:12px;color:#13763d}button:disabled{opacity:.4}video{max-width:100%;max-height:200px}@media(max-width:600px){.panel{inset:3px;padding:10px}.launch{top:auto;bottom:12px}.stage{height:140px}}</style><button class="launch">🎧 XỬ LÝ AUDIO</button><section class="panel"><div class="wrap"><div class="row"><h2 style="flex:1">🎧 XỬ LÝ AUDIO</h2><button id="close">✕ Đóng</button></div><div class="card"><b>✂ Cắt đoạn audio chính xác</b><p><input id="file" type="file" accept="audio/*,video/*"></p><p class="note" id="info">Chọn audio hoặc video để lấy tiếng. Xử lý trên thiết bị, không cần API.</p><video id="video" controls playsinline hidden></video></div><div class="card"><p>Kéo vạch đỏ bên trái và bên phải để chọn đoạn.</p><div class="stage"><canvas id="wave"></canvas><div id="sel" class="sel"></div><button id="left" class="handle" role="slider" aria-label="Điểm bắt đầu">❮</button><button id="right" class="handle" role="slider" aria-label="Điểm kết thúc">❯</button></div><div class="row"><label>Từ (giây) <input id="start" type="number" min="0" step="0.001" value="0"></label><label>Đến (giây) <input id="end" type="number" min="0" step="0.001" value="0"></label><b id="len"></b></div><p class="note">Có thể nhập thời gian đến 0,001 giây. Phím mũi tên điều chỉnh vạch 0,01 giây; Shift + mũi tên: 1 giây.</p><div class="row"><label>Âm lượng <input id="gain" type="range" min="0" max="200" value="100"><span id="gaintext">100%</span></label><label><input id="fade" type="checkbox"> Vào/ra êm 0,05 giây</label></div><div class="row" style="margin-top:15px"><button id="preview" disabled>▶ Nghe thử đoạn chọn</button><button id="stop">■ Dừng</button><button id="all" disabled>Chọn toàn bộ</button><button id="cut" class="primary" disabled>✂ CẮT ĐOẠN ĐÃ CHỌN</button></div><p id="status" role="status">Chọn tệp để bắt đầu.</p></div><div id="result" class="card" hidden><b id="resultinfo"></b><audio id="output" controls></audio><a id="download">⬇ Tải đoạn audio WAV</a><button id="toLip">🎙 Dùng cho Nhép Miệng</button><button id="toClip">＋ Chèn vào CLIP</button><button id="toWan30">🎙 Chèn WAN 30s · tự chia 15s</button><p class="note">Giữ tần số lấy mẫu và số kênh nguồn. Đoạn xuất đúng hai vạch chọn, không cắt theo thời gian phát thực tế.</p></div></div></section>`;
+(()=>{function boot(){const host=document.createElement('div');document.getElementById('tabAudioProcess').append(host);const r=host.attachShadow({mode:'open'});r.innerHTML=`<style>:host{font:15px Arial;color:#172333}*{box-sizing:border-box}button,input{font:inherit}button{cursor:pointer;padding:11px;border:1px solid #ccd5e2;border-radius:9px;background:white}.launch{display:none}.panel{position:relative;background:#f3f5f9;padding:20px;border-radius:14px}.panel[hidden]{display:none}.wrap{max-width:1000px;margin:auto}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.card{padding:18px;background:white;border-radius:12px;margin:15px 0}.stage{height:180px;position:relative;margin:25px 15px;touch-action:none;background:#eff3fa}canvas{width:100%;height:100%}.sel{position:absolute;top:0;height:100%;background:#dc262625;pointer-events:none}.handle{position:absolute;top:-10px;bottom:-10px;width:26px;padding:0;background:#b91c1c;color:white;transform:translateX(-50%);touch-action:none}.note{font-size:13px;color:#627086;line-height:1.6}input[type=number]{width:120px;padding:10px}.primary{background:#b91c1c;color:white}audio{width:100%}a{display:inline-block;padding:12px;color:#13763d}button:disabled{opacity:.4}video{max-width:100%;max-height:200px}@media(max-width:600px){.panel{inset:3px;padding:10px}.launch{top:auto;bottom:12px}.stage{height:140px}}</style><button class="launch">🎧 XỬ LÝ AUDIO</button><section class="panel"><div class="wrap"><div class="row"><h2 style="flex:1">🎧 XỬ LÝ AUDIO</h2><button id="close">✕ Đóng</button></div><div class="card"><b>✂ Cắt đoạn audio chính xác</b><p><input id="file" type="file" accept="audio/*,video/*"></p><p class="note" id="info">Chọn audio hoặc video để lấy tiếng. Xử lý trên thiết bị, không cần API.</p><video id="video" controls playsinline hidden></video></div><div class="card"><p>Kéo vạch đỏ bên trái và bên phải để chọn đoạn.</p><div class="stage"><canvas id="wave"></canvas><div id="sel" class="sel"></div><button id="left" class="handle" role="slider" aria-label="Điểm bắt đầu">❮</button><button id="right" class="handle" role="slider" aria-label="Điểm kết thúc">❯</button></div><div class="row"><label>Từ (giây) <input id="start" type="number" min="0" step="0.001" value="0"></label><label>Đến (giây) <input id="end" type="number" min="0" step="0.001" value="0"></label><b id="len"></b></div><p class="note">Có thể nhập thời gian đến 0,001 giây. Phím mũi tên điều chỉnh vạch 0,01 giây; Shift + mũi tên: 1 giây.</p><div class="row"><label>Âm lượng <input id="gain" type="range" min="0" max="200" value="100"><span id="gaintext">100%</span></label><label><input id="fade" type="checkbox"> Vào/ra êm 0,05 giây</label></div><div class="row" style="margin-top:15px"><button id="preview" disabled>▶ Nghe thử đoạn chọn</button><button id="stop">■ Dừng</button><button id="all" disabled>Chọn toàn bộ</button><button id="cut" class="primary" disabled>✂ CẮT ĐOẠN ĐÃ CHỌN</button></div><p id="status" role="status">Chọn tệp để bắt đầu.</p></div><div id="result" class="card" hidden><b id="resultinfo"></b><audio id="output" controls></audio><a id="download">⬇ Tải đoạn audio WAV</a><button id="toLip">🎙 Dùng cho Nhép Miệng</button><button id="toClip">＋ Chèn vào CLIP</button><button id="toWan30">🎙 Chèn WAN 30s · tự chia 15s</button><button id="toWan60">🎙 Chèn WAN 60s · 4 cảnh 15s</button><p class="note">Giữ tần số lấy mẫu và số kênh nguồn. Đoạn xuất đúng hai vạch chọn, không cắt theo thời gian phát thực tế.</p></div></div></section>`;
 const q=id=>r.getElementById(id);let ctx,buf=null,a=0,b=0,src=null,url='',outurl='',name='',resultFile=null,generation=0,peaks=[];const status=t=>q('status').textContent=t;
 function stop(){if(src){src.onended=null;try{src.stop()}catch(e){}src.disconnect();src=null}q('video').pause()}
 function sync(){if(!buf)return;let sample=1/buf.sampleRate;a=Math.max(0,Math.min(a,buf.duration-sample));b=Math.min(buf.duration,Math.max(a+sample,b));q('start').value=a.toFixed(3);q('end').value=b.toFixed(3);q('len').textContent=(b-a).toFixed(3)+' giây';let l=a/buf.duration*100,h=b/buf.duration*100;q('left').style.left=l+'%';q('right').style.left=h+'%';q('sel').style.left=l+'%';q('sel').style.width=(h-l)+'%';for(let [id,v] of [['left',a],['right',b]]){q(id).setAttribute('aria-valuemin','0');q(id).setAttribute('aria-valuemax',buf.duration);q(id).setAttribute('aria-valuenow',v)}}
@@ -14732,7 +14732,7 @@ for(let id of ['start','end'])q(id).onchange=()=>{if(!buf)return;stop();let v=Nu
 q('preview').onclick=async()=>{if(!buf)return;stop();try{await ctx.resume();src=ctx.createBufferSource();src.buffer=selected();src.connect(ctx.destination);src.onended=stop;src.start();status('Đang nghe đúng đoạn '+a.toFixed(3)+' → '+b.toFixed(3)+' giây.')}catch(e){status(e.message)}};
 q('cut').onclick=()=>{if(!buf)return;stop();try{let out=selected(),blob=wav(out);if(outurl)URL.revokeObjectURL(outurl);outurl=URL.createObjectURL(blob);q('output').src=outurl;q('download').href=outurl;q('download').download=(name.replace(/\.[^.]+$/,'')||'IDECO')+'_'+a.toFixed(3)+'-'+b.toFixed(3)+'.wav';resultFile=new File([blob],q('download').download,{type:'audio/wav'});q('resultinfo').textContent='Đã cắt '+a.toFixed(3)+' → '+b.toFixed(3)+' giây · '+out.duration.toFixed(3)+' giây';q('result').hidden=false;status('✓ Đã cắt đúng đoạn. Bấm nghe lại hoặc tải WAV.')}catch(e){status(e.message)}};
 q('toLip').onclick=()=>{if(!resultFile)return;const dt=new DataTransfer();dt.items.add(resultFile);document.getElementById('lipAudio').files=dt.files;document.getElementById('lipAudio').dispatchEvent(new Event('change'));switchTab('lip');toast('Đã chuyển đoạn audio sang Nhép Miệng')};
-q('toWan30').onclick=()=>{if(resultFile)window.IDECO_WAN30_IMPORT(resultFile).catch(e=>toast(e.message,true))};
+q('toWan30').onclick=()=>{if(resultFile)window.IDECO_WAN30_IMPORT(resultFile).catch(e=>toast(e.message,true))};q('toWan60').onclick=()=>{if(resultFile)window.IDECO_WAN30_IMPORT(resultFile,{seconds:60}).catch(e=>toast(e.message,true))};
 q('toClip').onclick=()=>{if(!resultFile)return;clipAddAudioFile(resultFile,'audio');clipRenderAll();switchTab('clip');toast('Đã chèn đoạn audio vào CLIP')};
 new ResizeObserver(draw).observe(q('wave'));window.IDECO_AUDIO_EDITOR={open:()=>r.querySelector('.launch').click()};
 }if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot()})();
@@ -15276,7 +15276,12 @@ function buildSeedance25Input(prompt,res,aspect,duration,images,audioUrl){
 </script>
 
 <!-- IDECO WAN 30S IMPORT RESTORED: Audio Studio V5 cut cards, two 15s clips -> exact 30s, fine-trim editor. -->
-<!-- IDECO WAN 30S API PATCH 2026-11-20: remove unsupported omni_reference_task_type from Wan 3.0 request; preserve separate Seedance schema. -->
+<!-- IDECO WAN 30S / 60S V6 API PATCH 2026-11-20: remove unsupported omni_reference_task_type from Wan 3.0 request; preserve separate Seedance schema. -->
+<style id="ideco-wan-v8-bg-style">
+#w30BgDock{display:none;position:fixed;bottom:calc(18px + env(safe-area-inset-bottom));right:20px;z-index:2147481000;width:min(370px,calc(100vw - 28px));padding:14px 15px;color:#e9f5ff;background:#111f38;border:1px solid #4b709c;box-shadow:0 12px 34px rgba(9,24,49,.34);border-radius:15px;font:12px system-ui;pointer-events:auto}
+#w30BgDock.show{display:block}#w30BgDock .w30-bg-head{display:flex;align-items:center;gap:6px;margin-bottom:9px}#w30BgDock .w30-bg-head b{flex:1;font-size:12px;color:#f2fcff}#w30BgDock button{background:#243c5e;color:#f5f7fa;border:1px solid #51749f;border-radius:7px;padding:6px 8px;font-size:11px;cursor:pointer}#w30BgDock button:hover{background:#365a88}#w30BgLabel{margin-bottom:7px;line-height:1.45;font-weight:600}#w30BgBar{width:100%;height:10px;accent-color:#26cda6}#w30BgInfo{display:block;color:#b4c9e0;margin-top:7px;line-height:1.4}
+@media(max-width:640px){#w30BgDock{left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));width:auto}}
+</style>
 <script id="ideco-wan30-workflow">
 (function(){
 'use strict';
@@ -15284,53 +15289,118 @@ const by=id=>document.getElementById(id),esc=x=>String(x||'').replace(/[&<>"']/g
 let records=[],current=null,db=null,busy=false,stopped=false,fullBlob=null,fullMeta=null,libraryViewId=null,replaceSlot=null;const urls=new Map();
 let storageResolve;const storageReady=new Promise(ok=>storageResolve=ok);
 let loadedFromStore=false,partRenderRecord=null;
-const nav=document.createElement('button');nav.id='tabBtnWan30';nav.textContent='🎙 WAN · 30s';by('tabBtnVid').after(nav);
+let workflowActiveRecord=null;
+const pauseMs=async(t)=>new Promise(ok=>setTimeout(ok,t));
+const plainError=e=>String(e?.message||e||'Lỗi không xác định');
+function wf(r){if(!r.workflow)r.workflow={stage:'Sẵn sàng',events:[],autoRetry:true,smartPrompt:true};return r.workflow}
+function wfLog(r,stage,detail='',kind='info'){
+ if(!r)return;
+ const f=wf(r);f.stage=stage;f.lastAt=Date.now();f.events.push({at:Date.now(),stage,detail:String(detail||''),kind});
+ if(f.events.length>45)f.events=f.events.slice(-45);
+ const msg='🤖 '+stage+(detail?' · '+detail:'');message(msg);render();
+}
+function smartPrompts(r){
+ const base=(r.prompt||'').trim()||'Nhân vật biểu diễn theo audio gốc, khẩu hình đồng bộ và chuyển động điện ảnh tự nhiên.';
+ const camera=['Góc toàn hoặc trung cảnh thiết lập không gian, chuyển động camera chậm và liên tục.','Chuyển dần đến trung cảnh, giữ chuyển động camera đồng hướng với cảnh trước.','Tiếp tục góc máy từ cảnh trước, biến đổi rất nhẹ phù hợp diễn xuất; tránh giật hình.','Hoàn tất hành động tự nhiên bằng chuyển động camera nhất quán, không kết thúc sớm.'];
+ for(let i=0;i<slots(r);i++)if(!(r[promptKey(i)]||'').trim())r[promptKey(i)]=[
+  base,
+  partHint(i),camera[i]||'',
+  'Đây là đoạn '+(i+1)+'/'+slots(r)+' từ '+(15*i)+' đến '+(15*(i+1))+' giây của MỘT VIDEO liên tục.',
+  i?'BẮT ĐẦU đúng khung cuối của đoạn '+i+'. Không thay mặt, trang phục, dáng người, hướng nhìn, ánh sáng, bối cảnh hay vị trí máy quay.':'Dùng ảnh nhân vật gốc. Thiết lập khuôn mặt, trang phục, ánh sáng nhất quán cho toàn video.',
+  'Chỉ dùng nội dung Audio1 của chính đoạn này; nhép miệng chính xác; không hát lặp, không thêm giọng; kết thúc ở tư thế tự nhiên để có frame nối cảnh.'
+ ].filter(Boolean).join('\n');
+}
+async function safeRetry(action,label,record,max=4){
+ let attempt=0;
+ while(true){
+  try{return await action()}
+  catch(e){
+   if(stopped||!wf(record).autoRetry||!isTemporary(e)||attempt>=max-1)throw e;
+   attempt++;const delay=Math.min(15000,1200*2**(attempt-1)+400);
+   wfLog(record,'Khôi phục kết nối',label+' · thử lại '+attempt+'/'+(max-1)+' sau '+Math.round(delay/1000)+' giây','warn');
+   await pauseMs(delay);
+  }
+ }
+}
+function isTemporary(e){
+ const status=Number(e?.httpStatus||0),code=Number(e?.apiCode||0);
+ if([408,425,429,500,502,503,504].includes(status)||[408,425,429,500,502,503,504].includes(code))return true;
+ if(e?.definitive)return false;
+ return /network|fetch|timeout|time.?out|hết thời gian|kết nối|load failed|Failed to fetch|tải về|tải media/i.test(plainError(e));
+}
+
+const DURATION_CHOICES=[30,60],SEGMENT_SECONDS=15;
+const seconds=r=>Number(r?.seconds)===60?60:30;
+const slots=r=>seconds(r)/SEGMENT_SECONDS;
+const partCountText=r=>slots(r)+' đoạn 15 giây';
+const promptKey=i=>'p'+(i+1);
+const partHint=i=>[
+'Bắt đầu cảnh diễn tự nhiên, chuyển động mở đầu mượt, tránh cắt cảnh đột ngột.',
+'Tiếp diễn liên tục với nhân vật, trang phục, góc máy, ánh sáng và chuyển động nhất quán; không mở đầu lại.',
+'Tiếp tục từ chính khung cuối của đoạn trước, biến chuyển hành động/góc máy từ từ; không reset bối cảnh.',
+'Giữ liên tục từ khung cuối đoạn 3; hoàn tất hành động tự nhiên, không nhảy nhân vật hay thay đổi trang phục.'
+][i]||'Tiếp tục khung hình cuối của đoạn trước.';
+function defaults(r){if(!r)return r;r.seconds=seconds(r);r.parts=Array.from({length:slots(r)},(_,i)=>r.parts?.[i]||{});r.audioParts=Array.from({length:slots(r)},(_,i)=>r.audioParts?.[i]||null);return r;}
+function firstVacant(r,length=1){for(let i=0;i<=slots(r)-length;i++)if(r.audioParts.slice(i,i+length).every(a=>!a))return i;return -1;}
+
+const nav=document.createElement('button');nav.id='tabBtnWan30';nav.textContent='🎙 WAN · 30s / 60s';by('tabBtnVid').after(nav);
 const tab=document.createElement('div');tab.id='tabWan30';tab.style.display='none';tab.innerHTML=`
-<div class="w30-head"><div><small>IDECO · WAN 3.0</small><h2>Audio 30s → Video liền mạch</h2><p>Chèn audio · Xóa/Thay đoạn · Chuẩn audio WAN 14,75s · Xem trước và ghép</p></div><button id="w30New">＋ Lượt mới</button></div>
+<div class="w30-head"><div><small>IDECO · WAN 3.0</small><h2>WAN 3.0 · Video liền mạch 30s / 60s</h2><p>Tự chia 2 hoặc 4 cảnh 15s · Liên tục khung hình · Tự ghép MP4 ngầm · Lưu thư viện</p></div><button id="w30New">＋ Lượt mới</button></div>
 <div class="w30-grid">
 <section class="w30-card"><h3>1 · Audio & nhân vật</h3>
-<div class="w30-row"><label class="w30-pick">📁 Chọn audio 15s hoặc 30s<input id="w30Audio" type="file" accept="audio/*,.mp3,.wav,.m4a"></label><button id="w30ClearAudio" class="w30-danger" type="button">✕ Xóa audio / chèn lại</button></div>
+<div class="w30-mode"><span><b>⏱ Thời lượng video</b><small>60s = 4 video × 15s ghép liên tiếp</small></span><label><input type="radio" name="w30mode" value="30" checked> 30 giây</label><label><input type="radio" name="w30mode" value="60"> 60 giây</label></div>
+<div class="w30-row"><label class="w30-pick">📁 Chọn audio 15s / 30s / 60s<input id="w30Audio" type="file" accept="audio/*,.mp3,.wav,.m4a"></label><button id="w30ClearAudio" class="w30-danger" type="button">✕ Xóa audio / chèn lại</button></div>
 <button id="w30FromCut" type="button">↪ Lấy đoạn đã chọn từ tab Cắt</button> <button id="w30CheckAudio" type="button">✓ Kiểm tra audio WAN (không tốn credit)</button>
 <p id="w30AudioCheck" role="status" style="padding:9px 11px;border-radius:8px;background:#eef9f3;color:#176745;font-size:12px;line-height:1.6">Chưa kiểm tra audio tham chiếu. Ứng dụng sẽ tự chuẩn hóa xuống 14,75 giây trước khi gửi Kie.</p>
 <input id="w30PartAudio" type="file" accept="audio/*,.mp3,.wav,.m4a" hidden>
 <p id="w30AudioInfo">Chưa nạp audio</p><audio id="w30AudioPlayer" controls></audio><div id="w30Parts"></div>
-<small class="w30-help">Audio gốc: hai đoạn 15 giây để ghép video cuối 30 giây. Khi gửi WAN 3.0, mỗi đoạn được tự chuẩn hóa thành <b>14,75 giây</b> bằng cách phát nhanh khoảng 1,7%, không cắt chữ cuối câu. File gốc 30 giây giữ nguyên để ghép xuất. Có thể xóa/thay riêng trước khi gửi; tác vụ Kie đã gửi vẫn được giữ.</small>
+<small class="w30-help">Audio gốc: hai hoặc bốn đoạn 15 giây để ghép video cuối 30/60 giây. Khi gửi WAN 3.0, mỗi đoạn được tự chuẩn hóa thành <b>14,75 giây</b> bằng cách phát nhanh khoảng 1,7%, không cắt chữ cuối câu. File gốc 30/60 giây giữ nguyên để ghép xuất. Có thể xóa/thay riêng trước khi gửi; tác vụ Kie đã gửi vẫn được giữ.</small>
 <label class="w30-pick">Chọn ảnh nhân vật<input id="w30Image" type="file" accept="image/png,image/jpeg,image/webp"></label>
 <img id="w30ImagePreview" alt="Ảnh nhân vật" hidden>
 <label><input id="w30Continue" type="checkbox"> Tiếp nối video hoàn tất gần nhất</label>
 <small>Tiếp nối sẽ dùng ảnh cuối lượt trước thay ảnh tải lên. Ảnh cuối là tham chiếu, không bảo đảm khớp tư thế tuyệt đối.</small></section>
-<section class="w30-card"><h3>2 · Yêu cầu cho 30 giây</h3>
+<section class="w30-card"><h3 id="w30PromptHeading">2 · Yêu cầu cho 30 giây</h3>
 <textarea id="w30Prompt" rows="5" placeholder="Ví dụ: Nhân vật nhìn vào camera, nói tự nhiên, cử động nhẹ. Giữ nguyên trang phục, bối cảnh và ánh sáng; máy quay cố định."></textarea>
 <div class="w30-row"><select id="w30Resolution"><option value="480P">480p · tiết kiệm</option><option value="720P">720p · rõ nét</option></select><select id="w30Aspect"><option value="16:9">16:9 ngang</option><option value="9:16">9:16 dọc</option><option value="1:1">1:1 vuông</option></select></div>
-<details><summary>Chỉnh riêng từng đoạn / khôi phục tác vụ</summary>
-<label>Đoạn 1 · 0–15s<textarea id="w30Prompt1" rows="2" placeholder="Bổ sung hành động đoạn đầu"></textarea></label>
-<label>Đoạn 2 · 15–30s<textarea id="w30Prompt2" rows="2" placeholder="Bổ sung hành động tiếp diễn"></textarea></label>
+<div class="w30-row"><button id="w30BuildPrompts" type="button">✨ Tự chia thành các prompt 15s (có thể sửa)</button></div>
+<details id="w30PromptsDetails" open><summary><b id="w30PromptCount">Chỉnh 2 prompt 15s / khôi phục tác vụ</b></summary>
+<div id="w30PromptEditors"></div>
 <p>Nếu mất kết nối ngay khi gửi, nhập mã tác vụ từ lịch sử Kie để tiếp tục, tránh tạo trùng.</p>
-<div class="w30-row"><select id="w30RecoverPart"><option value="0">Đoạn 1</option><option value="1">Đoạn 2</option></select><input id="w30TaskId" placeholder="Mã tác vụ Kie"><button id="w30Recover">Gắn mã</button></div></details>
-<p id="w30Cost"></p><label><input id="w30AutoMerge" type="checkbox" checked> Tự ghép khi hai đoạn hoàn tất</label>
-<div class="w30-row"><button id="w30Run" class="w30-primary">▶ Tạo / tiếp tục / kiểm tra tiến độ</button><button id="w30Stop">Dừng sau bước hiện tại</button><button id="w30Merge">Ghép 30s</button></div>
+<div class="w30-row"><select id="w30RecoverPart"></select><input id="w30TaskId" placeholder="Mã tác vụ Kie"><button id="w30Recover">Gắn mã</button></div></details>
+<p id="w30Cost"></p>
+<div class="w30-automation"><div class="w30-auto-head"><b>🤖 HUYỀN WAN · WORKFLOW TỰ ĐỘNG</b><span id="w30AutoState">Sẵn sàng</span></div>
+<p>Chạy tuần tự: kiểm tra audio → tạo cảnh 1 → lấy frame cuối → cảnh 2 → cảnh 3 → cảnh 4 → ghép MP4, không phải bấm tiếp từng đoạn.</p>
+<label><input id="w30SmartPrompt" type="checkbox" checked> Đạo diễn tự động bổ sung 4 prompt nhất quán (không ghi đè prompt đã sửa)</label>
+<label><input id="w30AutoRetry" type="checkbox" checked> Tự thử lại lỗi mạng khi tải media / kiểm tra trạng thái Kie (không gửi trùng tác vụ tạo)</label>
+<label><input id="w30AutoMerge" type="checkbox" checked> Tự động ghép MP4 30s / 60s khi đủ video</label>
+<div class="w30-row"><button id="w30AutoRun" type="button" class="w30-auto-button">🤖 TẠO 60 GIÂY TỰ ĐỘNG · 1 CHẠM</button></div>
+<div class="w30-auto-meter"><progress id="w30AutoProgress" max="100" value="0"></progress><b id="w30AutoProgressText">0% công đoạn</b></div>
+<div id="w30AutoTimeline" class="w30-auto-timeline"></div>
+<details><summary>📋 Nhật ký điều phối · kiểm tra lỗi & tiếp tục</summary><div id="w30AutoLog" class="w30-auto-log"></div></details>
+</div>
+<div class="w30-row"><button id="w30Run" class="w30-primary">▶ Tạo / tiếp tục / kiểm tra tiến độ</button><button id="w30Stop">Dừng sau bước hiện tại</button><button id="w30Merge">🎬 Ghép MP4 ngầm</button><button id="w30CancelMerge" class="w30-danger" hidden>✕ Hủy ghép</button></div><small class="w30-help">⚡ Ghép bằng Web Worker (không khóa giao diện). Anh vẫn chuyển tab, chỉnh sửa và xem các video khác được. Giữ trang đang mở để tiến trình hoàn thành; lần đầu cần tải bộ xử lý FFmpeg.</small>
 <div class="w30-runstate"><b id="w30StepLabel">Tiến độ từng công đoạn</b><span id="w30Percent">0/2 đoạn</span></div><p id="w30Status" role="status" aria-live="polite">Sẵn sàng</p>
 <progress id="w30Progress" max="100" value="0"></progress><small id="w30SaveState">Lưu dự án trên trình duyệt này.</small>
 </section></div>
 <section class="w30-card" id="w30ResultsSection"><h3>3 · Xem video đã tạo</h3>
-<p id="w30PreviewHint">Video 15 giây sẽ hiển thị ngay khi Kie tạo xong; không cần chờ ghép 30 giây.</p>
+<p id="w30PreviewHint">Video 15 giây sẽ hiển thị ngay khi Kie tạo xong; không cần chờ ghép MP4.</p>
 <div id="w30PreviewParts" class="w30-preview-grid"></div>
-<div id="w30MergedWrap" hidden><h4>▶ Video hoàn chỉnh 30 giây</h4><video id="w30Result" controls playsinline preload="metadata"></video>
+<div id="w30MergedWrap" hidden><h4 id="w30MergedTitle">▶ Video hoàn chỉnh</h4><video id="w30Result" controls playsinline preload="metadata"></video>
 <div class="w30-row"><button id="w30JoinPreview">▶ Xem điểm nối 15s</button><button id="w30Download">↓ Tải MP4</button></div></div>
 <div id="w30Frames"></div></section>
-<section class="w30-card" id="w30LibrarySection"><div class="w30-head"><div><h3>4 · THƯ VIỆN VIDEO 30 GIÂY</h3><small id="w30LibStats">0 video hoàn tất</small></div></div>
+<section class="w30-card" id="w30LibrarySection"><div class="w30-head"><div><h3>4 · THƯ VIỆN VIDEO 30s & 60s</h3><small id="w30LibStats">0 video hoàn tất</small></div></div>
 <div class="w30-library-tools"><button id="w30SelectAll">✓ Chọn tất cả video hoàn tất</button><button id="w30SelectNone">◻ Bỏ chọn</button><button id="w30MergeAll" class="w30-primary">🎬 GHÉP TẤT CẢ → FULL MP4</button></div>
-<p class="w30-help">Video 30s sau khi ghép sẽ xuất hiện trong thư viện. Dùng nút Xem để mở trực tiếp; ↑ ↓ để sắp xếp thứ tự trước khi ghép. Chỉ các video hoàn tất đã tích chọn mới được đưa vào bản FULL.</p>
+<p class="w30-help">Video 30s hoặc 60s sau khi ghép sẽ xuất hiện trong thư viện. Dùng nút Xem để mở trực tiếp; ↑ ↓ để sắp xếp thứ tự trước khi ghép. Có thể ghép lẫn video 30s và 60s; chỉ các video hoàn tất đã tích chọn được đưa vào bản FULL.</p>
 <div id="w30List"></div>
-<div id="w30LibraryViewer" hidden class="w30-library-viewer"><div class="w30-head"><h4 id="w30LibraryTitle">Xem video 30s</h4><button id="w30LibraryClose">✕ Đóng xem</button></div><video id="w30LibraryVideo" controls playsinline preload="metadata"></video><div class="w30-row"><button id="w30LibraryDownload">↓ Tải video 30s</button><button id="w30LibraryEdit">↗ Mở lượt video</button></div></div>
+<div id="w30LibraryViewer" hidden class="w30-library-viewer"><div class="w30-head"><h4 id="w30LibraryTitle">Xem video</h4><button id="w30LibraryClose">✕ Đóng xem</button></div><video id="w30LibraryVideo" controls playsinline preload="metadata"></video><div class="w30-row"><button id="w30LibraryDownload">↓ Tải video MP4</button><button id="w30LibraryEdit">↗ Mở lượt video</button></div></div>
 <details class="w30-pending"><summary>📋 Tác vụ chưa hoàn tất · <span id="w30PendingCount">0</span></summary><div id="w30Pending"></div></details>
-<div class="w30-fullbox"><h3>🎞 KẾT QUẢ FULL VIDEO</h3><p id="w30FullSummary">Chọn các video 30s, bấm Ghép tất cả để dựng một MP4 liền mạch.</p>
-<progress id="w30FullProgress" max="100" hidden></progress><p id="w30FullProgressText" role="status"></p>
+<div class="w30-fullbox"><h3>🎞 KẾT QUẢ FULL VIDEO</h3><p id="w30FullSummary">Chọn các video 30s/60s, bấm Ghép tất cả để dựng một MP4 liền mạch.</p>
+<progress id="w30FullProgress" max="100" hidden></progress><p id="w30FullProgressText" role="status"></p><button id="w30CancelFull" class="w30-danger" hidden>✕ Hủy ghép FULL</button>
 <video id="w30Full" controls playsinline preload="metadata" hidden></video><button id="w30DownloadFull" hidden>↓ TẢI FULL VIDEO MP4</button></div></section>
 <small>Tiến độ % chỉ hiển thị nếu Kie thực sự trả về trường progress; nếu không ứng dụng chỉ báo trạng thái chờ, đang tạo, hoàn tất. Sau khi tạo xong có thể xem từng đoạn trước khi ghép. File nguồn đã lưu cục bộ trong trình duyệt.</small>`;
 by('tabVid').after(tab);const style=document.createElement('style');style.textContent=`
 #tabWan30{max-width:1180px;margin:20px auto;padding:20px;background:#f3f6fb;border-radius:18px;color:#1e293b;font:14px system-ui}
-.w30-head,.w30-row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}.w30-head h2{margin:6px 0;font-size:25px}.w30-head small{color:#64748b;letter-spacing:2px}.w30-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:18px 0}
+.w30-automation{margin:14px 0;padding:14px;border:1px solid #a8d5cd;border-radius:14px;background:linear-gradient(145deg,#f1fbfa,#f6f9ff)}.w30-auto-head{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;color:#155b60}.w30-auto-head span{font-size:11px;padding:5px 9px;background:#d7f5ec;border-radius:100px}.w30-automation p{font-size:12px;color:#466477;line-height:1.6;margin:9px 0}.w30-automation label{display:flex;align-items:flex-start;gap:7px;font-size:12px;color:#285061;line-height:1.55;margin:7px 0}.w30-automation label input{flex:0 0 17px;margin-top:3px;accent-color:#109b86}.w30-automation #w30AutoRun{width:100%;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(105deg,#007d80,#1257c4);border-color:#0d7e94;box-shadow:0 6px 18px rgba(10,104,149,.16);margin:9px 0}.w30-auto-meter{display:flex;align-items:center;gap:10px}.w30-auto-meter progress{flex:1;height:11px;accent-color:#0f9f90}.w30-auto-meter b{font-size:11px;color:#14616d;white-space:nowrap}.w30-auto-timeline{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:12px 0}.w30-auto-step{min-width:0;text-align:center;border:1px solid #d6e3e9;background:white;padding:9px 4px;border-radius:9px;font-size:10px;color:#72849a}.w30-auto-step strong{display:block;font-size:12px;margin-bottom:3px}.w30-auto-step.done{color:#0c7351;border-color:#8cd5ad;background:#e9faef}.w30-auto-step.active{color:#194ea2;border-color:#639ce8;background:#eaf2ff}.w30-auto-step.warn{color:#9b4c18;border-color:#e2bb86;background:#fff6e6}.w30-auto-log{max-height:170px;overflow:auto;line-height:1.6;color:#4e647c;font-size:11px;margin:8px 0}.w30-auto-log div{border-bottom:1px dashed #d8e2ee;padding:5px 0}.w30-auto-log time{color:#8899a9;margin-right:5px}@media(max-width:520px){.w30-auto-timeline{grid-template-columns:repeat(2,1fr)}}.w30-mode{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 13px;background:#eef4ff;border:1px solid #bcd2fb;border-radius:12px;margin:10px 0 12px}.w30-mode span{flex:1;min-width:150px}.w30-mode span small{letter-spacing:0}.w30-mode label{cursor:pointer;white-space:nowrap;border:1px solid #cbd9ec;border-radius:9px;background:#fff;padding:9px 11px!important;margin:0!important}.w30-mode input{accent-color:#3458ce}.w30-editor{border-left:3px solid #3c68d5;background:#f5f8ff;padding:9px 12px;border-radius:9px;margin:8px 0}.w30-editor label{font-weight:700;font-size:12px}.w30-editor small{font-size:11px}.w30-head,.w30-row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}.w30-head h2{margin:6px 0;font-size:25px}.w30-head small{color:#64748b;letter-spacing:2px}.w30-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:18px 0}
 .w30-card{padding:20px;border:1px solid #dbe3ef;border-radius:14px;background:white;margin-bottom:16px}.w30-card h3{margin:0 0 15px}#tabWan30 button,.w30-pick{padding:11px 14px;border:1px solid #c8d3e4;background:#eef2ff;border-radius:9px;cursor:pointer;color:#26386b;font-weight:600}
 #tabWan30 button:disabled{opacity:.48;cursor:wait}#tabWan30 .w30-primary{background:#3458ce;color:white;border-color:#3458ce}.w30-pick{display:inline-block;margin-bottom:10px}.w30-pick input{display:none}
 #tabWan30 textarea{width:100%;box-sizing:border-box;padding:12px;border:1px solid #cbd5e1;border-radius:9px;font:14px/1.6 system-ui;margin:8px 0}
@@ -15346,10 +15416,10 @@ by('tabVid').after(tab);const style=document.createElement('style');style.textCo
 .w30-preview a{font-size:12px;color:#3153a0;overflow-wrap:anywhere}#w30PreviewHint{font-size:13px;color:#64748b;margin:4px 0 12px}#w30MergedWrap h4{margin:14px 0 8px}
 .w30-row{justify-content:flex-start}#w30Status{padding:12px;background:#edf3ff;border-radius:8px;white-space:pre-wrap;overflow-wrap:anywhere}
 .w30-library-tools{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin:12px 0}.w30-library-tools #w30MergeAll{margin-left:auto;font-size:14px}.w30-library-viewer{margin-top:12px;border-radius:12px;background:#eaf0fb;border:1px solid #c6d9ff;padding:16px;scroll-margin-top:70px}.w30-library-viewer video{display:block;width:100%;max-height:520px;background:#0b1425;border-radius:10px;margin:12px 0}.w30-library-viewer h4{margin:0}.w30-item.done-record{padding:14px 12px;margin-bottom:9px;border:1px solid #d7e4f0;border-radius:12px;background:#f8fbff}.w30-item.done-record:has(input:checked){border-color:#78a5ee;background:#f0f6ff}.w30-item.done-record span small{display:block;margin-top:4px;color:#64748b}.w30-item.done-record input{width:17px;height:17px;accent-color:#3458ce}.w30-item.done-record button[data-act=view]{background:#dcecff;border-color:#9dbbed}.w30-fullbox{margin-top:14px;padding:16px;background:linear-gradient(145deg,#eef4ff,#f8fbff);border:1px solid #c7d9f9;border-radius:14px}.w30-fullbox h3{margin:0 0 8px}.w30-fullbox video{width:100%;margin:10px 0;max-height:520px}.w30-fullbox #w30DownloadFull{background:#136b4e;color:white}.w30-fullbox progress{width:100%;height:10px;accent-color:#17a86b}#w30FullProgressText{color:#3153a0;font-weight:700;font-size:12px}.w30-pending{margin-top:18px;background:#f9fafb;border-radius:10px;padding:12px}.w30-pending summary{cursor:pointer;font-weight:700;color:#64748b}.w30-pending .w30-item{background:white;padding:9px;border-radius:9px}.w30-library-tools button:disabled{opacity:.45}
-@media(max-width:740px){.w30-grid,.w30-preview-grid{grid-template-columns:1fr}#tabWan30{padding:10px}.w30-card{padding:13px}.w30-library-tools #w30MergeAll{margin-left:0;width:100%}.w30-item.done-record button{flex:1}.w30-library-viewer{padding:10px}}`;
+@media(max-width:740px){.w30-mode{gap:8px}.w30-mode span{width:100%;flex:auto}.w30-grid,.w30-preview-grid{grid-template-columns:1fr}#tabWan30{padding:10px}.w30-card{padding:13px}.w30-library-tools #w30MergeAll{margin-left:0;width:100%}.w30-item.done-record button{flex:1}.w30-library-viewer{padding:10px}}`;
 
 document.head.append(style);
-const oldSwitch=window.switchTab;window.switchTab=function(name){if(window.WAN30_EXPORT_BUSY){message('Đang ghép MP4. Chờ xuất xong để chuyển tab.');return;}oldSwitch(name==='wan30studio'?'vid':name);const show=name==='wan30studio';tab.style.display=show?'block':'none';nav.classList.toggle('on',show);if(show){document.body.classList.remove('video-workspace');by('mergeBar').classList.remove('show');by('tabVid').style.display='none';by('gobarVid').style.display='none';by('tabBtnVid').classList.remove('on')}};nav.onclick=()=>switchTab('wan30studio');
+const oldSwitch=window.switchTab;window.switchTab=function(name){oldSwitch(name==='wan30studio'?'vid':name);const show=name==='wan30studio';tab.style.display=show?'block':'none';nav.classList.toggle('on',show);if(show){document.body.classList.remove('video-workspace');by('mergeBar').classList.remove('show');by('tabVid').style.display='none';by('gobarVid').style.display='none';by('tabBtnVid').classList.remove('on')}};nav.onclick=()=>switchTab('wan30studio');
 function message(t){by('w30Status').textContent=t}
 const key=()=>WAN_API_KEY||API_KEY,auth=()=>({'Authorization':'Bearer '+key(),'Content-Type':'application/json'});
 function url(blob){if(!urls.has(blob))urls.set(blob,URL.createObjectURL(blob));return urls.get(blob)}
@@ -15360,9 +15430,9 @@ async function persist(){
  by('w30SaveState').textContent='Đã lưu '+new Date().toLocaleTimeString('vi-VN');
 }
 function saveSoon(){persist().catch(e=>{by('w30SaveState').textContent='Chưa lưu: '+e.message})}
-function make(){return {id:uid(),name:'Audio mới',prompt:'',p1:'',p2:'',res:'480P',aspect:'16:9',parts:[{},{}],selected:true}}
+function make(s=30){const n=s===60?4:2;return {workflow:{stage:'Sẵn sàng',events:[],autoRetry:true,smartPrompt:true},id:uid(),seconds:s,name:'Audio mới',prompt:'',p1:'',p2:'',p3:'',p4:'',res:'480P',aspect:'16:9',parts:Array.from({length:n},()=>({})),audioParts:Array(n).fill(null),selected:true}}
 function cost(r){if(!r)return 0;return r.parts.reduce((n,p)=>n+(!p.id&&!p.blob&&!p.unknown?15*(r.res==='720P'?16:8):0),0)}
-function hasAudioParts(r){return !!(r&&r.audioParts&&r.audioParts[0]&&r.audioParts[1])}
+function hasAudioParts(r){return !!(r&&r.audioParts&&r.audioParts.length>=slots(r)&&r.audioParts.slice(0,slots(r)).every(Boolean))}
 function stateOf(p){if(p.blob)return ['✓ Video đã tải','done'];if(p.url)return ['✓ Kie đã tạo video','done'];if(p.unknown)return ['? Chưa rõ kết quả gửi','fail'];if(p.status&&/thất bại|từ chối|lỗi/i.test(p.status))return ['✕ Lỗi tạo','fail'];if(p.id)return [p.state==='generating'?'● Đang tạo video':p.state==='queuing'||p.state==='waiting'?'◷ Trong hàng chờ':'● Đã gửi Kie','running'];return ['○ Chưa tạo','idle']}
 function stateExtra(p){const status=p.status||'';if(p.id&&Number.isFinite(p.progress))return status+' · '+Math.round(p.progress)+'% (Kie)';return status||'Chưa gửi tạo video'}
 function audioSlotMarkup(r,i){const a=r?.audioParts?.[i],p=r?.parts?.[i]||{},s=stateOf(p);return '<div class="w30-part" data-w30-slot="'+i+'"><div class="w30-part-head"><b>Đoạn '+(i+1)+' · '+(i*15)+'–'+((i+1)*15)+'s</b><span class="w30-state '+s[1]+'" data-w30-badge>'+esc(s[0])+'</span></div>'+
@@ -15371,8 +15441,8 @@ function audioSlotMarkup(r,i){const a=r?.audioParts?.[i],p=r?.parts?.[i]||{},s=s
 function updateParts(r){
  const node=by('w30Parts'),id=r?.id||'';
  if(!r){node.innerHTML='';partRenderRecord=null;return}
- if(partRenderRecord!==id){node.innerHTML='<h4 style="margin:12px 0 7px">Audio và tiến độ 2 đoạn 15 giây</h4><div data-w30-holder="0"></div><div data-w30-holder="1"></div>';partRenderRecord=id}
- for(let i=0;i<2;i++){
+ if(partRenderRecord!==id+'-'+slots(r)){node.innerHTML='<h4 style="margin:12px 0 7px">Audio và tiến độ '+slots(r)+' đoạn 15 giây</h4>'+Array.from({length:slots(r)},(_,i)=>'<div data-w30-holder="'+i+'"></div>').join('');partRenderRecord=id+'-'+slots(r)}
+ for(let i=0;i<slots(r);i++){
   const holder=node.querySelector('[data-w30-holder="'+i+'"]');const a=r.audioParts?.[i];const signature=a?url(a):'';
   if(holder.dataset.audio!==signature){holder.innerHTML=audioSlotMarkup(r,i);holder.dataset.audio=signature}
   const p=r.parts[i]||{},s=stateOf(p),badge=holder.querySelector('[data-w30-badge]');if(badge){badge.className='w30-state '+s[1];badge.textContent=s[0]}
@@ -15386,7 +15456,7 @@ function updateParts(r){
 function previewVideos(r){
  const box=by('w30PreviewParts');if(!r){box.innerHTML='';box.dataset.id='';return}
  if(box.dataset.id!==r.id){box.innerHTML='';box.dataset.id=r.id}
- for(let i=0;i<2;i++){
+ for(let i=0;i<slots(r);i++){
   const p=r.parts[i]||{},source=p.blob?url(p.blob):p.url||'';
   let section=box.querySelector('[data-w30-preview="'+i+'"]');if(!section){section=document.createElement('div');section.className='w30-preview';section.dataset.w30Preview=i;section.innerHTML='<h4>Video đoạn '+(i+1)+' · '+(i*15)+'–'+((i+1)*15)+'s</h4><p data-w30-preview-status></p><video controls playsinline preload="metadata"></video><div data-w30-origin></div>';box.append(section)}
   const v=section.querySelector('video');if(source){if(v.dataset.src!==source){v.src=source;v.dataset.src=source;v.load()}v.style.display='block'}else{if(v.dataset.src){v.removeAttribute('src');v.load();v.dataset.src=''}v.style.display='none'}
@@ -15396,41 +15466,67 @@ function previewVideos(r){
 }
 function completedRecords(){return records.filter(r=>r.merged instanceof Blob&&r.merged.size>0)}
 function selectedCompleted(){return completedRecords().filter(r=>r.selected!==false)}
-function showFull(meta){if(!fullBlob)return;fullMeta=meta||fullMeta||{};const v=by('w30Full');const src=url(fullBlob);if(v.dataset.src!==src){v.src=src;v.dataset.src=src;v.load()}v.hidden=false;by('w30DownloadFull').hidden=false;by('w30FullSummary').textContent='✓ FULL VIDEO · '+(fullMeta.count||'?')+' × 30s · '+(fullMeta.seconds||'?')+' giây · '+new Date(fullMeta.createdAt||Date.now()).toLocaleString('vi-VN');}
+function showFull(meta){if(!fullBlob)return;fullMeta=meta||fullMeta||{};const v=by('w30Full');const src=url(fullBlob);if(v.dataset.src!==src){v.src=src;v.dataset.src=src;v.load()}v.hidden=false;by('w30DownloadFull').hidden=false;by('w30FullSummary').textContent='✓ FULL VIDEO · '+(fullMeta.count||'?')+' video · '+(fullMeta.seconds||'?')+' giây · '+new Date(fullMeta.createdAt||Date.now()).toLocaleString('vi-VN');}
 async function persistFull(){if(!db||!fullBlob)return false;return await new Promise((resolve,reject)=>{const tx=db.transaction('data','readwrite');tx.objectStore('data').put({blob:fullBlob,meta:fullMeta},'fullVideo');tx.oncomplete=()=>resolve(true);tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||Error('Lưu full MP4 bị hủy'))})}
-function openLibraryVideo(r){if(!r||!r.merged)return message('Video 30s chưa ghép xong.');libraryViewId=r.id;const panel=by('w30LibraryViewer'),v=by('w30LibraryVideo'),source=url(r.merged);by('w30LibraryTitle').textContent='▶ '+r.name+' · MP4 30 giây';panel.hidden=false;if(v.dataset.src!==source){v.src=source;v.dataset.src=source;v.load()}panel.scrollIntoView({behavior:'smooth',block:'center'});}
-function renderLibrary(){const completed=completedRecords(),chosen=selectedCompleted(),pending=records.filter(r=>!r.merged);by('w30LibStats').textContent=completed.length+' video hoàn chỉnh (mỗi video 30s) · Đang chọn '+chosen.length+' video = '+(chosen.length*30)+' giây';
- by('w30List').innerHTML=completed.map((rr,i)=>'<div class="w30-item done-record" data-id="'+esc(rr.id)+'"><input type="checkbox" data-act="select" '+(rr.selected!==false?'checked':'')+' aria-label="Chọn '+esc(rr.name)+'"><span><b>🎬 Video '+String(i+1).padStart(2,'0')+' · '+esc(rr.name)+'</b><small>✓ Đã ghép đủ 30 giây · '+(rr.merged.size/1048576).toFixed(1)+' MB · '+esc(rr.res)+' · '+esc(rr.aspect)+'</small></span><button data-act="view">▶ Xem</button><button data-act="download">↓ Tải</button><button data-act="up" '+(!i?'disabled':'')+'>↑</button><button data-act="down" '+(i===completed.length-1?'disabled':'')+'>↓</button><button data-act="delete" class="w30-danger">Xóa</button></div>').join('')||'<p style="color:#64748b;padding:14px 0">Chưa có video 30 giây hoàn chỉnh. Tạo xong hai đoạn 15 giây, bấm <b>Ghép 30s</b> để đưa video vào thư viện.</p>';
+function openLibraryVideo(r){if(!r||!r.merged)return message('Video chưa ghép xong.');libraryViewId=r.id;const panel=by('w30LibraryViewer'),v=by('w30LibraryVideo'),source=url(r.merged);by('w30LibraryTitle').textContent='▶ '+r.name+' · MP4 '+seconds(r)+' giây';panel.hidden=false;if(v.dataset.src!==source){v.src=source;v.dataset.src=source;v.load()}panel.scrollIntoView({behavior:'smooth',block:'center'});}
+function renderLibrary(){
+ const completed=completedRecords(),chosen=selectedCompleted(),pending=records.filter(r=>!r.merged);
+ const sum=chosen.reduce((n,r)=>n+seconds(r),0);
+ by('w30LibStats').textContent=completed.length+' video hoàn chỉnh · Đã chọn '+chosen.length+' video = '+sum+' giây';
+ by('w30List').innerHTML=completed.map((rr,i)=>'<div class="w30-item done-record" data-id="'+esc(rr.id)+'"><input type="checkbox" data-act="select" '+(rr.selected!==false?'checked':'')+' aria-label="Chọn '+esc(rr.name)+'"><span><b>🎬 Video '+String(i+1).padStart(2,'0')+' · '+esc(rr.name)+'</b><small>✓ Đã ghép '+seconds(rr)+' giây ('+slots(rr)+' cảnh) · '+(rr.merged.size/1048576).toFixed(1)+' MB · '+esc(rr.res)+' · '+esc(rr.aspect)+'</small></span><button data-act="view">▶ Xem</button><button data-act="download">↓ Tải</button><button data-act="up" '+(!i?'disabled':'')+'>↑</button><button data-act="down" '+(i===completed.length-1?'disabled':'')+'>↓</button><button data-act="delete" class="w30-danger">Xóa</button></div>').join('')||'<p style="color:#64748b;padding:14px 0">Chưa có MP4 hoàn chỉnh. Sau khi tạo xong 2 hoặc 4 cảnh 15s, bấm <b>Ghép MP4</b> để đưa video vào thư viện.</p>';
  by('w30PendingCount').textContent=pending.length;
- by('w30Pending').innerHTML=pending.map(rr=>'<div class="w30-item" data-id="'+esc(rr.id)+'"><span><b>'+esc(rr.name)+'</b><small>'+esc((rr.parts||[]).map((p,j)=>'Đoạn '+(j+1)+': '+stateOf(p)[0]).join(' · '))+'</small></span><button data-act="open">↗ Mở lượt</button><button data-act="delete">Xóa</button></div>').join('')||'<small>Không có tác vụ dở dang.</small>';
- const disabled=busy||completed.length===0;by('w30MergeAll').disabled=disabled||chosen.length===0;by('w30SelectAll').disabled=disabled;by('w30SelectNone').disabled=disabled;
- by('w30MergeAll').textContent=chosen.length?'🎬 GHÉP '+chosen.length+' VIDEO · '+chosen.length*30+' GIÂY → FULL MP4':'🎬 CHỌN VIDEO ĐỂ GHÉP';
+ by('w30Pending').innerHTML=pending.map(rr=>'<div class="w30-item" data-id="'+esc(rr.id)+'"><span><b>'+esc(rr.name)+' · '+seconds(rr)+' giây</b><small>'+esc((rr.parts||[]).map((p,j)=>'Đoạn '+(j+1)+': '+stateOf(p)[0]).join(' · '))+'</small></span><button data-act="open">↗ Mở lượt</button><button data-act="delete">Xóa</button></div>').join('')||'<small>Không có tác vụ dở dang.</small>';
+ const disabled=busy||completed.length===0;by('w30MergeAll').disabled=disabled||chosen.length===0;by('w30SelectAll').disabled=false;by('w30SelectNone').disabled=false;
+ by('w30MergeAll').textContent=chosen.length?'🎬 GHÉP '+chosen.length+' VIDEO · '+sum+' GIÂY → FULL MP4':'🎬 CHỌN VIDEO ĐỂ GHÉP';
  if(libraryViewId&&!completed.some(r=>r.id===libraryViewId)){libraryViewId=null;by('w30LibraryViewer').hidden=true;const v=by('w30LibraryVideo');v.pause();v.removeAttribute('src');v.dataset.src='';v.load()}
 }
 function render(){
- const r=current,finished=r?r.parts.filter(p=>p.blob).length:0;
- by('w30Cost').textContent=r?'Dự kiến tạo mới: '+num(cost(r))+' credit ≈ '+num(cost(r)*130)+'đ (không gồm tác vụ đã gửi).':'30s: 240 credit ≈ 31.200đ ở 480p; 480 credit ≈ 62.400đ ở 720p.';
- // Progress of overall workflow, not elapsed time. Percentage per part uses Kie data only.
- const progress=r?(r.merged?100:(r.parts[0]?.blob?45:0)+(r.parts[1]?.blob?45:0)+(r.parts[0]?.frame?5:0)+(r.parts[1]?.frame?5:0)):0;
+ const r=current,n=slots(r),finished=r?r.parts.filter(p=>p.blob).length:0;
+ by('w30Cost').textContent=r?'Dự kiến tạo mới: '+num(cost(r))+' credit ≈ '+num(cost(r)*130)+'đ (không gồm tác vụ đã gửi).': '30s: 240 credit (480p), 60s: 480 credit (480p), tùy bảng giá thực tế Kie.';
+ const progress=r?(r.merged?100:r.parts.reduce((v,p)=>v+(p.blob?90/n:0)+(p.frame?10/n:0),0)):0;
  by('w30Progress').value=progress;
- by('w30StepLabel').textContent=r&&r.merged?'✓ Hoàn tất 30 giây':r?'Tiến độ các bước (không phải thời gian chờ)':'Chưa có tác vụ';
- by('w30Percent').textContent=finished+'/2 đoạn video đã tải'+(r&&r.merged?' · Đã ghép MP4':'');
+ by('w30StepLabel').textContent=r&&r.merged?'✓ Hoàn tất '+seconds(r)+' giây':r?'Tiến độ các bước (không phải thời gian chờ)':'Chưa có tác vụ';
+ by('w30Percent').textContent=finished+'/'+n+' đoạn video đã tải'+(r&&r.merged?' · Đã ghép MP4':'');
+ by('w30PromptHeading').textContent='2 · Yêu cầu cho '+seconds(r)+' giây';
+ by('w30PromptCount').textContent='Chỉnh riêng '+n+' prompt 15s / khôi phục tác vụ';
+ const radio=tab.querySelector('input[name="w30mode"][value="'+seconds(r)+'"]');if(radio)radio.checked=true;
+ by('w30MergedTitle').textContent='▶ Video hoàn chỉnh '+seconds(r)+' giây';
+ by('w30Merge').textContent='🎬 Ghép '+seconds(r)+'s MP4';
+ by('w30AudioCheck').dataset.mode=String(seconds(r));
  updateParts(r);previewVideos(r);
  by('w30Frames').innerHTML=r?r.parts.map((p,i)=>p.frame?'<img src="'+esc(url(p.frame))+'" alt="Khung hình cuối đoạn '+(i+1)+'">':'').join(''):'';
  const result=by('w30Result'),wrap=by('w30MergedWrap');wrap.hidden=!(r&&r.merged);
  if(r&&r.merged){const u=url(r.merged);if(result.dataset.src!==u){result.src=u;result.dataset.src=u;result.load()}}
  else if(result.dataset.src){result.removeAttribute('src');result.dataset.src='';result.load()}
- by('w30PreviewHint').textContent=r&&r.merged?'✓ Hai đoạn đã ghép thành MP4 30 giây. Xem từng đoạn hoặc bản hoàn chỉnh phía dưới.':'Các video 15 giây xuất hiện tại đây ngay khi Kie tạo thành công. Nếu không tải được file về máy, vẫn có liên kết mở video gốc.';
+ by('w30PreviewHint').textContent=r&&r.merged?'✓ Đã ghép thành MP4 '+seconds(r)+' giây. Xem từng đoạn hoặc bản hoàn chỉnh phía dưới.':'Video 15 giây xuất hiện tại đây ngay khi Kie tạo thành công. Nếu không tải được về, có thể mở liên kết Kie.';
  renderLibrary();
- for(const id of ['w30New','w30Audio','w30Image','w30FromCut','w30ClearAudio','w30CheckAudio','w30Prompt','w30Prompt1','w30Prompt2','w30Resolution','w30Aspect','w30Continue','w30Recover'])by(id).disabled=busy;
- by('w30Run').disabled=busy||!r||!hasAudioParts(r);by('w30Merge').disabled=busy||!r||!r.parts.every(p=>p.blob);
+ if(r){
+  const f=wf(r),running=busy&&workflowActiveRecord===r,partsDone=r.parts.filter(p=>p.blob).length;
+  by('w30SmartPrompt').checked=f.smartPrompt!==false;
+  by('w30AutoRetry').checked=f.autoRetry!==false;
+  by('w30AutoState').textContent=r.merged?'✓ Hoàn thành':running?'● Đang điều phối':f.stage||'Sẵn sàng';
+  by('w30AutoState').title=f.stage||'';
+  const fractional=r.parts.reduce((sum,p)=>(sum+(p.blob?1:p.url?.95:p.id?Math.min(.95,Math.max(.05,(Number(p.progress)||0)/100)):.0)),0);
+  const pct=r.merged?100:Math.min(94,Math.round(94*fractional/n));
+  by('w30AutoProgress').value=pct;
+  by('w30AutoProgressText').textContent=pct+'% bước công việc';
+  by('w30AutoTimeline').innerHTML=r.parts.map((p,i)=>{const state=p.blob?'done':p.id?'active':p.unknown||/thất bại|lỗi|từ chối/i.test(p.status||'')?'warn':'idle';return '<div class="w30-auto-step '+state+'"><strong>'+(p.blob?'✓':p.id?'●':state==='warn'?'⚠':'○')+' Cảnh '+(i+1)+'</strong>'+esc(p.blob?'15s sẵn sàng':p.id?'Đang tạo / tải':p.unknown?'Kiểm tra tác vụ':'Chưa chạy')+'</div>'}).join('');
+  by('w30AutoLog').innerHTML=f.events.slice(-20).reverse().map(x=>'<div><time>'+new Date(x.at).toLocaleTimeString('vi-VN')+'</time> '+esc(x.stage)+(x.detail?' · '+esc(x.detail):'')+'</div>').join('')||'Chưa có nhật ký chạy.';
+  by('w30AutoRun').textContent=seconds(r)===60?'🤖 '+(r.parts.some(p=>p.id||p.blob)?'TIẾP TỤC 60S · KHÔNG TẠO TRÙNG':'TẠO 60 GIÂY TỰ ĐỘNG · 1 CHẠM'):'🤖 CHẠY TỰ ĐỘNG 30S · 2 CẢNH';
+  by('w30AutoRun').disabled=busy||!hasAudioParts(r)||!!r.merged;
+ }else{by('w30AutoRun').disabled=true}
+ for(const id of ['w30New','w30Audio','w30Image','w30FromCut','w30ClearAudio','w30CheckAudio','w30Prompt','w30Resolution','w30Aspect','w30Continue','w30Recover','w30BuildPrompts'])by(id).disabled=busy;
+ tab.querySelectorAll('input[name="w30mode"], [data-w30-prompt], #w30RecoverPart').forEach(el=>el.disabled=busy);
+ by('w30SmartPrompt').disabled=busy;by('w30AutoRetry').disabled=busy;by('w30AutoMerge').disabled=busy;by('w30Run').disabled=busy||!r||!hasAudioParts(r);by('w30Merge').disabled=busy||!r||!r.parts.every(p=>p.blob);
  by('w30Download').disabled=!r||!r.merged;by('w30JoinPreview').disabled=!r||!r.merged;
 }
-function openRecord(r){current=r;partRenderRecord=null;
- by('w30AudioInfo').textContent=r.audio?r.name+' · 30s gốc · 2 đoạn 15s (audio Kie tự chuẩn hóa 14,75s)':r.audioParts?.some(Boolean)?r.name+' · đang chờ chèn đủ 2 đoạn 15s':'Chưa nạp audio';
+function openRecord(r){
+ current=r=defaults(r);partRenderRecord=null;
+ by('w30AudioInfo').textContent=r.audio?r.name+' · '+seconds(r)+'s gốc · '+partCountText(r)+' (audio gửi WAN: 14,75s/cảnh)':r.audioParts?.some(Boolean)?r.name+' · đã chèn '+r.audioParts.filter(Boolean).length+'/'+slots(r)+' đoạn 15s':'Chưa nạp audio';
  const player=by('w30AudioPlayer');if(r.audio){const u=url(r.audio);if(player.dataset.src!==u){player.src=u;player.dataset.src=u;player.load()}}else{player.removeAttribute('src');player.dataset.src='';player.load()}
- by('w30Prompt').value=r.prompt||'';by('w30Prompt1').value=r.p1||'';by('w30Prompt2').value=r.p2||'';
- by('w30Resolution').value=r.res;by('w30Aspect').value=r.aspect;by('w30Continue').checked=!!r.continue;
+ const editors=by('w30PromptEditors');editors.innerHTML=Array.from({length:slots(r)},(_,i)=>'<div class="w30-editor"><label>🎬 Prompt '+(i+1)+' · '+(i*15)+'–'+((i+1)*15)+' giây</label><small>'+esc(partHint(i))+'</small><textarea id="w30Prompt'+(i+1)+'" data-w30-prompt="'+i+'" rows="3" placeholder="Chi tiết diễn xuất và chuyển động cho đoạn '+(i+1)+'">'+esc(r[promptKey(i)]||'')+'</textarea></div>').join('');
+ const recover=by('w30RecoverPart');recover.innerHTML=Array.from({length:slots(r)},(_,i)=>'<option value="'+i+'">Đoạn '+(i+1)+' · '+(i*15)+'–'+((i+1)*15)+'s</option>').join('');
+ by('w30Prompt').value=r.prompt||'';by('w30AutoMerge').checked=r.autoMerge!==false;by('w30Resolution').value=r.res||'480P';by('w30Aspect').value=r.aspect||'16:9';by('w30Continue').checked=!!r.continue;
  const img=by('w30ImagePreview');img.hidden=!r.image;if(r.image)img.src=url(r.image);else img.removeAttribute('src');render();
 }
 async function decode(blob){
@@ -15473,7 +15569,7 @@ async function getWanReference(r,i){
  const existing=await decode(r.audioParts[i]);
  if(existing.duration>15.25){
   if(!r.audio)throw Error('Audio cũ dài '+existing.duration.toFixed(3)+'s và không còn bản 30s gốc. Vui lòng xóa đoạn cũ và chèn lại audio gốc.');
-  const fixed=await split(r.audio);
+  const fixed=await split(r.audio,seconds(r));
   // Only replace the slot we are about to submit; do not mutate a reference
   // already linked to an existing Kie task, which could cost credits.
   r.audioParts[i]=fixed.parts[i];
@@ -15491,60 +15587,91 @@ async function getWanReference(r,i){
  p.referenceAudio=ref.blob;p.referenceDuration=ref.duration;
  return ref;
 }
-async function split(blob){
- const audio=await normalizeAudio(blob,30),b=await decode(audio);
- const n=Math.round(15*b.sampleRate);
- if(b.length<n*2)throw Error('Audio sau chuẩn hóa không đủ 30 giây ở '+b.sampleRate+' Hz; hãy nạp lại.');
- const p1=wav(b,0,n),p2=wav(b,n,n);
- // Validate final downloadable WAV metadata, not UI rounding.
- const d1=(await decode(p1)).duration,d2=(await decode(p2)).duration;
- if(Math.abs(d1-15)>.02||Math.abs(d2-15)>.02)throw Error('Cắt audio sai thời lượng: '+d1.toFixed(3)+'s / '+d2.toFixed(3)+'s. Đã chặn gửi lên Kie.');
- return {audio,parts:[p1,p2],duration:30};
+async function split(blob,duration=30){
+ if(![30,60].includes(duration))throw Error('Chỉ hỗ trợ 30s hoặc 60s.');
+ const audio=await normalizeAudio(blob,duration),b=await decode(audio);
+ const n=Math.round(15*b.sampleRate),count=duration/15;
+ if(b.length<n*count)throw Error('Audio sau chuẩn hóa không đủ '+duration+' giây ở '+b.sampleRate+' Hz; hãy nạp lại.');
+ const parts=Array.from({length:count},(_,i)=>wav(b,i*n,n));
+ const durations=await Promise.all(parts.map(async p=>(await decode(p)).duration));
+ if(durations.some(d=>Math.abs(d-15)>.02))throw Error('Cắt audio sai thời lượng: '+durations.map(d=>d.toFixed(3)).join('s / ')+'s. Đã chặn gửi lên Kie.');
+ return {audio,parts,duration};
 }
-async function joinTwo(parts){
- const a=await decode(parts[0]),b=await decode(parts[1]);
- if(a.sampleRate!==b.sampleRate)throw Error('Hai đoạn audio có sample rate khác nhau; hãy chuẩn hóa lại 15s.');
- const n=Math.round(15*a.sampleRate);
- if(a.length<n||b.length<n)throw Error('Audio có đoạn ngắn hơn 15s sau khi decode.');
- const ch=Math.min(2,Math.max(a.numberOfChannels,b.numberOfChannels));
- const raw=new AudioBuffer({length:n*2,numberOfChannels:ch,sampleRate:a.sampleRate});
- for(let k=0;k<ch;k++){
-  raw.getChannelData(k).set(a.getChannelData(Math.min(k,a.numberOfChannels-1)).subarray(0,n),0);
-  raw.getChannelData(k).set(b.getChannelData(Math.min(k,b.numberOfChannels-1)).subarray(0,n),n);
- }
- return wav(raw,0,n*2);
+async function joinParts(parts){
+ const decoded=await Promise.all(parts.map(p=>decode(p)));
+ if(decoded.some(b=>!b))throw Error('Chưa đủ audio để ghép.');
+ const rate=decoded[0].sampleRate,n=Math.round(15*rate),ch=Math.min(2,Math.max(...decoded.map(b=>b.numberOfChannels)));
+ if(decoded.some(b=>b.length<n||b.sampleRate!==rate))throw Error('Audio có đoạn dưới 15s hoặc sai sample rate.');
+ const raw=new AudioBuffer({length:n*parts.length,numberOfChannels:ch,sampleRate:rate});
+ for(let i=0;i<parts.length;i++)for(let k=0;k<ch;k++)raw.getChannelData(k).set(decoded[i].getChannelData(Math.min(k,decoded[i].numberOfChannels-1)).subarray(0,n),n*i);
+ return wav(raw,0,n*parts.length);
 }
-function cloneDraft(r){const x=make();if(r){x.prompt=r.prompt||'';x.p1=r.p1||'';x.p2=r.p2||'';x.res=r.res||'480P';x.aspect=r.aspect||'16:9';x.image=r.image;x.continue=!!r.continue;}records.push(x);return x}
-async function clearAudio(which=null){by('w30AudioCheck').textContent='Đã thay/xóa audio: cần kiểm tra lại hai đoạn trước khi gửi Kie.';if(busy)throw Error('Đang chạy tác vụ, chỉ sửa sau khi hoàn tất hoặc dừng chờ.');let r=current;if(!r){r=cloneDraft(null);openRecord(r)}
- if(hasStarted(r)){if(!confirm('Lượt này đã gửi Kie. Tạo bản nháp mới để thay audio, giữ nguyên video và mã tác vụ cũ?'))return; r=cloneDraft(r);openRecord(r);}
- if(which===null){delete r.audio;r.audioParts=[null,null];r.parts=[{},{}];r.name='Audio mới';r.merged=null;}
- else{if(!r.audioParts)r.audioParts=[null,null];r.audioParts[which]=null;delete r.audio;r.merged=null;r.parts=[{},{}];}
- await persist();openRecord(r);message(which===null?'✓ Đã xóa audio cũ. Chèn file mới 15s hoặc 30s.':'✓ Đã xóa đoạn '+(which+1)+'. Chèn lại audio 15s vào đúng ô.');
+function cloneDraft(r,s){const x=make(s||seconds(r));if(r){x.prompt=r.prompt||'';for(let i=0;i<4;i++)x[promptKey(i)]=r[promptKey(i)]||'';x.res=r.res||'480P';x.aspect=r.aspect||'16:9';x.image=r.image;x.continue=!!r.continue;x.workflow={stage:'Sẵn sàng',events:[],smartPrompt:wf(r).smartPrompt!==false,autoRetry:wf(r).autoRetry!==false};}records.push(x);return x}
+async function clearAudio(which=null){
+ by('w30AudioCheck').textContent='Đã thay/xóa audio: cần kiểm tra lại các đoạn trước khi gửi Kie.';
+ if(busy)throw Error('Đang chạy tác vụ, chỉ sửa sau khi hoàn tất hoặc dừng chờ.');
+ let r=current;if(!r){r=cloneDraft(null);openRecord(r)}
+ if(hasStarted(r)){if(!confirm('Lượt này đã gửi Kie. Tạo bản nháp mới để thay audio, giữ nguyên video và mã tác vụ cũ?'))return;r=cloneDraft(r);openRecord(r)}
+ if(which===null){delete r.audio;r.audioParts=Array(slots(r)).fill(null);r.parts=Array.from({length:slots(r)},()=>({}));r.name='Audio mới';r.merged=null;}
+ else{r.audioParts[which]=null;delete r.audio;r.merged=null;r.parts=Array.from({length:slots(r)},()=>({}));}
+ await persist();openRecord(r);message(which===null?'✓ Đã xóa audio cũ. Có thể chèn file mới 15/30/'+seconds(r)+'s.':'✓ Đã xóa đoạn '+(which+1)+'. Chèn lại audio 15s vào đúng ô.');
 }
 async function putPart(file,forcedSlot=null){
  let r=current;if(!r||hasStarted(r)||(hasAudioParts(r)&&forcedSlot===null)){r=cloneDraft(r);openRecord(r)}
- if(!r.audioParts)r.audioParts=[null,null];
  const match=String(file.name||'').match(/(?:phan|đoạn|doan|part|seg)[_\-\s]*0?(\d+)(?:[_\-.\s]|$)/i);
- let slot=forcedSlot!==null?forcedSlot: r.audioParts.findIndex(a=>!a);
- if(forcedSlot===null&&match){const idx=Number(match[1]);if(idx>0){const guess=(idx-1)%2;if(!r.audioParts[guess])slot=guess}}
- if(slot<0)slot=0;
+ let slot=forcedSlot!==null?forcedSlot:firstVacant(r);
+ if(forcedSlot===null&&match){const idx=Number(match[1]);if(idx>0){const guess=(idx-1)%slots(r);if(!r.audioParts[guess])slot=guess}}
+ if(slot<0)throw Error('Đã đủ '+slots(r)+' audio. Bấm Lượt mới để làm tiếp.');
  const normalized=await normalizeAudio(file,15);r.audioParts[slot]=normalized;
- delete r.audio;r.merged=null;r.name=file.name||'Audio 15s';r.parts=[{},{}];
- if(hasAudioParts(r)){r.audio=await joinTwo(r.audioParts);r.name=file.name.replace(/(?:_phan_?\d+[^.]*)?(\.[^.]+)?$/i,'')+'_WAN_30s.wav';}
- await persist();openRecord(r);message(hasAudioParts(r)?'✓ Đã nhận đủ 2 đoạn 15s, ghép audio đúng 30s. Có thể chọn ảnh rồi tạo video.':'✓ Đã nhận Đoạn '+(slot+1)+'/2 (15s). Chèn đoạn còn lại vào ô trống.');
+ delete r.audio;r.merged=null;r.name=file.name||'Audio 15s';r.parts=Array.from({length:slots(r)},()=>({}));
+ if(hasAudioParts(r)){r.audio=await joinParts(r.audioParts);r.name=file.name.replace(/(?:_phan_?\d+[^.]*)?(\.[^.]+)?$/i,'')+'_WAN_'+seconds(r)+'s.wav';}
+ await persist();openRecord(r);message(hasAudioParts(r)?'✓ Đã nhận đủ '+slots(r)+' đoạn 15s, ghép audio đúng '+seconds(r)+'s. Chọn ảnh rồi tạo video.':'✓ Đã nhận đoạn '+(slot+1)+'/'+slots(r)+'. Còn '+r.audioParts.filter(a=>!a).length+' ô audio cần chèn.');
+ return r;
+}
+async function putThirtyIntoSixty(file){
+ let r=current;if(!r||seconds(r)!==60||hasStarted(r)||hasAudioParts(r)){r=cloneDraft(r,60);openRecord(r)}
+ const slot=firstVacant(r,2);if(slot<0)throw Error('Không còn 2 ô audio liên tiếp cho file 30s. Xóa bớt một cặp hoặc tạo lượt 60s mới.');
+ const a=await split(file,30);r.audioParts[slot]=a.parts[0];r.audioParts[slot+1]=a.parts[1];r.parts=Array.from({length:4},()=>({}));delete r.audio;r.merged=null;r.name=file.name||'Audio 30s';
+ if(hasAudioParts(r)){r.audio=await joinParts(r.audioParts);r.name=(file.name||'Audio')+'_WAN_60s.wav'}
+ await persist();openRecord(r);message('✓ Đã lấy audio 30s vào hai đoạn '+(slot+1)+'–'+(slot+2)+'/4. '+(hasAudioParts(r)?'Đã đủ 60s.':'Cần chèn thêm audio cho các đoạn còn thiếu.'));
  return r;
 }
 window.IDECO_WAN30_CORE={wav,cost,makeWanReferenceAudio, getWanReference, WAN_REF_SECONDS};
+function setMode(v){
+ const s=Number(v)===60?60:30;
+ if(busy)throw Error('Không chuyển chế độ khi đang tạo/ghép.');
+ if(!current){const r=cloneDraft(null,s);openRecord(r);saveSoon();return r;}
+ if(seconds(current)===s)return current;
+ // Never discard submitted tasks or existing audio while switching modes.
+ const prior=current,hasData=prior.audioParts?.some(Boolean)||hasStarted(prior)||prior.merged;
+ if(hasData){const next=cloneDraft(prior,s);openRecord(next);message('✓ Đã chuyển sang '+s+'s ở lượt MỚI. Lượt '+seconds(prior)+'s và mọi audio/tác vụ cũ vẫn được giữ trong thư viện.');saveSoon();return next;}
+ current.seconds=s;defaults(current);partRenderRecord=null;openRecord(current);saveSoon();message('✓ Đã chọn '+s+'s · '+slots(current)+' cảnh 15s.');return current;
+}
+window.IDECO_WAN_MODE=setMode;
+tab.querySelectorAll('input[name="w30mode"]').forEach(input=>input.addEventListener('change',()=>{if(input.checked)try{setMode(Number(input.value))}catch(e){message('✕ '+e.message);render()}}));
+for(const id of ['w30SmartPrompt','w30AutoRetry'])by(id).addEventListener('change',()=>{if(current){wf(current)[id==='w30SmartPrompt'?'smartPrompt':'autoRetry']=by(id).checked;saveSoon()}});
+by('w30PromptEditors').addEventListener('change',e=>{const i=Number(e.target.dataset.w30Prompt);if(!Number.isInteger(i)||i<0||i>=4||!current)return;if(hasStarted(current)){openRecord(current);return message('Đã gửi tạo video. Không thể thay prompt của tác vụ đã gửi; dùng Lượt mới.')}current[promptKey(i)]=e.target.value;saveSoon()});
+by('w30BuildPrompts').onclick=()=>{
+ if(!current)return;if(hasStarted(current))return message('Lượt đang có tác vụ Kie. Vui lòng tạo lượt mới để đổi prompt.');
+ const r=current,base=r.prompt.trim()||'Nhân vật biểu diễn theo đúng phần audio tham chiếu, ánh mắt và khẩu hình tự nhiên, quay phim chuyên nghiệp.';
+ for(let i=0;i<slots(r);i++)r[promptKey(i)]=base+'\n'+partHint(i)+'\nChỉ phát triển hành động tương ứng '+(i*15)+'–'+((i+1)*15)+'s; giữ nguyên nhân vật và bối cảnh.';
+ openRecord(r);saveSoon();message('✓ Đã đề xuất '+slots(r)+' prompt theo từng cảnh, có thể chỉnh sửa độc lập trước khi chạy.');
+};
 async function importAudio(f,opt={}){
  by('w30AudioCheck').textContent='Đã nhận audio mới: sẽ tự kiểm tra từng đoạn trước khi gửi WAN.';
  if(busy)throw Error('Đang chạy lượt hiện tại. Hãy dùng Dừng hoặc chờ xong trước khi chèn thêm.');
  if(!f||typeof f.arrayBuffer!=='function'||typeof f.size!=='number')throw Error('Không nhận được dữ liệu audio. Hãy tải hoặc cắt lại.');
+ if(opt.seconds)setMode(opt.seconds);
  busy=true;render();message('Đang giải mã file audio và kiểm tra thời lượng…');
  try{
-  const b=await decode(f),dur=b.duration;
+  const b=await decode(f),dur=b.duration,desired=seconds(current);
   if(Math.abs(dur-15)<.18){await putPart(f,opt.slot??null)}
-  else if(Math.abs(dur-30)<.18){busy=true;const a=await split(f),r=cloneDraft(current);r.audio=a.audio;r.audioParts=a.parts;r.name=f.name||'Audio 30s';await persist();openRecord(r);message('✓ Đã nạp audio 30s và cắt chính xác 0–15s / 15–30s. Chọn ảnh rồi bấm Tạo.');}
-  else throw Error('File dài '+num(dur)+' giây. WAN nhận audio 15s hoặc 30s. Vui lòng cắt lại cho đúng thời lượng.');
+  else if(Math.abs(dur-30)<.18&&desired===60){await putThirtyIntoSixty(f)}
+  else if(Math.abs(dur-desired)<.18){
+   const a=await split(f,desired),r=cloneDraft(current,desired);r.audio=a.audio;r.audioParts=a.parts;r.name=f.name||'Audio '+desired+'s';await persist();openRecord(r);
+   message('✓ Đã nạp audio '+desired+'s và cắt chính xác '+a.parts.length+' đoạn 15s. Chọn ảnh rồi bấm Tạo.');
+  }
+  else throw Error('File dài '+num(dur)+' giây. Ở chế độ '+desired+'s, WAN nhận audio 15s, 30s'+(desired===60?' hoặc 60s':'')+'. Hãy cắt lại.');
   switchTab('wan30studio');
  }finally{busy=false;render()}
 }
@@ -15553,19 +15680,20 @@ by('w30Audio').onchange=function(){if(this.files[0])importAudio(this.files[0]).c
 by('w30PartAudio').onchange=function(){const i=replaceSlot;replaceSlot=null;if(this.files[0])importAudio(this.files[0],{slot:i}).catch(e=>message('✕ '+e.message));this.value=''};
 by('w30ClearAudio').onclick=()=>clearAudio().catch(e=>message('✕ '+e.message));
 by('w30CheckAudio').onclick=async()=>{
- if(busy||!current||!hasAudioParts(current))return message('Cần có đủ hai đoạn audio 15s để kiểm tra.');
- busy=true;render();const info=by('w30AudioCheck');info.textContent='Đang xuất và kiểm tra audio WAV 14,75 giây cho từng đoạn…';
+ if(busy||!current||!hasAudioParts(current))return message('Cần có đủ '+slots(current)+' đoạn audio 15s để kiểm tra.');
+ busy=true;render();const info=by('w30AudioCheck');info.textContent='Đang xuất và kiểm tra '+slots(current)+' audio WAV 14,75 giây…';
  try{
-  for(let i=0;i<2;i++){const a=await getWanReference(current,i);info.textContent='✓ Đoạn '+(i+1)+'/2: audio WAN '+a.duration.toFixed(3)+' giây, không cắt cuối câu.';render()}
-  await persist();info.textContent='✓ KIỂM TRA ĐẠT: 2/2 audio tham chiếu đều 14,750 giây, WAV 48kHz, dưới giới hạn API. Audio gốc 30 giây vẫn được giữ nguyên. Không phát sinh credit.';
+  for(let i=0;i<slots(current);i++){const a=await getWanReference(current,i);info.textContent='✓ Đoạn '+(i+1)+'/'+slots(current)+': audio WAN '+a.duration.toFixed(3)+' giây, không cắt cuối câu.';render()}
+  await persist();info.textContent='✓ KIỂM TRA ĐẠT: '+slots(current)+'/'+slots(current)+' audio tham chiếu đều 14,750 giây, WAV 48kHz, dưới giới hạn API. Audio gốc '+seconds(current)+' giây vẫn được giữ nguyên. Không phát sinh credit.';
   message('✓ Audio WAN hợp lệ. Bấm Tạo/tiếp tục để gửi video.');
  }catch(e){info.textContent='✕ Không đạt: '+e.message;message('✕ '+e.message)}finally{busy=false;render()}
 };
 by('w30Parts').addEventListener('click',e=>{const b=e.target.closest('[data-w30-edit]');if(!b)return;const i=Number(b.dataset.i);if(b.dataset.w30Edit==='clear')clearAudio(i).catch(err=>message('✕ '+err.message));else{if(busy)return;replaceSlot=i;by('w30PartAudio').click()}});
-by('w30FromCut').onclick=async()=>{try{const a=window.V664SelectedCutAudio;if(!a)throw Error('Chọn đoạn tại tab Cắt Âm Thanh, hoặc bấm trực tiếp "CHÈN WAN 30s" ở đoạn đã cắt.');const blob=a.file||await(await fetch(a.dataUrl)).blob();await importAudio(new File([blob],a.name||'audio.wav',{type:blob.type||'audio/wav'}))}catch(e){message('✕ '+e.message)}};
-by('w30New').onclick=()=>{const r=cloneDraft(current);openRecord(r);message('✓ Đã tạo lượt mới. Audio cũ và các tác vụ đã tạo vẫn nằm trong danh sách; chèn audio 15s hoặc 30s mới.');saveSoon()};
-function hasStarted(r){return r.parts.some(p=>p.id||p.blob||p.unknown)}
-for(const [id,prop]of [['w30Prompt','prompt'],['w30Prompt1','p1'],['w30Prompt2','p2'],['w30Resolution','res'],['w30Aspect','aspect'],['w30Continue','continue']])by(id).addEventListener('change',()=>{if(!current)return;if(hasStarted(current)){openRecord(current);return message('Lượt này đã gửi tạo. Để giữ đồng nhất, chỉ chỉnh cấu hình trước khi tạo hoặc bắt đầu lượt mới.');}current[prop]=prop==='continue'?by(id).checked:by(id).value;saveSoon();render()});
+by('w30FromCut').onclick=async()=>{try{const a=window.V664SelectedCutAudio;if(!a)throw Error('Chọn đoạn tại tab Cắt Âm Thanh, hoặc bấm "CHÈN WAN 30s/60s" ở đoạn đã cắt.');const blob=a.file||await(await fetch(a.dataUrl)).blob();await importAudio(new File([blob],a.name||'audio.wav',{type:blob.type||'audio/wav'}))}catch(e){message('✕ '+e.message)}};
+by('w30New').onclick=()=>{const r=cloneDraft(current);openRecord(r);message('✓ Đã tạo lượt mới '+seconds(r)+'s. Audio cũ và tác vụ đã gửi vẫn nằm trong thư viện; chèn audio 15s/30s/'+seconds(r)+'s mới.');saveSoon()};
+function hasStarted(r){return !!(r&&r.parts&&r.parts.some(p=>p.id||p.blob||p.unknown||p.url))}
+for(const [id,prop]of [['w30Prompt','prompt'],['w30Resolution','res'],['w30Aspect','aspect'],['w30Continue','continue']])by(id).addEventListener('change',()=>{if(!current)return;if(hasStarted(current)){openRecord(current);return message('Lượt này đã gửi tạo. Để giữ đồng nhất, chỉ chỉnh cấu hình trước khi tạo hoặc bắt đầu lượt mới.');}current[prop]=prop==='continue'?by(id).checked:by(id).value;saveSoon();render()});
+by('w30AutoMerge').addEventListener('change',()=>{if(current){current.autoMerge=by('w30AutoMerge').checked;saveSoon()}});
 by('w30Image').onchange=async function(){const f=this.files[0];if(!f)return;try{if(!current)throw Error('Chèn audio trước.');if(hasStarted(current))throw Error('Không đổi ảnh của lượt đã tạo.');if(f.size>20*1024*1024)throw Error('Ảnh vượt 20MB.');const image=await createImageBitmap(f);if(Math.min(image.width,image.height)<240||Math.max(image.width,image.height)>8000||image.width/image.height>8||image.height/image.width>8){image.close();throw Error('Ảnh cần cạnh 240–8000px và tỷ lệ không quá 8:1.');}image.close();current.image=f;await persist();openRecord(current)}catch(e){message(e.message)}this.value=''};
 const dataUrl=b=>new Promise((ok,no)=>{const f=new FileReader();f.onload=()=>ok(f.result);f.onerror=no;f.readAsDataURL(b)});
 async function request(path,body){
@@ -15575,7 +15703,7 @@ async function request(path,body){
   let d;try{d=await r.json()}catch(_){throw Error('Máy chủ Kie trả về dữ liệu không hợp lệ (HTTP '+r.status+'). Hãy kiểm tra kết nối.');}
   if(!r.ok||Number(d.code)!==200){
    const msg=String(d.msg||d.message||d.data&&d.data.error||'Kie báo lỗi HTTP '+r.status);
-   const e=Error(msg);const code=Number(d.code);
+   const e=Error(msg);const code=Number(d.code);e.httpStatus=r.status;e.apiCode=code;
    // Only treat explicit validation rejection as safe to retry with a corrected request.
    // Ambiguous network failures must remain pending to avoid duplicate credit charges.
    e.definitive=(r.status>=400&&r.status<500)||(code>=400&&code<500)||/unsupported field|unknown field|invalid parameter|validation error/i.test(msg);
@@ -15585,11 +15713,11 @@ async function request(path,body){
  }catch(e){if(e&&e.name==='AbortError')throw Error('Kết nối Kie hết thời gian chờ. Hãy kiểm tra lịch sử tác vụ trước khi tạo lại để tránh trừ credit hai lần.');throw e;}
  finally{clearTimeout(t)}
 }
-async function upload(blob,name){const d=await fetch(UPLOAD_URL,{method:'POST',headers:auth(),body:JSON.stringify({base64Data:await dataUrl(blob),uploadPath:'ideco/wan30',fileName:name})});const j=await d.json();if(!d.ok||j.code&&Number(j.code)!==200)throw Error(j.msg||'Tải media thất bại');const u=j.data&&(j.data.downloadUrl||j.data.fileUrl||j.data.url);if(!u)throw Error('Chưa có URL media');return u}
+async function upload(blob,name){const d=await fetch(UPLOAD_URL,{method:'POST',headers:auth(),body:JSON.stringify({base64Data:await dataUrl(blob),uploadPath:'ideco/wan30',fileName:name})});const j=await d.json();if(!d.ok||j.code&&Number(j.code)!==200){const e=Error(j.msg||'Tải media thất bại');e.httpStatus=d.status;e.apiCode=Number(j.code);throw e;}const u=j.data&&(j.data.downloadUrl||j.data.fileUrl||j.data.url);if(!u)throw Error('Chưa có URL media');return u}
 async function download(u){return new Promise((ok,no)=>{let done=false;const timer=setTimeout(()=>{done=true;no(Error('Không tải được video. Bấm tiếp tục để tải lại, không tạo lại.'))},60000);fetchBlobSmart(u,b=>{if(done)return;clearTimeout(timer);b&&b.size?ok(b):no(Error('Video tải về rỗng'))},e=>{if(done)return;done=true;clearTimeout(timer);no(Error('Không tải được video: '+(e&&e.message||e||'lỗi kết nối')+'. Bấm tiếp tục để tải lại.'))})})}
 async function video(blob){const v=document.createElement('video');v.preload='auto';v.muted=true;v.playsInline=true;v.src=url(blob);await new Promise((ok,no)=>{const timer=setTimeout(()=>no(Error('Không đọc được video')),20000);v.onloadedmetadata=()=>{clearTimeout(timer);ok()};v.onerror=()=>{clearTimeout(timer);no(Error('Video không đọc được'))}});if(!Number.isFinite(v.duration)||v.duration<=0)throw Error('Thời lượng video không hợp lệ');return v}
 async function lastFrame(blob){const v=await video(blob);try{await new Promise((ok,no)=>{const timer=setTimeout(()=>no(Error('Không trích được khung hình cuối')),15000);v.onseeked=()=>{clearTimeout(timer);ok()};v.currentTime=Math.max(0,v.duration-.08)});const c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);return await new Promise((ok,no)=>c.toBlob(b=>b?ok(b):no(Error('Ảnh cuối rỗng')),'image/jpeg',.95))}finally{v.removeAttribute('src');v.load()}}
-function payload(r,i,img,audio){return {model:'wan/3-0-video',input:{duration:15,resolution:r.res,aspect_ratio:r.aspect,audio:true,reference_image_urls:[img],reference_audio_urls:[audio],prompt:[r.prompt,i===0?r.p1:r.p2,'Image1 is the visual reference. Audio1 contains the exact dialogue or singing for this 15-second segment. Preserve the voice, words and timing. Synchronize mouth movements to Audio1. Keep the same character identity, clothing, scene, lighting and camera direction. No extra speech or music.',i===0?'Begin the performance naturally; end with a stable pose and no fade.':'Continue directly from the pose in Image1, the last frame of the preceding segment. No introduction, scene reset, cut or fade.'].filter(Boolean).join('\n').slice(0,20000)}}}
+function payload(r,i,img,audio){return {model:'wan/3-0-video',input:{duration:15,resolution:r.res,aspect_ratio:r.aspect,audio:true,reference_image_urls:[img],reference_audio_urls:[audio],prompt:[r.prompt,r[promptKey(i)]||partHint(i),'Image1 is the visual reference. Audio1 contains the exact dialogue or singing for this 15-second segment. Preserve the voice, words and timing. Synchronize mouth movements to Audio1. Keep the same character identity, clothing, scene, lighting and camera direction. No extra speech or music.',i===0?'Begin the performance naturally; end with a stable pose and no fade.':'Continue directly from the pose in Image1, the final frame of segment '+i+'. Keep the same identity, costume, set, movement and camera trajectory. Never reset or repeat previous movement. No new intro, jump cut, scene reset, fade or hard transition.'].filter(Boolean).join('\n').slice(0,20000)}}}
 window.IDECO_WAN30_CORE.payload=payload;
 async function ensurePart(r,i,image){
  const p=r.parts[i];if(p.blob)return;
@@ -15598,80 +15726,180 @@ async function ensurePart(r,i,image){
   p.status='Đang chuẩn hóa audio 15s thành 14,75s (không cắt mất cuối câu)';render();message('Đoạn '+(i+1)+' · kiểm tra giới hạn audio WAN trước khi gửi…');
   const ref=await getWanReference(r,i);await persist();
   p.status='Audio hợp lệ '+ref.duration.toFixed(3)+' giây · đang tải ảnh và audio lên Kie';render();
-  const img=await upload(image,r.id+'_'+i+'.jpg'),au=await upload(ref.blob,r.id+'_'+i+'_WAN_REF_14p75s.wav');
+  const img=await safeRetry(()=>upload(image,r.id+'_'+i+'.jpg'),'Tải ảnh tham chiếu cảnh '+(i+1),r),au=await safeRetry(()=>upload(ref.blob,r.id+'_'+i+'_WAN_REF_14p75s.wav'),'Tải audio cảnh '+(i+1),r);
   if(stopped)throw Error('Đã dừng trước khi gửi tạo video.');
-  p.unknown=true;p.status='Đang gửi tác vụ lên Kie';await persist();render();
-  try{const d=await request('/api/v1/jobs/createTask',payload(r,i,img,au));if(!d||!d.taskId)throw Error('Chưa có mã tác vụ');p.id=d.taskId;p.unknown=false;p.state='waiting';p.status='Kie đã nhận tác vụ';await persist();render();}
+  p.unknown=true;p.status='Đang gửi tác vụ lên Kie';wfLog(r,'Đang gửi cảnh '+(i+1)+'/'+slots(r),'Một lần duy nhất, chống gửi trùng');await persist();render();
+  try{const d=await request('/api/v1/jobs/createTask',payload(r,i,img,au));if(!d||!d.taskId)throw Error('Chưa có mã tác vụ');p.id=d.taskId;p.unknown=false;p.state='waiting';p.status='Kie đã nhận tác vụ';wfLog(r,'Kie đã nhận cảnh '+(i+1),String(p.id));await persist();render();}
   catch(e){if(e.definitive){p.unknown=false;p.status='Gửi bị từ chối: '+e.message+' · Đã giữ audio và ảnh để thử lại, không có mã tác vụ';await persist();render()}throw e}
  }
  const deadline=Date.now()+30*60*1000;
  while(!p.url){
   if(stopped)throw Error('Đã dừng chờ; mã tác vụ vẫn được lưu. Bấm tiếp tục để nhận kết quả.');
   if(Date.now()>deadline)throw Error('Đã chờ 30 phút. Bấm tiếp tục để kiểm tra tác vụ cũ.');
-  let d=await request('/api/v1/jobs/recordInfo?taskId='+encodeURIComponent(p.id));
-  p.state=d.state||'waiting';if(d.progress!==null&&d.progress!==undefined&&Number.isFinite(Number(d.progress))){p.progress=Math.max(0,Math.min(100,Number(d.progress)))}
+  let d=await safeRetry(()=>request('/api/v1/jobs/recordInfo?taskId='+encodeURIComponent(p.id)),'Kiểm tra trạng thái video '+(i+1),r,5);
+  const rawState=String(d?.state||d?.status||'waiting').toLowerCase();
+  p.state=({succeeded:'success',completed:'success',finished:'success',failure:'fail',error:'fail',pending:'waiting',processing:'generating',running:'generating'}[rawState]||rawState);
+  const nativeProgress=d?.progress??d?.percentage??d?.data?.progress;
+  if(nativeProgress!==null&&nativeProgress!==undefined&&Number.isFinite(Number(nativeProgress))){const q=Number(nativeProgress);p.progress=Math.max(0,Math.min(100,q>0&&q<=1?q*100:q))}
   const stage={waiting:'Đang chờ',queuing:'Đang xếp hàng',generating:'Đang tạo video',success:'Đã tạo video',fail:'Thất bại',failed:'Thất bại'};
   p.status=(stage[p.state]||'Kie: '+p.state)+(Number.isFinite(p.progress)?' · '+Math.round(p.progress)+'% do Kie báo':' · chưa có % từ Kie');
   if(p.state==='success'){
    let j;try{j=typeof d.resultJson==='string'?JSON.parse(d.resultJson):d.resultJson}catch(e){throw Error('Kie trả kết quả video không hợp lệ')}
-   p.url=j?.resultUrls?.[0]||j?.videoUrl||d.videoUrl;
+   p.url=j?.resultUrls?.[0]||j?.videoUrl||d.videoUrl||d.resultUrl||d.data?.videoUrl;
    if(!p.url)throw Error('Kie báo hoàn tất nhưng chưa có URL video. Hãy kiểm tra lịch sử Kie.');
    p.progress=100;p.status='✓ Kie tạo thành công · đang tải và lưu video';await persist();render();break;
   }
   if(p.state==='fail'||p.state==='failed'){p.failedId=p.id;delete p.id;p.status='Thất bại: '+(d.failMsg||d.failCode||'Kie');await persist();render();throw Error(p.status+' · Bấm tiếp tục chỉ tạo lại đoạn lỗi.')}
-  render();message('Đoạn '+(i+1)+'/2 · '+p.status+' · Mã: '+p.id);
+  render();message('Đoạn '+(i+1)+'/'+slots(r)+' · '+p.status+' · Mã: '+p.id);
   await new Promise(ok=>setTimeout(ok,5000));
  }
  try{
-  p.blob=await download(p.url);
+  p.blob=await safeRetry(()=>download(p.url),'Tải video cảnh '+(i+1),r,4);
   const v=await video(p.blob);if(v.duration<14.90){delete p.blob;throw Error('Video ngắn hơn 15s; cần kiểm tra tác vụ trên Kie.')}v.removeAttribute('src');v.load();
-  p.status='Hoàn tất · đã tải và lưu video 15s';p.state='success';p.progress=100;await persist();render();
+  p.status='Hoàn tất · đã tải và lưu video 15s';p.state='success';p.progress=100;wfLog(r,'✓ Hoàn tất cảnh '+(i+1)+'/'+slots(r),'Đã tải 15s, chuẩn bị nối cảnh tiếp theo');await persist();render();
  }catch(e){p.status='✓ Kie đã tạo video, nhưng chưa tải lưu được: '+e.message;await persist();render();throw Error(p.status+'. Có thể xem video gốc ở mục 3; bấm Tiếp tục để tải lại (không tạo mới).')}
 }
+
+/* ===== WAN V8 · GHÉP NGẦM WORKER, KHÔNG CHẶN ỨNG DỤNG ===== */
+const W30_BG_WORKER_SOURCE = "/* IDECO WAN V8 – FFmpeg WASM ghép MP4 trong Web Worker chuyên dụng.\n   Vật liệu video/audio chỉ ở bộ nhớ cục bộ. */\nlet ff=null;let fileCounter=0;\nconst say=(stage,progress,info='')=>self.postMessage({kind:'progress',stage,progress,info});\nfunction check(code,label){if(code!==0)throw Error(label+' (FFmpeg trả mã '+code+')')}\nfunction extension(type,buffer){\n const b=new Uint8Array(buffer,0,Math.min(buffer.byteLength,16));\n if(b.length>=12&&String.fromCharCode(...b.subarray(0,4))==='RIFF')return 'wav';\n if(b.length>=3&&String.fromCharCode(...b.subarray(0,3))==='ID3')return 'mp3';\n if(b.length>=4&&String.fromCharCode(...b.subarray(0,4))==='OggS')return 'ogg';\n if(b.length>=12&&String.fromCharCode(...b.subarray(4,8))==='ftyp')return 'mp4';\n if(type?.includes('mpeg'))return 'mp3';if(type?.includes('mp4'))return 'm4a';\n if(type?.includes('webm'))return 'webm';if(type?.includes('ogg'))return 'ogg';return 'wav';\n}\nasync function init(){\n if(ff)return ff;\n say('Đang tải bộ ghép ngầm FFmpeg (lần đầu ~31 MB)',1);\n const base='https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd';\n async function loadFile(u,kind){\n  const c=new AbortController();const tm=setTimeout(()=>c.abort(),45000);\n  try{let r=await fetch(u,{signal:c.signal,mode:'cors'});if(!r.ok)throw Error('HTTP '+r.status+' khi tải '+u);return URL.createObjectURL(new Blob([await r.arrayBuffer()],{type:kind}));}\n  finally{clearTimeout(tm)}\n }\n let jsURL=null,wasmURL=null;\n try{\n  jsURL=await loadFile(base+'/ffmpeg-core.js','text/javascript');say('Đã tải bộ điều khiển; nạp công cụ ghép',3);\n  wasmURL=await loadFile(base+'/ffmpeg-core.wasm','application/wasm');say('Khởi động engine Worker',6);\n  importScripts(jsURL);\n  if(typeof self.createFFmpegCore!=='function')throw Error('Không tìm thấy FFmpeg core');\n  ff=await self.createFFmpegCore({mainScriptUrlOrBlob:jsURL+'#'+btoa(JSON.stringify({wasmURL,workerURL:''}))});\n  ff.setLogger(({message})=>{if(/Error|Invalid|moov|failed/i.test(message||''))self.postMessage({kind:'log',text:String(message).slice(0,300)})});\n  ff.setProgress(({progress})=>{if(Number.isFinite(progress)&&progress>=0&&progress<=1)say('Đang xử lý các khung ghép…',30+Math.round(progress*55))});\n  say('Sẵn sàng ghép trong Worker',9);return ff;\n }catch(e){if(jsURL)URL.revokeObjectURL(jsURL);if(wasmURL)URL.revokeObjectURL(wasmURL);throw e}\n}\nasync function run({clips,audio,seconds,mode}){\n const core=await init();\n if(!Array.isArray(clips)||clips.length<1)throw Error('Không có video để ghép');\n const filenames=[];const cleanup=[];\n try{\n  for(let i=0;i<clips.length;i++){\n   say('Nạp video '+(i+1)+'/'+clips.length,10+Math.round((i/clips.length)*18));\n   const b=clips[i];if(!b||!b.size)throw Error('Video '+(i+1)+' bị rỗng');\n   const name='wan_'+fileCounter+++'_'+i+'.'+(b.type?.includes('webm')?'webm':'mp4');\n   core.FS.writeFile(name,new Uint8Array(await b.arrayBuffer()));filenames.push(name);cleanup.push(name);\n  }\n  const listName='wan_list_'+fileCounter+++'.txt';cleanup.push(listName);\n  core.FS.writeFile(listName,new TextEncoder().encode(filenames.map(x=>\"file '\"+x+\"'\").join('\\n')+'\\n'));\n  const joined='wan_join_'+fileCounter+++'.mp4';cleanup.push(joined);\n  say('Ghép nhanh hình ảnh – giữ nguyên chất lượng gốc',30);\n  core.setTimeout(-1);\n  core.exec('-hide_banner','-nostdin','-loglevel','error','-f','concat','-safe','0','-i',listName,\n            '-map','0:v:0',...(mode==='full'?['-map','0:a:0']:[]),'-c','copy','-movflags','+faststart',joined);\n  check(core.ret,'Ghép nối các đoạn MP4');core.reset();\n  let out=joined;\n  if(mode==='record'){\n   if(!audio||!audio.size)throw Error('Thiếu audio gốc để ghép video '+seconds+' giây');\n   say('Chuẩn bị audio gốc '+seconds+' giây',65);\n   const data=await audio.arrayBuffer();const ext=extension(audio.type,data);\n   const audioName='wan_audio_'+fileCounter+++'.'+ext;cleanup.push(audioName);core.FS.writeFile(audioName,new Uint8Array(data));\n   out='wan_final_'+fileCounter+++'.mp4';cleanup.push(out);\n   say('Ghép tiếng – không mã hóa lại hình',70);\n   core.setTimeout(-1);\n   core.exec('-hide_banner','-nostdin','-loglevel','error','-i',joined,'-i',audioName,\n         '-map','0:v:0','-map','1:a:0','-c:v','copy','-c:a','aac','-b:a','160k',\n         '-ar','48000','-ac','2','-af','aresample=async=1:first_pts=0',\n         '-t',String(Number(seconds)||30),'-movflags','+faststart',out);\n   check(core.ret,'Ghép audio vào MP4');core.reset();\n  }\n  say('Đóng gói MP4 và kiểm tra dữ liệu',94);\n  const result=core.FS.readFile(out);\n  if(!result?.byteLength||result.byteLength<1024)throw Error('MP4 kết quả bị rỗng');\n  const buffer=result.buffer.slice(result.byteOffset,result.byteOffset+result.byteLength);\n  say('✓ Video hoàn chỉnh đã tạo xong',100);\n  self.postMessage({kind:'done',buffer},[buffer]);\n }finally{\n  for(const n of cleanup){try{core.FS.unlink(n)}catch(e){}}\n }\n}\nself.onmessage=async e=>{\n if(e.data?.kind==='merge'){\n  try{await run(e.data)}catch(err){self.postMessage({kind:'error',error:String(err&&err.message||err)})}\n }\n};";
+const w30BgDock=document.createElement('aside');w30BgDock.id='w30BgDock';w30BgDock.setAttribute('role','status');
+w30BgDock.innerHTML='<div class="w30-bg-head"><b>🎬 GHÉP VIDEO NGẦM</b><button type="button" id="w30BgGoto">↗ WAN</button><button type="button" id="w30BgCancel">✕ Hủy</button></div><div id="w30BgLabel">Đang khởi tạo…</div><progress id="w30BgBar" max="100" value="0"></progress><small id="w30BgInfo">Anh vẫn sử dụng các chức năng khác bình thường.</small>';
+document.body.append(w30BgDock);
+let w30BgActive=null;
+let w30BgLastPct=0;
+function w30BgStatus(stage,pct){
+ if(!w30BgActive)return;
+ w30BgLastPct=Math.max(w30BgLastPct,Math.min(100,Math.round(Number(pct)||0)));
+ w30BgDock.classList.add('show');
+ by('w30BgLabel').textContent=stage||'Đang ghép…';
+ by('w30BgBar').value=w30BgLastPct;
+ by('w30BgInfo').textContent=w30BgLastPct+'% · Đang xử lý trên Worker · Có thể xem video, chuyển tab và thao tác ứng dụng khác.';
+ if(w30BgActive.onProgress)w30BgActive.onProgress(stage,w30BgLastPct);
+}
+function w30BgStop(){if(!w30BgActive)return;
+ const job=w30BgActive;w30BgActive=null;try{job.worker.terminate()}catch(e){};
+ job.reject(Error('Đã hủy ghép video. Các video 15s và audio gốc vẫn được giữ.'));
+ w30BgDock.classList.remove('show');by('w30BgBar').value=0;
+}
+by('w30BgCancel').onclick=w30BgStop;
+by('w30BgGoto').onclick=()=>switchTab('wan30studio');
+by('w30CancelMerge').onclick=w30BgStop;
+by('w30CancelFull').onclick=w30BgStop;
+function w30BackgroundMerge(clips,audio,seconds,mode,onProgress){
+ if(w30BgActive)throw Error('Đang ghép một video khác trong Worker; có thể xem video và chờ xong.');
+ if(!window.Worker||!window.Blob||!window.URL)throw Error('Trình duyệt chưa hỗ trợ Web Worker. Hãy dùng Chrome/Edge mới.');
+ return new Promise((resolve,reject)=>{
+  let worker=null,workerURL=null;
+  try{
+   workerURL=URL.createObjectURL(new Blob([W30_BG_WORKER_SOURCE],{type:'text/javascript'}));
+   worker=new Worker(workerURL);
+   URL.revokeObjectURL(workerURL);
+  }catch(err){if(workerURL)URL.revokeObjectURL(workerURL);reject(Error('Không khởi động được Web Worker; hãy mở ứng dụng qua trang HTTPS: '+err.message));return}
+  const job={worker,reject,onProgress};w30BgActive=job;w30BgLastPct=0;
+  const finish=()=>{
+   try{worker.terminate()}catch(e){};
+   if(w30BgActive===job)w30BgActive=null;
+   w30BgDock.classList.remove('show');
+  };
+  worker.onmessage=e=>{
+   const d=e.data||{};
+   if(d.kind==='progress'){w30BgStatus(d.stage,d.progress);return}
+   if(d.kind==='log'){console.warn('[WAN Worker FFmpeg]',d.text);return}
+   if(d.kind==='done'){
+    finish();const blob=new Blob([d.buffer],{type:'video/mp4'});
+    if(blob.size<1024)return reject(Error('File MP4 xuất không hợp lệ'));
+    resolve({blob,ext:'mp4',audioFallback:false,worker:true});return;
+   }
+   if(d.kind==='error'){
+    finish();reject(Error('Ghép ngầm chưa thành công: '+d.error+'. Kiểm tra kết nối CDN và video nguồn. Không mất video 15s.'));
+   }
+  };
+  worker.onerror=e=>{finish();reject(Error('Web Worker bị lỗi: '+(e.message||'không xác định')+' · cần Chrome/Edge qua HTTPS'))};
+  worker.onmessageerror=()=>{finish();reject(Error('Worker không gửi được kết quả MP4'))};
+  w30BgDock.classList.add('show');w30BgStatus('Khởi động ghép ngầm',0);
+  try{worker.postMessage({kind:'merge',clips,audio,seconds,mode})}catch(err){finish();reject(err)}
+ });
+}
+
 async function trackVideo(blob,start,duration,sound){const v=await video(blob);if(v.duration<duration-.05)throw Error('Video ngắn hơn thời lượng cần ghép.');return {id:clipUid(),track:'visual',type:'video',name:'WAN',url:url(blob),video:v,start,duration,sourceDuration:v.duration,trimStart:0,speed:1,scale:100,x:0,y:0,fit:'contain',effect:'none',volume:sound?100:0}}
 async function mergeRecord(r){
  if(r.merged)return;
- if(!r.parts.every(p=>p.blob))throw Error('Cần tải đủ hai video 15s mới ghép được. Nếu Kie đã tạo, bấm Tiếp tục để tải lại.');
- message('Đang ghép hai video 15s với audio gốc 30s…');
- const a=document.createElement('audio');a.src=url(r.audio);
- const tracks={visual:[await trackVideo(r.parts[0].blob,0,15,false),await trackVideo(r.parts[1].blob,15,15,false)],audio:[{id:clipUid(),track:'audio',type:'audio',name:r.name,url:url(r.audio),audio:a,start:0,duration:30,sourceDuration:30,trimStart:0,volume:100,loop:false}],overlay:[],text:[],effect:[],sfx:[]};
- const out=await window.IDECO_WAN_EXPORT(tracks,r.aspect,r.res);
- if(out.ext!=='mp4'||out.audioFallback)throw Error('Chưa xuất được MP4 có audio gốc; kiểm tra codec hoặc thử Chrome/Edge mới.');
- r.merged=out.blob;await persist();render();message('✓ Đã lưu video MP4 30 giây. Có thể xem ở mục 3 và tải về.');
+ if(!r.parts.every(p=>p.blob))throw Error('Cần tải đủ '+slots(r)+' video 15s mới ghép được. Nếu Kie đã tạo, bấm Tiếp tục để tải lại.');
+ if(!r.audio)throw Error('Còn thiếu audio gốc '+seconds(r)+'s để xuất MP4 đầy đủ tiếng.');
+ message('🎬 Đang ghép ngầm '+slots(r)+' video 15s với audio gốc '+seconds(r)+'s. Anh có thể xem video, chuyển tab bình thường.');
+ by('w30CancelMerge').hidden=false;
+ try{
+  const result=await w30BackgroundMerge(r.parts.map(p=>p.blob),r.audio,seconds(r),'record', (stage,pct)=>{
+   message('🎬 '+stage+' · '+pct+'% · Vẫn có thể thao tác các tab khác.');
+  });
+  r.merged=result.blob;
+  await persist();render();message('✓ Đã ghép ngầm MP4 '+seconds(r)+' giây, xem trong thư viện và tải xuống.');
+ }finally{by('w30CancelMerge').hidden=true}
 }
 async function run(){
- if(busy)return;const r=current;if(!r||!hasAudioParts(r)||!r.audio)return message('Chèn đủ 2 đoạn audio 15s hoặc 1 file 30s trước.');
- if(!key())return message('Nhập API key Wan/Kie trong cài đặt.');
- if(!r.prompt?.trim()&&!r.parts.some(p=>p.id||p.url||p.blob))return message('Viết yêu cầu video trước.');
- by('w30AudioCheck').textContent='✓ Kiểm tra audio WAN (không tốn credit)';
- busy=true;stopped=false;render();
+ if(busy)return;
+ const r=current;if(!r||!hasAudioParts(r)||!r.audio)return message('Cần đủ '+(r?slots(r):2)+' audio 15s trước khi chạy tự động.');
+ if(r.merged)return message('✓ Video '+seconds(r)+'s đã ghép xong. Xem hoặc tải trong Thư viện.');
+ if(!key())return message('Nhập API key Kie/WAN trong Cài đặt trước khi chạy.');
+ if(!r.prompt?.trim()&&!r.parts.some(p=>p.id||p.url||p.blob))return message('Hãy nhập yêu cầu video hoặc mô tả cảnh trước khi tự tạo.');
+ if(!r.image&&!r.continue&&!r.parts.some(p=>p.id||p.url||p.blob))return message('Chọn ảnh nhân vật hoặc bật Tiếp nối video hoàn tất trước đó.');
+ if(r.parts.some(p=>p.unknown))return message('⚠ Có đoạn gửi Kie chưa rõ kết quả. Gắn mã tác vụ từ lịch sử Kie trước khi chạy tiếp để tránh trừ credit trùng.');
+ busy=true;stopped=false;workflowActiveRecord=r;render();
+ const flow=wf(r);flow.startedAt=Date.now();flow.running=true;
  try{
+  if(flow.smartPrompt!==false&&!hasStarted(r)){smartPrompts(r);openRecord(r)}
+  by('w30AudioCheck').textContent='🤖 Đang kiểm tra audio trước khi gửi WAN…';
+  wfLog(r,'Kiểm tra trước khi chạy',slots(r)+' audio / '+seconds(r)+'s; xác minh mọi audio tham chiếu');
+  // Prepare only unsubmitted reference audio. Existing tasks are never modified/rebilled.
+  for(let i=0;i<slots(r);i++)if(!r.parts[i].id&&!r.parts[i].url&&!r.parts[i].blob){
+   if(stopped)throw Error('Đã dừng trước khi gửi thêm tác vụ.');
+   const ref=await getWanReference(r,i);
+   if(ref.duration>14.80||ref.duration<14.70)throw Error('Audio '+(i+1)+' chưa hợp lệ: '+ref.duration.toFixed(3)+'s.');
+  }
+  await persist();
   let image=r.image;
-  if(r.continue&&!hasStarted(r)){const prior=records.slice(0,records.indexOf(r)).filter(x=>x.merged).pop();if(!prior)throw Error('Chưa có video trước hoàn tất để tiếp nối.');image=prior.parts[1].frame||await lastFrame(prior.parts[1].blob);r.image=image;}
-  if(!image&&!r.parts.some(p=>p.url||p.id||p.blob))throw Error('Chọn ảnh nhân vật hoặc bật tiếp nối video trước.');
-  await persist();await ensurePart(r,0,image);
-  if(stopped)throw Error('Đã dừng, các tác vụ đã gửi vẫn tiếp tục trên Kie.');
-  if(!r.parts[0].frame){message('Đang lấy khung hình cuối đoạn 1…');r.parts[0].frame=await lastFrame(r.parts[0].blob);await persist();render()}
-  await ensurePart(r,1,r.parts[0].frame);
-  if(stopped)throw Error('Đã dừng, các tác vụ đã gửi vẫn tiếp tục trên Kie.');
-  if(!r.parts[1].frame){r.parts[1].frame=await lastFrame(r.parts[1].blob);await persist();render()}
-  if(by('w30AutoMerge').checked)await mergeRecord(r);else message('✓ Hai video 15s đã xong. Xem ở mục 3 và bấm Ghép 30s để xuất MP4.');
- }catch(e){message('✕ '+e.message)}finally{busy=false;render()}
+  if(r.continue&&!hasStarted(r)){
+   const prior=records.slice(0,records.indexOf(r)).filter(x=>x.merged).pop();
+   if(!prior)throw Error('Chưa có video hoàn tất trước đó để tiếp nối.');
+   const last=prior.parts[prior.parts.length-1];image=last.frame||await lastFrame(last.blob);r.image=image;
+  }
+  if(!image&&!r.parts.some(p=>p.url||p.id||p.blob))throw Error('Chưa có ảnh nhân vật.');
+  await persist();
+  for(let i=0;i<slots(r);i++){
+   if(stopped)throw Error('Đã dừng theo yêu cầu, mọi video đã tạo vẫn được lưu.');
+   wfLog(r,'Bước '+(i+1)+'/'+slots(r)+' · '+i*15+'–'+(i+1)*15+'s',r.parts[i].blob?'Dùng lại video đã hoàn tất':r.parts[i].id?'Tiếp tục theo dõi mã tác vụ đã gửi':'Tự tạo video từ prompt và audio');
+   if(i>0){
+    const prev=r.parts[i-1];
+    if(!prev.blob)throw Error('Chưa có video cảnh '+i+' để lấy khung hình nối cảnh.');
+    if(!prev.frame){wfLog(r,'Nối cảnh '+i+' → '+(i+1),'Trích frame cuối của cảnh '+i);prev.frame=await lastFrame(prev.blob);await persist();}
+    image=prev.frame;
+   }
+   await ensurePart(r,i,image);
+   if(!r.parts[i].frame){wfLog(r,'Trích khung hình nối cảnh','Đang lấy frame cuối cảnh '+(i+1));r.parts[i].frame=await lastFrame(r.parts[i].blob);await persist();render();}
+  }
+  if(stopped)throw Error('Đã dừng trước bước ghép. Video 15s đã được bảo toàn.');
+  if(by('w30AutoMerge').checked){wfLog(r,'🎬 Tự ghép '+seconds(r)+' giây','Ghép '+slots(r)+' video 15s + audio gốc');await mergeRecord(r);wfLog(r,'✓ HOÀN TẤT '+seconds(r)+' GIÂY','MP4 đã lưu trong thư viện và sẵn sàng tải','success');}
+  else wfLog(r,'✓ Đủ '+slots(r)+' video 15s','Có thể xem từng đoạn và bấm Ghép MP4','success');
+ }catch(e){
+  wfLog(r,stopped?'⏸ Đã tạm dừng':'⚠ Workflow tạm dừng',plainError(e),'warn');
+  if(r.parts.some(p=>p.unknown))message('⚠ Không rõ kết quả gửi trên Kie, không tự gửi lại để tránh mất credit. Tra mã Kie và bấm Gắn mã.');
+ }finally{flow.running=false;workflowActiveRecord=null;busy=false;await persist().catch(()=>{});render()}
 }
-by('w30Run').onclick=()=>run().catch(e=>message(e.message));by('w30Stop').onclick=()=>{stopped=true;message('Đã yêu cầu dừng. Tác vụ Kie đã gửi vẫn tiếp tục; ghép MP4 đang chạy sẽ hoàn tất.')};by('w30Merge').onclick=async()=>{if(busy||!current)return;busy=true;render();try{await mergeRecord(current)}catch(e){message(e.message)}finally{busy=false;render()}};
+by('w30AutoRun').onclick=()=>run().catch(e=>message('✕ '+e.message));by('w30Run').onclick=()=>run().catch(e=>message('✕ '+e.message));by('w30Stop').onclick=()=>{stopped=true;message('Đã yêu cầu dừng. Tác vụ Kie đã gửi vẫn tiếp tục; ghép MP4 đang chạy sẽ hoàn tất.')};by('w30Merge').onclick=async()=>{if(busy||!current)return;busy=true;render();try{await mergeRecord(current)}catch(e){message(e.message)}finally{busy=false;render()}};
 by('w30Recover').onclick=async()=>{if(!current||busy)return;const i=Number(by('w30RecoverPart').value),p=current.parts[i],id=by('w30TaskId').value.trim();if(!id)return message('Nhập mã tác vụ Kie.');if(p.blob||p.id)return message('Đoạn đã có video hoặc mã tác vụ; không ghi đè.');p.id=id;p.unknown=false;p.status='Đã gắn mã, bấm tiếp tục';saveSoon();render()};
 function downloadFile(blob,name){if(!blob)return;const a=document.createElement('a');a.href=url(blob);a.download=name;a.click()}
-by('w30Download').onclick=()=>current&&downloadFile(current.merged,'IDECO_WAN_'+current.id+'_30s.mp4');by('w30JoinPreview').onclick=()=>{by('w30Result').currentTime=13;by('w30Result').play().catch(e=>message(e.message))};
+by('w30Download').onclick=()=>current&&downloadFile(current.merged,'IDECO_WAN_'+current.id+'_'+seconds(current)+'s.mp4');by('w30JoinPreview').onclick=()=>{by('w30Result').currentTime=13;by('w30Result').play().catch(e=>message(e.message))};
 by('w30LibraryClose').onclick=()=>{const v=by('w30LibraryVideo');v.pause();by('w30LibraryViewer').hidden=true};
-by('w30LibraryDownload').onclick=()=>{const r=records.find(x=>x.id===libraryViewId);if(r)downloadFile(r.merged,'IDECO_WAN_'+r.id+'_30s.mp4')};
+by('w30LibraryDownload').onclick=()=>{const r=records.find(x=>x.id===libraryViewId);if(r)downloadFile(r.merged,'IDECO_WAN_'+r.id+'_'+seconds(r)+'s.mp4')};
 by('w30LibraryEdit').onclick=()=>{const r=records.find(x=>x.id===libraryViewId);if(r){openRecord(r);by('w30ResultsSection').scrollIntoView({behavior:'smooth',block:'start'})}};
 by('w30SelectAll').onclick=()=>{completedRecords().forEach(r=>r.selected=true);saveSoon();render()};
 by('w30SelectNone').onclick=()=>{completedRecords().forEach(r=>r.selected=false);saveSoon();render()};
-async function listClick(e){const b=e.target.closest('[data-act]'),row=e.target.closest('[data-id]');if(!b||!row||busy)return;const i=records.findIndex(x=>x.id===row.dataset.id),r=records[i];if(!r)return;
+async function listClick(e){const b=e.target.closest('[data-act]'),row=e.target.closest('[data-id]');if(!b||!row)return;const i=records.findIndex(x=>x.id===row.dataset.id),r=records[i];if(!r)return;
  const action=b.dataset.act;
  if(action==='view'){openLibraryVideo(r);return}
- if(action==='download'){downloadFile(r.merged,'IDECO_WAN_'+r.id+'_30s.mp4');return}
- if(action==='open'){openRecord(r);by('tabWan30').scrollIntoView({behavior:'smooth',block:'start'});return}
+ if(action==='download'){downloadFile(r.merged,'IDECO_WAN_'+r.id+'_'+seconds(r)+'s.mp4');return}
+ if(action==='open'){if(busy)return message('Đang xử lý tác vụ WAN; có thể xem hoặc tải video khác, nhưng chưa được đổi dự án đang chạy.');openRecord(r);by('tabWan30').scrollIntoView({behavior:'smooth',block:'start'});return}
+ if(busy&&(action==='delete'||action==='up'||action==='down'))return message('Đang ghép: vui lòng đợi hoàn tất trước khi xóa/đổi thứ tự. Vẫn có thể xem và tải video.');
  if(action==='up'||action==='down'){
   const done=completedRecords(),pos=done.findIndex(x=>x.id===r.id),other=done[pos+(action==='up'?-1:1)];if(other){const j=records.indexOf(other);[records[i],records[j]]=[records[j],records[i]]}
  }
@@ -15686,38 +15914,31 @@ async function listClick(e){const b=e.target.closest('[data-act]'),row=e.target.
 by('w30List').addEventListener('click',e=>listClick(e).catch(err=>message('✕ '+err.message)));
 by('w30Pending').addEventListener('click',e=>listClick(e).catch(err=>message('✕ '+err.message)));
 by('w30MergeAll').onclick=async()=>{
- if(busy)return;
- const selected=selectedCompleted();if(!selected.length)return message('Chọn ít nhất một video 30s hoàn chỉnh trong thư viện.');
- if(selected.some(r=>r.aspect!==selected[0].aspect))return message('Các video cần cùng tỷ lệ khung hình (16:9, 9:16 hoặc 1:1). Hãy chọn cùng tỷ lệ.');
- if(selected.some(r=>!r.audio||!r.parts?.every(p=>p.blob)))return message('Có video 30s thiếu nguồn audio hoặc đoạn 15s. Mở lượt tương ứng để khôi phục, tránh xuất bản FULL mất tiếng.');
- busy=true;render();const n=selected.length,summary=by('w30FullSummary'),bar=by('w30FullProgress'),txt=by('w30FullProgressText');
- bar.hidden=false;bar.removeAttribute('value');txt.textContent='Chuẩn bị nguồn video…';summary.textContent='Đang ghép '+n+' video 30s thành FULL '+(n*30)+' giây. Không đóng tab khi đang xuất.';
+ if(busy||w30BgActive)return;
+ const selected=selectedCompleted();if(!selected.length)return message('Chọn ít nhất một video 30s hoặc 60s hoàn chỉnh trong thư viện.');
+ if(selected.some(r=>r.aspect!==selected[0].aspect))return message('Các video cần cùng tỷ lệ khung hình. Hãy chọn cùng tỷ lệ 16:9, 9:16 hoặc 1:1.');
+ if(selected.some(r=>!r.merged||!r.merged.size))return message('Có video hoàn chỉnh bị mất MP4, hãy khôi phục trong thư viện.');
+ busy=true;render();const n=selected.length,total=selected.reduce((sum,r)=>sum+seconds(r),0),summary=by('w30FullSummary'),bar=by('w30FullProgress'),txt=by('w30FullProgressText');
+ bar.hidden=false;bar.value=0;by('w30CancelFull').hidden=false;
+ txt.textContent='Đang chuẩn bị Worker…';summary.textContent='Ghép ngầm '+n+' video thành FULL '+total+' giây. Anh vẫn dùng ứng dụng và xem video bình thường (không đóng trang).';
  try{
-  const tracks={visual:[],audio:[],overlay:[],text:[],effect:[],sfx:[]};
-  for(let i=0;i<n;i++){
-   const r=selected[i];const offset=i*30;
-   txt.textContent='Nạp video '+(i+1)+'/'+n+' · '+r.name;
-   tracks.visual.push(await trackVideo(r.parts[0].blob,offset,15,false));
-   tracks.visual.push(await trackVideo(r.parts[1].blob,offset+15,15,false));
-   const a=document.createElement('audio');a.src=url(r.audio);
-   tracks.audio.push({id:clipUid(),track:'audio',type:'audio',url:url(r.audio),audio:a,name:r.name,start:offset,duration:30,sourceDuration:30,trimStart:0,volume:100,loop:false});
-  }
-  const result=await window.IDECO_WAN_EXPORT(tracks,selected[0].aspect,selected[0].res);
-  if(result.ext!=='mp4'||result.audioFallback)throw Error('Không xuất được MP4 có audio. Hãy kiểm tra trình duyệt/codec và thử lại.');
-  fullBlob=result.blob;fullMeta={count:n,seconds:n*30,createdAt:Date.now(),ids:selected.map(r=>r.id)};
-  showFull(fullMeta);bar.value=100;txt.textContent='✓ FULL MP4 đã hoàn tất, có thể mở xem ngay hoặc tải về.';
-  try{await persistFull()}catch(e){txt.textContent+=' ⚠ Không lưu được FULL vào bộ nhớ (có thể đã đầy); hãy tải MP4 ngay: '+e.message}
-  message('✓ Đã ghép '+n+' video thành một bản FULL '+(n*30)+' giây. Xem ở cuối thư viện và tải file MP4.');
- }catch(e){txt.textContent='✕ Ghép FULL thất bại: '+e.message;message('✕ '+e.message)}finally{busy=false;render()}
+  const result=await w30BackgroundMerge(selected.map(r=>r.merged),null,total,'full',(stage,pct)=>{
+   txt.textContent='🎬 '+stage+' · '+pct+'%';bar.value=pct;
+  });
+  fullBlob=result.blob;fullMeta={count:n,seconds:total,createdAt:Date.now(),ids:selected.map(r=>r.id)};
+  showFull(fullMeta);bar.value=100;txt.textContent='✓ FULL MP4 hoàn tất. Có thể mở xem hoặc tải về.';
+  try{await persistFull()}catch(e){txt.textContent+=' ⚠ Chưa lưu FULL vào bộ nhớ: '+e.message+' — hãy tải video ngay.'}
+  message('✓ Đã ghép ngầm '+n+' video thành FULL '+total+' giây. Anh có thể xem và tải ngay.');
+ }catch(e){txt.textContent='✕ '+e.message;message('✕ '+e.message)}finally{busy=false;by('w30CancelFull').hidden=true;render()}
 };
 by('w30DownloadFull').onclick=()=>downloadFile(fullBlob,'IDECO_WAN_FULL.mp4');
-new MutationObserver(()=>{if(busy&&document.body.classList.contains('v42-exporting')){const info=by('clipProgress').textContent;by('w30FullProgressText').textContent=info;message(info);const match=info.match(/(\d+(?:[.,]\d+)?)\s*%/);if(match)by('w30FullProgress').value=Math.max(0,Math.min(100,Number(match[1].replace(',','.'))));else by('w30FullProgress').removeAttribute('value')}}).observe(by('clipProgress'),{childList:true,characterData:true,subtree:true});
-document.addEventListener('click',e=>{if(window.WAN30_EXPORT_BUSY&&!tab.contains(e.target)){e.preventDefault();e.stopImmediatePropagation()}},true);
+/* V8: WAN tiến độ Worker riêng, không đọc clipProgress của tab CLIP. */
+/* V8: Không chặn tương tác các tab khác trong lúc ghép WAN bằng Worker. */
 try{
  const req=indexedDB.open('IDECO_WAN30_V1',1);
  req.onupgradeneeded=()=>req.result.createObjectStore('data');
  req.onsuccess=()=>{db=req.result;const get=db.transaction('data').objectStore('data').get('records');
- get.onsuccess=()=>{if(!records.length)records=get.result||[];loadedFromStore=true;storageResolve();if(records.length&&!current)openRecord(records[records.length-1]);render();try{const saved=req.result.transaction('data').objectStore('data').get('fullVideo');saved.onsuccess=()=>{const f=saved.result;if(f?.blob instanceof Blob&&f.blob.size){fullBlob=f.blob;showFull(f.meta);}}}catch(e){/* Không có FULL trước đó */}};
+ get.onsuccess=()=>{if(!records.length)records=(get.result||[]).map(defaults);loadedFromStore=true;storageResolve();if(records.length&&!current)openRecord(records[records.length-1]);render();if(current?.workflow?.running){wf(current).running=false;wf(current).stage='Đã ngắt phiên · bấm Tiếp tục để nhận lại tác vụ cũ';render();}try{const saved=req.result.transaction('data').objectStore('data').get('fullVideo');saved.onsuccess=()=>{const f=saved.result;if(f?.blob instanceof Blob&&f.blob.size){fullBlob=f.blob;showFull(f.meta);}}}catch(e){/* Không có FULL trước đó */}};
  get.onerror=()=>{loadedFromStore=true;storageResolve();message('⚠ Không đọc được dự án cũ. Có thể tạo lượt mới.')};
  };
  req.onerror=()=>{loadedFromStore=true;storageResolve();message('⚠ Không mở được kho lưu. File tạo mới chỉ tồn tại trong phiên này.')};
