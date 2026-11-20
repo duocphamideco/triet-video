@@ -15286,14 +15286,15 @@ let storageResolve;const storageReady=new Promise(ok=>storageResolve=ok);
 let loadedFromStore=false,partRenderRecord=null;
 const nav=document.createElement('button');nav.id='tabBtnWan30';nav.textContent='🎙 WAN · 30s';by('tabBtnVid').after(nav);
 const tab=document.createElement('div');tab.id='tabWan30';tab.style.display='none';tab.innerHTML=`
-<div class="w30-head"><div><small>IDECO · WAN 3.0</small><h2>Audio 30s → Video liền mạch</h2><p>Chèn audio · Xóa/Thay đoạn · Theo dõi tạo video · Xem trước và ghép</p></div><button id="w30New">＋ Lượt mới</button></div>
+<div class="w30-head"><div><small>IDECO · WAN 3.0</small><h2>Audio 30s → Video liền mạch</h2><p>Chèn audio · Xóa/Thay đoạn · Chuẩn audio WAN 14,75s · Xem trước và ghép</p></div><button id="w30New">＋ Lượt mới</button></div>
 <div class="w30-grid">
 <section class="w30-card"><h3>1 · Audio & nhân vật</h3>
 <div class="w30-row"><label class="w30-pick">📁 Chọn audio 15s hoặc 30s<input id="w30Audio" type="file" accept="audio/*,.mp3,.wav,.m4a"></label><button id="w30ClearAudio" class="w30-danger" type="button">✕ Xóa audio / chèn lại</button></div>
-<button id="w30FromCut" type="button">↪ Lấy đoạn đã chọn từ tab Cắt</button>
+<button id="w30FromCut" type="button">↪ Lấy đoạn đã chọn từ tab Cắt</button> <button id="w30CheckAudio" type="button">✓ Kiểm tra audio WAN (không tốn credit)</button>
+<p id="w30AudioCheck" role="status" style="padding:9px 11px;border-radius:8px;background:#eef9f3;color:#176745;font-size:12px;line-height:1.6">Chưa kiểm tra audio tham chiếu. Ứng dụng sẽ tự chuẩn hóa xuống 14,75 giây trước khi gửi Kie.</p>
 <input id="w30PartAudio" type="file" accept="audio/*,.mp3,.wav,.m4a" hidden>
 <p id="w30AudioInfo">Chưa nạp audio</p><audio id="w30AudioPlayer" controls></audio><div id="w30Parts"></div>
-<small class="w30-help">Chèn 30s: tự chia 2 đoạn. Chèn 15s: đặt vào Đoạn 1 hoặc Đoạn 2; có thể xóa và thay riêng trước khi gửi tạo video. Nếu lượt đã gửi Kie, thay audio sẽ mở bản nháp mới để không làm mất tác vụ và credit cũ.</small>
+<small class="w30-help">Audio gốc: hai đoạn 15 giây để ghép video cuối 30 giây. Khi gửi WAN 3.0, mỗi đoạn được tự chuẩn hóa thành <b>14,75 giây</b> bằng cách phát nhanh khoảng 1,7%, không cắt chữ cuối câu. File gốc 30 giây giữ nguyên để ghép xuất. Có thể xóa/thay riêng trước khi gửi; tác vụ Kie đã gửi vẫn được giữ.</small>
 <label class="w30-pick">Chọn ảnh nhân vật<input id="w30Image" type="file" accept="image/png,image/jpeg,image/webp"></label>
 <img id="w30ImagePreview" alt="Ảnh nhân vật" hidden>
 <label><input id="w30Continue" type="checkbox"> Tiếp nối video hoàn tất gần nhất</label>
@@ -15366,7 +15367,7 @@ function stateOf(p){if(p.blob)return ['✓ Video đã tải','done'];if(p.url)re
 function stateExtra(p){const status=p.status||'';if(p.id&&Number.isFinite(p.progress))return status+' · '+Math.round(p.progress)+'% (Kie)';return status||'Chưa gửi tạo video'}
 function audioSlotMarkup(r,i){const a=r?.audioParts?.[i],p=r?.parts?.[i]||{},s=stateOf(p);return '<div class="w30-part" data-w30-slot="'+i+'"><div class="w30-part-head"><b>Đoạn '+(i+1)+' · '+(i*15)+'–'+((i+1)*15)+'s</b><span class="w30-state '+s[1]+'" data-w30-badge>'+esc(s[0])+'</span></div>'+
  (a?'<audio controls preload="metadata" src="'+esc(url(a))+'"></audio>':'<p style="color:#7b879a;font-size:12px">Chưa có audio 15 giây</p>')+
- '<small data-w30-detail>'+esc(stateExtra(p))+'</small><div data-w30-meter></div><div class="w30-part-actions"><button type="button" class="w30-mini" data-w30-edit="replace" data-i="'+i+'">↻ Thay audio</button><button type="button" class="w30-mini w30-danger" data-w30-edit="clear" data-i="'+i+'" '+(!a?'disabled':'')+'>✕ Xóa đoạn</button></div></div>'}
+ '<small data-w30-detail>'+esc(stateExtra(p))+'</small><small data-w30-ref style="display:block;margin-top:4px;color:#176745"></small><div data-w30-ref-play></div><div data-w30-meter></div><div class="w30-part-actions"><button type="button" class="w30-mini" data-w30-edit="replace" data-i="'+i+'">↻ Thay audio</button><button type="button" class="w30-mini w30-danger" data-w30-edit="clear" data-i="'+i+'" '+(!a?'disabled':'')+'>✕ Xóa đoạn</button></div></div>'}
 function updateParts(r){
  const node=by('w30Parts'),id=r?.id||'';
  if(!r){node.innerHTML='';partRenderRecord=null;return}
@@ -15376,6 +15377,8 @@ function updateParts(r){
   if(holder.dataset.audio!==signature){holder.innerHTML=audioSlotMarkup(r,i);holder.dataset.audio=signature}
   const p=r.parts[i]||{},s=stateOf(p),badge=holder.querySelector('[data-w30-badge]');if(badge){badge.className='w30-state '+s[1];badge.textContent=s[0]}
   const detail=holder.querySelector('[data-w30-detail]');if(detail)detail.textContent=stateExtra(p);
+  const refLabel=holder.querySelector('[data-w30-ref]');if(refLabel)refLabel.textContent=p.referenceAudio?'✓ Đã chuẩn hóa audio tham chiếu: '+Number(p.referenceDuration||14.75).toFixed(3)+' giây · đủ nội dung đoạn 15s · đã kiểm tra dưới giới hạn WAN':'Audio gốc 15s sẽ được nén thời gian thành 14,75s trước khi gửi Kie';
+  const refPlay=holder.querySelector('[data-w30-ref-play]');if(refPlay){const src=p.referenceAudio?url(p.referenceAudio):'';let player=refPlay.querySelector('audio');if(src){if(!player){refPlay.innerHTML='<span style="display:block;font-size:11px;margin:5px 0;color:#64748b">Nghe thử audio thực tế gửi Kie:</span><audio controls preload="metadata" style="width:100%"></audio>';player=refPlay.querySelector('audio')}if(player.dataset.src!==src){player.src=src;player.dataset.src=src;player.load()}}else if(player)refPlay.replaceChildren()}
   const meter=holder.querySelector('[data-w30-meter]');if(meter){if(p.blob||p.url)meter.innerHTML='<progress max="100" value="100"></progress>';else if(p.id&&Number.isFinite(p.progress))meter.innerHTML='<progress max="100" value="'+Math.max(0,Math.min(100,p.progress))+'"></progress>';else if(p.id)meter.innerHTML='<progress max="100"></progress>';else meter.innerHTML=''}
   const del=holder.querySelector('[data-w30-edit="clear"]');if(del)del.disabled=busy||!a;const rep=holder.querySelector('[data-w30-edit="replace"]');if(rep)rep.disabled=busy;
  }
@@ -15419,27 +15422,100 @@ function render(){
  else if(result.dataset.src){result.removeAttribute('src');result.dataset.src='';result.load()}
  by('w30PreviewHint').textContent=r&&r.merged?'✓ Hai đoạn đã ghép thành MP4 30 giây. Xem từng đoạn hoặc bản hoàn chỉnh phía dưới.':'Các video 15 giây xuất hiện tại đây ngay khi Kie tạo thành công. Nếu không tải được file về máy, vẫn có liên kết mở video gốc.';
  renderLibrary();
- for(const id of ['w30New','w30Audio','w30Image','w30FromCut','w30ClearAudio','w30Prompt','w30Prompt1','w30Prompt2','w30Resolution','w30Aspect','w30Continue','w30Recover'])by(id).disabled=busy;
+ for(const id of ['w30New','w30Audio','w30Image','w30FromCut','w30ClearAudio','w30CheckAudio','w30Prompt','w30Prompt1','w30Prompt2','w30Resolution','w30Aspect','w30Continue','w30Recover'])by(id).disabled=busy;
  by('w30Run').disabled=busy||!r||!hasAudioParts(r);by('w30Merge').disabled=busy||!r||!r.parts.every(p=>p.blob);
  by('w30Download').disabled=!r||!r.merged;by('w30JoinPreview').disabled=!r||!r.merged;
 }
 function openRecord(r){current=r;partRenderRecord=null;
- by('w30AudioInfo').textContent=r.audio?r.name+' · 30s · 2 đoạn chính xác 15s':r.audioParts?.some(Boolean)?r.name+' · đang chờ chèn đủ 2 đoạn 15s':'Chưa nạp audio';
+ by('w30AudioInfo').textContent=r.audio?r.name+' · 30s gốc · 2 đoạn 15s (audio Kie tự chuẩn hóa 14,75s)':r.audioParts?.some(Boolean)?r.name+' · đang chờ chèn đủ 2 đoạn 15s':'Chưa nạp audio';
  const player=by('w30AudioPlayer');if(r.audio){const u=url(r.audio);if(player.dataset.src!==u){player.src=u;player.dataset.src=u;player.load()}}else{player.removeAttribute('src');player.dataset.src='';player.load()}
  by('w30Prompt').value=r.prompt||'';by('w30Prompt1').value=r.p1||'';by('w30Prompt2').value=r.p2||'';
  by('w30Resolution').value=r.res;by('w30Aspect').value=r.aspect;by('w30Continue').checked=!!r.continue;
  const img=by('w30ImagePreview');img.hidden=!r.image;if(r.image)img.src=url(r.image);else img.removeAttribute('src');render();
 }
-async function decode(blob){const ac=new (window.AudioContext||window.webkitAudioContext)();try{return await ac.decodeAudioData(await blob.arrayBuffer())}finally{await ac.close()}}
+async function decode(blob){
+ // decodeAudioData resamples to AudioContext.sampleRate. Explicit 48k avoids a
+ // 44.1k device silently turning 720000 frames into 16.327s (the original bug).
+ const AudioCtx=window.AudioContext||window.webkitAudioContext;
+ let ac;try{ac=new AudioCtx({sampleRate:48000})}catch(_){ac=new AudioCtx()}
+ try{return await ac.decodeAudioData(await blob.arrayBuffer())}finally{await ac.close()}
+}
 function wav(buffer,start,count){const ch=Math.min(2,buffer.numberOfChannels),ab=new ArrayBuffer(44+count*ch*2),v=new DataView(ab);function str(p,s){for(let i=0;i<s.length;i++)v.setUint8(p+i,s.charCodeAt(i))}str(0,'RIFF');v.setUint32(4,ab.byteLength-8,true);str(8,'WAVEfmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,ch,true);v.setUint32(24,buffer.sampleRate,true);v.setUint32(28,buffer.sampleRate*ch*2,true);v.setUint16(32,ch*2,true);v.setUint16(34,16,true);str(36,'data');v.setUint32(40,count*ch*2,true);let k=44;for(let i=0;i<count;i++)for(let c=0;c<ch;c++){const x=Math.max(-1,Math.min(1,buffer.getChannelData(c)[start+i]||0));v.setInt16(k,x<0?x*32768:x*32767,true);k+=2}return new Blob([ab],{type:'audio/wav'})}
 async function normalizeAudio(blob,seconds){
  const b=await decode(blob),dur=b.duration;if(Math.abs(dur-seconds)>.18)throw Error('Audio '+num(dur)+' giây; cần audio đúng '+seconds+' giây (sai số tối đa 0,18 giây). Hãy cắt lại trong tab Cắt.');
  const off=new OfflineAudioContext(Math.min(2,b.numberOfChannels),Math.round(seconds*48000),48000),source=off.createBufferSource();source.buffer=b;source.connect(off.destination);source.start();const out=await off.startRendering();return wav(out,0,out.length)
 }
-async function split(blob){const audio=await normalizeAudio(blob,30),b=await decode(audio),n=720000;return {audio,parts:[wav(b,0,n),wav(b,n,n)],duration:30};}
-async function joinTwo(parts){const a=await decode(parts[0]),b=await decode(parts[1]),ch=Math.min(2,Math.max(a.numberOfChannels,b.numberOfChannels));const raw=new AudioBuffer({length:1440000,numberOfChannels:ch,sampleRate:48000});for(let k=0;k<ch;k++){raw.getChannelData(k).set(a.getChannelData(Math.min(k,a.numberOfChannels-1)).subarray(0,720000),0);raw.getChannelData(k).set(b.getChannelData(Math.min(k,b.numberOfChannels-1)).subarray(0,720000),720000)}return wav(raw,0,1440000)}
+// Kie WAN 3.0 reference_audio_urls accepts <=15s, but full 15.000s can
+// be rounded past the cap in remote decoders. Preserve *all* 15s of speech
+// by resampling the full 15s into a 14.75s WAV (NOT truncating tail words).
+// Final MP4 always uses the original unmodified 30s audio.
+const WAN_REF_SECONDS=14.75, WAN_REF_HZ=48000;
+async function makeWanReferenceAudio(sourceBlob){
+ const input=await decode(sourceBlob);
+ if(!Number.isFinite(input.duration)||input.duration<1||input.duration>15.3)throw Error('Audio nguồn '+num(input.duration)+'s, cần khoảng 15 giây trước khi tạo tham chiếu WAN.');
+ const frames=Math.round(WAN_REF_SECONDS*WAN_REF_HZ);
+ const ctx=new OfflineAudioContext(Math.min(2,input.numberOfChannels),frames,WAN_REF_HZ);
+ const node=ctx.createBufferSource();node.buffer=input;
+ // Slightly accelerate, retaining *every* source sample rather than discarding the last 0.25s.
+ node.playbackRate.value=input.duration/WAN_REF_SECONDS;
+ node.connect(ctx.destination);node.start(0);
+ const rendered=await ctx.startRendering();
+ const ref=wav(rendered,0,frames);
+ const check=await decode(ref);
+ if(!(check.duration>=14.7&&check.duration<=14.8))throw Error('Kiểm tra audio tham chiếu thất bại: '+check.duration.toFixed(4)+' giây. Đã chặn gửi Kie.');
+ if(ref.size>15*1024*1024)throw Error('Audio tham chiếu vượt 15 MB. Đã chặn gửi Kie.');
+ return {blob:ref,duration:check.duration,originalSeconds:input.duration};
+}
+async function getWanReference(r,i){
+ if(!r.audioParts?.[i])throw Error('Chưa có audio cho đoạn '+(i+1));
+ // Repair persisted pre-fix drafts: previously decoded 48k audio in a
+ // 44.1k context, but used 720000 frames/part -> 16.33s reference WAV.
+ const existing=await decode(r.audioParts[i]);
+ if(existing.duration>15.25){
+  if(!r.audio)throw Error('Audio cũ dài '+existing.duration.toFixed(3)+'s và không còn bản 30s gốc. Vui lòng xóa đoạn cũ và chèn lại audio gốc.');
+  const fixed=await split(r.audio);
+  // Only replace the slot we are about to submit; do not mutate a reference
+  // already linked to an existing Kie task, which could cost credits.
+  r.audioParts[i]=fixed.parts[i];
+  delete r.parts[i].referenceAudio;delete r.parts[i].referenceDuration;
+  if(!r.parts.some(p=>p.id||p.url||p.blob||p.unknown)){
+   // In an unsubmitted draft we can correct both historical 16.33s blobs.
+   r.audio=fixed.audio;r.audioParts=fixed.parts;
+   for(const part of r.parts){delete part.referenceAudio;delete part.referenceDuration;}
+  }
+  await persist();
+ }
+ const p=r.parts[i];
+ if(p.referenceAudio){const v=await decode(p.referenceAudio);if(v.duration>=14.7&&v.duration<=14.8)return {blob:p.referenceAudio,duration:v.duration,originalSeconds:15};}
+ const ref=await makeWanReferenceAudio(r.audioParts[i]);
+ p.referenceAudio=ref.blob;p.referenceDuration=ref.duration;
+ return ref;
+}
+async function split(blob){
+ const audio=await normalizeAudio(blob,30),b=await decode(audio);
+ const n=Math.round(15*b.sampleRate);
+ if(b.length<n*2)throw Error('Audio sau chuẩn hóa không đủ 30 giây ở '+b.sampleRate+' Hz; hãy nạp lại.');
+ const p1=wav(b,0,n),p2=wav(b,n,n);
+ // Validate final downloadable WAV metadata, not UI rounding.
+ const d1=(await decode(p1)).duration,d2=(await decode(p2)).duration;
+ if(Math.abs(d1-15)>.02||Math.abs(d2-15)>.02)throw Error('Cắt audio sai thời lượng: '+d1.toFixed(3)+'s / '+d2.toFixed(3)+'s. Đã chặn gửi lên Kie.');
+ return {audio,parts:[p1,p2],duration:30};
+}
+async function joinTwo(parts){
+ const a=await decode(parts[0]),b=await decode(parts[1]);
+ if(a.sampleRate!==b.sampleRate)throw Error('Hai đoạn audio có sample rate khác nhau; hãy chuẩn hóa lại 15s.');
+ const n=Math.round(15*a.sampleRate);
+ if(a.length<n||b.length<n)throw Error('Audio có đoạn ngắn hơn 15s sau khi decode.');
+ const ch=Math.min(2,Math.max(a.numberOfChannels,b.numberOfChannels));
+ const raw=new AudioBuffer({length:n*2,numberOfChannels:ch,sampleRate:a.sampleRate});
+ for(let k=0;k<ch;k++){
+  raw.getChannelData(k).set(a.getChannelData(Math.min(k,a.numberOfChannels-1)).subarray(0,n),0);
+  raw.getChannelData(k).set(b.getChannelData(Math.min(k,b.numberOfChannels-1)).subarray(0,n),n);
+ }
+ return wav(raw,0,n*2);
+}
 function cloneDraft(r){const x=make();if(r){x.prompt=r.prompt||'';x.p1=r.p1||'';x.p2=r.p2||'';x.res=r.res||'480P';x.aspect=r.aspect||'16:9';x.image=r.image;x.continue=!!r.continue;}records.push(x);return x}
-async function clearAudio(which=null){if(busy)throw Error('Đang chạy tác vụ, chỉ sửa sau khi hoàn tất hoặc dừng chờ.');let r=current;if(!r){r=cloneDraft(null);openRecord(r)}
+async function clearAudio(which=null){by('w30AudioCheck').textContent='Đã thay/xóa audio: cần kiểm tra lại hai đoạn trước khi gửi Kie.';if(busy)throw Error('Đang chạy tác vụ, chỉ sửa sau khi hoàn tất hoặc dừng chờ.');let r=current;if(!r){r=cloneDraft(null);openRecord(r)}
  if(hasStarted(r)){if(!confirm('Lượt này đã gửi Kie. Tạo bản nháp mới để thay audio, giữ nguyên video và mã tác vụ cũ?'))return; r=cloneDraft(r);openRecord(r);}
  if(which===null){delete r.audio;r.audioParts=[null,null];r.parts=[{},{}];r.name='Audio mới';r.merged=null;}
  else{if(!r.audioParts)r.audioParts=[null,null];r.audioParts[which]=null;delete r.audio;r.merged=null;r.parts=[{},{}];}
@@ -15458,8 +15534,9 @@ async function putPart(file,forcedSlot=null){
  await persist();openRecord(r);message(hasAudioParts(r)?'✓ Đã nhận đủ 2 đoạn 15s, ghép audio đúng 30s. Có thể chọn ảnh rồi tạo video.':'✓ Đã nhận Đoạn '+(slot+1)+'/2 (15s). Chèn đoạn còn lại vào ô trống.');
  return r;
 }
-window.IDECO_WAN30_CORE={wav,cost};
+window.IDECO_WAN30_CORE={wav,cost,makeWanReferenceAudio, getWanReference, WAN_REF_SECONDS};
 async function importAudio(f,opt={}){
+ by('w30AudioCheck').textContent='Đã nhận audio mới: sẽ tự kiểm tra từng đoạn trước khi gửi WAN.';
  if(busy)throw Error('Đang chạy lượt hiện tại. Hãy dùng Dừng hoặc chờ xong trước khi chèn thêm.');
  if(!f||typeof f.arrayBuffer!=='function'||typeof f.size!=='number')throw Error('Không nhận được dữ liệu audio. Hãy tải hoặc cắt lại.');
  busy=true;render();message('Đang giải mã file audio và kiểm tra thời lượng…');
@@ -15475,6 +15552,15 @@ window.IDECO_WAN30_IMPORT=importAudio;
 by('w30Audio').onchange=function(){if(this.files[0])importAudio(this.files[0]).catch(e=>message('✕ '+e.message));this.value=''};
 by('w30PartAudio').onchange=function(){const i=replaceSlot;replaceSlot=null;if(this.files[0])importAudio(this.files[0],{slot:i}).catch(e=>message('✕ '+e.message));this.value=''};
 by('w30ClearAudio').onclick=()=>clearAudio().catch(e=>message('✕ '+e.message));
+by('w30CheckAudio').onclick=async()=>{
+ if(busy||!current||!hasAudioParts(current))return message('Cần có đủ hai đoạn audio 15s để kiểm tra.');
+ busy=true;render();const info=by('w30AudioCheck');info.textContent='Đang xuất và kiểm tra audio WAV 14,75 giây cho từng đoạn…';
+ try{
+  for(let i=0;i<2;i++){const a=await getWanReference(current,i);info.textContent='✓ Đoạn '+(i+1)+'/2: audio WAN '+a.duration.toFixed(3)+' giây, không cắt cuối câu.';render()}
+  await persist();info.textContent='✓ KIỂM TRA ĐẠT: 2/2 audio tham chiếu đều 14,750 giây, WAV 48kHz, dưới giới hạn API. Audio gốc 30 giây vẫn được giữ nguyên. Không phát sinh credit.';
+  message('✓ Audio WAN hợp lệ. Bấm Tạo/tiếp tục để gửi video.');
+ }catch(e){info.textContent='✕ Không đạt: '+e.message;message('✕ '+e.message)}finally{busy=false;render()}
+};
 by('w30Parts').addEventListener('click',e=>{const b=e.target.closest('[data-w30-edit]');if(!b)return;const i=Number(b.dataset.i);if(b.dataset.w30Edit==='clear')clearAudio(i).catch(err=>message('✕ '+err.message));else{if(busy)return;replaceSlot=i;by('w30PartAudio').click()}});
 by('w30FromCut').onclick=async()=>{try{const a=window.V664SelectedCutAudio;if(!a)throw Error('Chọn đoạn tại tab Cắt Âm Thanh, hoặc bấm trực tiếp "CHÈN WAN 30s" ở đoạn đã cắt.');const blob=a.file||await(await fetch(a.dataUrl)).blob();await importAudio(new File([blob],a.name||'audio.wav',{type:blob.type||'audio/wav'}))}catch(e){message('✕ '+e.message)}};
 by('w30New').onclick=()=>{const r=cloneDraft(current);openRecord(r);message('✓ Đã tạo lượt mới. Audio cũ và các tác vụ đã tạo vẫn nằm trong danh sách; chèn audio 15s hoặc 30s mới.');saveSoon()};
@@ -15509,12 +15595,14 @@ async function ensurePart(r,i,image){
  const p=r.parts[i];if(p.blob)return;
  if(p.unknown)throw Error('Đoạn '+(i+1)+' chưa rõ trạng thái gửi. Gắn mã tác vụ từ Kie trước khi tạo tiếp để tránh trừ credit trùng.');
  if(!p.id&&!p.url){
-  p.status='Đang tải ảnh và audio lên Kie';render();message('Đoạn '+(i+1)+' · tải ảnh và audio…');
-  const img=await upload(image,r.id+'_'+i+'.jpg'),au=await upload(r.audioParts[i],r.id+'_'+i+'.wav');
+  p.status='Đang chuẩn hóa audio 15s thành 14,75s (không cắt mất cuối câu)';render();message('Đoạn '+(i+1)+' · kiểm tra giới hạn audio WAN trước khi gửi…');
+  const ref=await getWanReference(r,i);await persist();
+  p.status='Audio hợp lệ '+ref.duration.toFixed(3)+' giây · đang tải ảnh và audio lên Kie';render();
+  const img=await upload(image,r.id+'_'+i+'.jpg'),au=await upload(ref.blob,r.id+'_'+i+'_WAN_REF_14p75s.wav');
   if(stopped)throw Error('Đã dừng trước khi gửi tạo video.');
   p.unknown=true;p.status='Đang gửi tác vụ lên Kie';await persist();render();
   try{const d=await request('/api/v1/jobs/createTask',payload(r,i,img,au));if(!d||!d.taskId)throw Error('Chưa có mã tác vụ');p.id=d.taskId;p.unknown=false;p.state='waiting';p.status='Kie đã nhận tác vụ';await persist();render();}
-  catch(e){if(e.definitive){p.unknown=false;p.status='Gửi bị từ chối: '+e.message;await persist();render()}throw e}
+  catch(e){if(e.definitive){p.unknown=false;p.status='Gửi bị từ chối: '+e.message+' · Đã giữ audio và ảnh để thử lại, không có mã tác vụ';await persist();render()}throw e}
  }
  const deadline=Date.now()+30*60*1000;
  while(!p.url){
@@ -15555,6 +15643,7 @@ async function run(){
  if(busy)return;const r=current;if(!r||!hasAudioParts(r)||!r.audio)return message('Chèn đủ 2 đoạn audio 15s hoặc 1 file 30s trước.');
  if(!key())return message('Nhập API key Wan/Kie trong cài đặt.');
  if(!r.prompt?.trim()&&!r.parts.some(p=>p.id||p.url||p.blob))return message('Viết yêu cầu video trước.');
+ by('w30AudioCheck').textContent='✓ Kiểm tra audio WAN (không tốn credit)';
  busy=true;stopped=false;render();
  try{
   let image=r.image;
