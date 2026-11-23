@@ -2170,6 +2170,7 @@ body:not(.clip-mode) #v73MobileExport,body:not(.clip-mode) #v73MobileProgress{di
     <div class="v67-music-toolbar">
       <div><strong>🎵 ÂM NHẠC · MUSIC AI STUDIO V6 · V78 COVER FIX</strong><span>Toàn bộ công cụ tạo bài hát, lời nói + nhạc, phối nhạc, MV, thư viện và Firebase được giữ nguyên từ file 2.</span></div>
       <button type="button" id="v67MusicImport">♪ CHỌN NHẠC ĐƯA VÀO CLIP</button>
+      <button type="button" id="v67MusicToMV" style="background:#2358bb">🎬 CHÈN NHẠC VÀO MV</button>
       <button type="button" id="v67MusicFullscreen">⛶ MỞ RỘNG</button>
     </div>
     <div class="v67-music-transfer" id="v67MusicTransfer" hidden><b>Thư viện âm nhạc → Timeline dựng phim</b><span>Chọn bản nhạc, Studio sẽ đưa vào track AUDIO đúng định dạng.</span><div id="v67MusicTracks">Đang chờ mở công cụ Âm nhạc…</div></div>
@@ -13438,6 +13439,22 @@ window.IDECO_REQUEST_MICROPHONE=function(){
         const h=document.createElement('b');h.textContent=tr.title||tr.filename||'Bản nhạc';d.appendChild(h);
         const btn=document.createElement('button');btn.type='button';btn.textContent='＋ Thêm nhạc vào phim';d.appendChild(btn);box.appendChild(d);
         const toAudio=document.createElement('button');toAudio.type='button';toAudio.textContent='✂ Chèn vào Cắt / Ghép Audio';d.appendChild(toAudio);
+        const toMV=document.createElement('button');toMV.type='button';toMV.textContent='🎬 Chèn vào MV TIMELINE';toMV.style.background='#2457bb';d.appendChild(toMV);
+        toMV.onclick=async()=>{
+          toMV.disabled=true;toMV.textContent='Đang chuyển nhạc sang MV…';
+          try{
+            const link=await vault.srcOf(tr.id);
+            if(!link)throw Error('Bài hát chưa có file audio đã tạo.');
+            const blob=await(vault.fetchBlob?vault.fetchBlob(link,true):fetch(link).then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.blob()}));
+            if(!blob||!blob.size)throw Error('Audio bài hát đang rỗng.');
+            const filename=String(tr.title||tr.filename||'IDECO_nhac').replace(/[\/:*?"<>|]/g,'_').slice(0,90)+'.mp3';
+            const imported=await window.IDECO_MV_IMPORT_AUDIO(new File([blob],filename,{type:blob.type||'audio/mpeg'}));
+            if(!imported)return;
+            show('✓ Đã đưa bài hát '+(tr.title||'')+' vào MV TIMELINE');
+          }catch(e){show('Không chuyển được bài hát vào MV: '+e.message,true)}
+          finally{toMV.disabled=false;toMV.textContent='🎬 Chèn vào MV TIMELINE'}
+        };
+
         toAudio.onclick=async()=>{toAudio.disabled=true;try{const url=await vault.srcOf(tr.id);const blob=await(vault.fetchBlob?vault.fetchBlob(url,true):fetch(url).then(r=>r.blob()));await window.IDECO_SEND_MUSIC_AUDIO(new File([blob],(tr.title||'Nhac')+'.mp3',{type:blob.type||'audio/mpeg'}))}catch(e){show(e.message,true)}finally{toAudio.disabled=false}};
 
         btn.onclick=async()=>{
@@ -13455,6 +13472,7 @@ window.IDECO_REQUEST_MICROPHONE=function(){
     }catch(e){box.textContent='Không thể đọc thư viện: '+e.message}
   }
   by('v67MusicImport').onclick=function(){by('v67MusicTransfer').hidden=false;populateMusic()};
+  by('v67MusicToMV').onclick=function(){by('v67MusicTransfer').hidden=false;populateMusic();by('v67MusicTracks').scrollIntoView({behavior:'smooth',block:'nearest'});show('Chọn bài hát rồi bấm 🎬 Chèn vào MV TIMELINE')};
   by('v67MusicFullscreen').onclick=function(){document.body.classList.toggle('v67-music-expanded');this.textContent=document.body.classList.contains('v67-music-expanded')?'↙ THU NHỎ':'⛶ MỞ RỘNG'};
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('v67-music-expanded'))by('v67MusicFullscreen').click()});
   // Transition editor: apply to incoming media, not as an overlay that replaces video.
@@ -14879,6 +14897,188 @@ el('lipBudgetDuration').addEventListener('change',renderLip);renderLip();
 render();
 })();
 </script>
+
+<style id="mv10-style">
+#mv10Tab{display:none;max-width:1500px;margin:0 auto;padding:18px 16px 60px;font:14px system-ui;color:#182640}
+#mv10Tab *{box-sizing:border-box}#mv10Tab h2{font-size:24px;margin:0 0 5px}#mv10Tab .mvsub{color:#65758d;margin:0 0 18px}
+#mv10Tab .mvpanel{background:#fff;border:1px solid #d6e0ef;border-radius:16px;padding:16px;margin:12px 0;box-shadow:0 4px 20px #16365a0a}
+#mv10Tab .mvrow{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:10px 0}
+#mv10Tab button,#mv10Tab select,#mv10Tab input[type=number]{border:1px solid #c8d6e9;background:#f3f7ff;border-radius:9px;padding:9px 12px;color:#1d3558;font:inherit}
+#mv10Tab button{cursor:pointer;font-weight:650}#mv10Tab button:hover{border-color:#4673cc}
+#mv10Tab .mvprimary{background:#3158ce;color:white;border-color:#3158ce}#mv10Tab .mvdanger{color:#b62e2e;background:#fff1f1;border-color:#f5c4c4}
+#mv10Tab .mvchip{cursor:grab;background:#e8efff;border:1px solid #91afe9;padding:11px 16px;border-radius:10px;font-weight:750;touch-action:none}
+#mv10Tab .mvchip:active{cursor:grabbing}#mv10Tab .mvscroll{overflow-x:auto;overflow-y:hidden;border:1px solid #cfdbed;border-radius:12px;background:#f7faff;scrollbar-width:auto}
+#mv10Tab .mvtrack{height:188px;position:relative;min-width:100%;background:repeating-linear-gradient(90deg,transparent 0,transparent calc(var(--unit) - 1px),#dce5f2 calc(var(--unit) - 1px),#dce5f2 var(--unit))}
+#mv10Tab .mvruler{position:absolute;top:0;height:35px;width:100%;border-bottom:1px solid #cbd8eb;background:#eef4ff}
+#mv10Tab .mvtick{position:absolute;top:6px;font-size:11px;color:#61748d;white-space:nowrap}
+#mv10Tab .mvwave{position:absolute;top:42px;height:40px;width:100%;background:repeating-linear-gradient(90deg,#bfd5f5 0 2px,transparent 2px 6px);opacity:.35}
+#mv10Tab .mvblock{position:absolute;top:92px;height:68px;border-radius:9px;background:#cfe0ff;border:2px solid #668bd1;display:flex;align-items:center;justify-content:center;flex-direction:column;cursor:grab;user-select:none;touch-action:none;overflow:hidden;font-size:12px}
+#mv10Tab .mvblock.active{border:3px solid #ec3030;background:#fff0ee;box-shadow:0 0 0 3px #ff535333;z-index:3}
+#mv10Tab .mvblock.done{background:#d7f6e8;border-color:#30a275}#mv10Tab .mvblock.done.active{border-color:#ed3030}
+#mv10Tab .mvblock small{font-size:10px;color:#526783}
+#mv10Tab .mvgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+#mv10Tab textarea{width:100%;min-height:110px;padding:11px;border:1px solid #cad6e7;border-radius:9px;font:inherit;resize:vertical}
+#mv10Tab label{font-weight:650;color:#334d70}#mv10Tab .mvnote{font-size:12px;color:#61738b;line-height:1.6}
+#mv10Tab .mvstatus{padding:10px;background:#eff5ff;border-radius:9px;color:#345480;min-height:40px}
+#mv10Tab video{max-width:100%;width:100%;max-height:240px;background:#111;border-radius:10px}
+#mv10Tab .mvprice{font-weight:800;color:#17634b;font-size:18px}
+@media(max-width:750px){#mv10Tab .mvgrid{grid-template-columns:1fr}#mv10Tab{padding:12px 8px}#mv10Tab .mvchip{padding:9px 12px}}
+</style>
+
+<style id="mv11-resize-style">
+#mv10Tab .mvblock{overflow:visible;min-width:30px}
+#mv10Tab .mvblock .mv11handle{position:absolute;top:-2px;bottom:-2px;width:14px;z-index:8;cursor:ew-resize;touch-action:none;background:linear-gradient(90deg,#406dcc,#8fb6ff);border:1px solid #2854b6;box-shadow:0 1px 5px #24467a44}
+#mv10Tab .mvblock .mv11handle.left{left:-2px;border-radius:8px 0 0 8px}
+#mv10Tab .mvblock .mv11handle.right{right:-2px;border-radius:0 8px 8px 0}
+#mv10Tab .mvblock.active .mv11handle{background:linear-gradient(90deg,#dc2929,#ff8888);border-color:#ad1212}
+#mv10Tab .mvblock small{max-width:calc(100% - 26px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#mv11Live{color:#b52528;background:#fff3f1;border:1px solid #f0cbcb;border-radius:9px;padding:8px 12px;font-variant-numeric:tabular-nums}
+</style>
+<script id="mv10-app">
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const nav=document.createElement('button');nav.id='mv10Nav';nav.textContent='🎬 MV TIMELINE';($('tabBtnWan30')||$('tabBtnVid')).after(nav);
+const root=document.createElement('section');root.id='mv10Tab';
+root.innerHTML=`
+<h2>🎬 IDECO · MV TIMELINE</h2><p class="mvsub">Kéo khung thời gian lên audio → chọn khung viền đỏ → chọn model, ảnh, prompt → tạo từng cảnh → ghép MV.</p>
+<div class="mvpanel">
+ <div class="mvrow"><label>🎵 Nhạc nền <input id="mv10File" type="file" accept="audio/*"></label><button id="mv10Remove" class="mvdanger">✕ Xóa nhạc / thay nhạc</button><span id="mv10AudioName">Chưa chọn nhạc</span></div>
+ <audio id="mv10Audio" controls style="width:100%"></audio>
+ <div class="mvrow"><b>Kéo khung lên timeline:</b><span class="mvchip" draggable="true" data-len="15">15 giây</span><span class="mvchip" draggable="true" data-len="30">30 giây</span><span class="mvchip" draggable="true" data-len="60">60 giây</span><button id="mv10Snap" class="mvprimary">🧲 KHỚP TẤT CẢ KHUNG</button><button id="mv10Fill">＋ Phủ kín bài nhạc</button></div>
+ <div class="mvrow"><label>Độ phóng timeline <input id="mv10Zoom" type="range" min="6" max="32" value="13"></label><span id="mv10ZoomLabel">13 px/giây</span><button id="mv10Left">◀</button><button id="mv10Right">▶</button><span id="mv10Length"></span></div>
+ <div class="mvrow"><strong id="mv11Live" aria-live="polite">Chọn khung để điều chỉnh thời lượng</strong><span class="mvnote">← Kéo mép trái | Kéo thân khung | Kéo mép phải →</span></div><div class="mvscroll" id="mv10Scroll"><div class="mvtrack" id="mv10Track"><div class="mvruler" id="mv10Ruler"></div><div class="mvwave"></div><div id="mv10Blocks"></div></div></div>
+ <p class="mvnote">Thả khung lên nhạc; <b>rê hai mép xanh của khung để co giãn từng 0,1 giây</b> (15s → 25s → 30s), kéo giữa để di chuyển. Mép tự hít sát khung kề bên trong khoảng 0,6 giây. Bấm “Khớp tất cả khung” để nối các đoạn sát nhau. Khung đang chọn có <b style="color:#d32f2f">viền đỏ</b>. Timeline có thanh cuộn ngang cho bài nhạc dài.</p>
+</div>
+<div class="mvgrid">
+<div class="mvpanel"><h3>🎥 Tạo video cho khung đang chọn</h3><div id="mv10Selected">Chưa chọn khung</div>
+<div class="mvrow"><label>Model <select id="mv10Model"><option value="grok">Grok · image/text-to-video</option><option value="wan">WAN 3.0 · audio reference / nhép miệng</option><option value="omni">OmniHuman 2.0 · nhân vật nói/hát (cần API tương thích)</option></select></label><label><input type="checkbox" id="mv10Lip"> Nhép miệng / lồng tiếng</label></div>
+<div class="mvrow"><label>Ảnh nhân vật <input type="file" id="mv10Image" accept="image/*"></label></div><img id="mv10ImageView" style="max-width:180px;max-height:140px;border-radius:10px;display:none" alt="Ảnh tham chiếu">
+<p><label>Prompt cho cảnh này</label></p><textarea id="mv10Prompt" placeholder="Mô tả chuyển động, bối cảnh, góc máy, khóa khuôn mặt..."></textarea>
+<div class="mvrow"><label>Giá tham khảo (credit / 15s) <input id="mv10Rate" type="number" min="0" step=".1" value="120" style="width:95px"></label><label>VNĐ / credit <input id="mv10Vnd" type="number" min="0" step="1" value="130" style="width:95px"></label></div>
+<div id="mv10Cost" class="mvprice">Chọn khung để tính chi phí</div><p class="mvnote">Giá là ước tính theo mức anh nhập, không phải báo giá API trực tiếp. Model có thể giới hạn thời lượng mỗi tác vụ; khung 30/60s cần chia thành các tác vụ ngắn tương ứng.</p>
+<div class="mvrow"><button id="mv10Send" class="mvprimary">▶ Đưa khung sang công cụ tạo video</button><button id="mv10Delete" class="mvdanger">Xóa khung</button></div><div id="mv10Status" class="mvstatus">Sẵn sàng</div>
+</div>
+<div class="mvpanel"><h3>📼 Video kết quả & thư viện</h3><p class="mvnote">Gắn MP4 đã tạo vào khung tương ứng; lưu cục bộ trong IndexedDB để khôi phục khi mở lại trang. Không lưu file video lớn trong localStorage.</p>
+<label>Chèn video MP4 cho khung <input id="mv10VideoFile" type="file" accept="video/mp4,video/webm"></label><video id="mv10Preview" controls></video>
+<div class="mvrow"><button id="mv10ToClip">↗ Chuyển các clip vào timeline CLIP</button><button id="mv10Merge" class="mvprimary">🎬 Mở CLIP để ghép MV FULL</button></div>
+<div id="mv10Summary" class="mvstatus">Chưa có video.</div><p class="mvnote">Chức năng xuất MP4 cuối sử dụng bộ ghép ở tab CLIP hiện có; cần kiểm tra các clip và bấm xuất tại đó.</p>
+</div></div>`;
+($('tabWan30')||$('tabVid')).after(root);
+const oldSwitch=window.switchTab;window.switchTab=function(name){if(name==='mv10'){oldSwitch('vid');$('tabVid').style.display='none';$('gobarVid')?.style&&( $('gobarVid').style.display='none');$('tabBtnVid').classList.remove('on');$('tabWan30')&&($('tabWan30').style.display='none');root.style.display='block';nav.classList.add('on');document.body.classList.remove('video-workspace');return;}root.style.display='none';nav.classList.remove('on');return oldSwitch(name)};
+nav.onclick=()=>window.switchTab('mv10');
+const key='IDECO_MV_TIMELINE_V10', DB='IDECO_MV_MEDIA_V10';
+let state={blocks:[],selected:null,duration:0,audioName:'',audioId:null,zoom:13,rate:{grok:70,wan:120,omni:150}},db=null,objectURLs=[];
+try{const old=JSON.parse(localStorage.getItem(key));if(old&&Array.isArray(old.blocks))state={...state,...old}}catch(e){}
+const persist=()=>{try{localStorage.setItem(key,JSON.stringify(state))}catch(e){status('Không lưu được trạng thái: '+e.message)}};
+function status(t){$('mv10Status').textContent=t}
+function id(){return 'mv'+Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
+function mediaPut(k,blob){return new Promise((resolve,reject)=>{if(!db)return reject(Error('Kho media chưa sẵn sàng'));const tx=db.transaction('media','readwrite');tx.objectStore('media').put(blob,k);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)})}
+function mediaGet(k){return new Promise((resolve,reject)=>{if(!db)return resolve(null);const tx=db.transaction('media','readonly'),q=tx.objectStore('media').get(k);q.onsuccess=()=>resolve(q.result||null);q.onerror=()=>reject(q.error)})}
+function mediaDel(k){return new Promise((resolve,reject)=>{if(!db)return resolve();const tx=db.transaction('media','readwrite');tx.objectStore('media').delete(k);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)})}
+const req=indexedDB.open(DB,1);req.onupgradeneeded=()=>req.result.createObjectStore('media');req.onsuccess=async()=>{db=req.result;await restore();};req.onerror=()=>status('Không mở được kho lưu video. Kiểm tra quyền lưu của trình duyệt.');
+const selected=()=>state.blocks.find(b=>b.id===state.selected);
+function sorted(){return [...state.blocks].sort((a,b)=>a.start-b.start)}
+function overlap(a,b){return a.start<b.start+b.len-.001&&b.start<a.start+a.len-.001}
+const tenth=v=>Math.round(v*10)/10;
+const formatSec=v=>Number(v).toFixed(1)+'s';
+function neighbors(b){const others=sorted().filter(x=>x.id!==b.id),end=b.start+b.len;return {prev:others.filter(x=>x.start<=b.start+.0001).at(-1),next:others.find(x=>x.start>=end-.0001)};}
+function snapCandidate(value,points,threshold=.6){let best=value,d=threshold;for(const p of points)if(Math.abs(p-value)<=d){d=Math.abs(p-value);best=p;}return best;}
+function boundEnd(b){let limit=state.duration;for(const x of state.blocks)if(x.id!==b.id&&x.start>=b.start-.0001)limit=Math.min(limit,x.start);return limit;}
+function boundStart(b){let limit=0;for(const x of state.blocks)if(x.id!==b.id&&x.start+x.len<=b.start+b.len+.0001)limit=Math.max(limit,x.start+x.len);return limit;}
+function live(b){const s='▶ '+formatSec(b.start)+' → '+formatSec(b.start+b.len)+'  |  THỜI LƯỢNG '+formatSec(b.len);$('mv11Live').textContent=s;$('mv10Selected').textContent=s;price();}
+function add(len,start){if(!state.duration)return status('Hãy tải nhạc trước.');len=Math.min(len,state.duration);start=Math.max(0,Math.min(state.duration-len,Math.round(start*10)/10));const b={id:id(),start,len,model:'wan',prompt:'',lip:true};state.blocks.push(b);state.selected=b.id;persist();render();status('Đã thêm khung '+len+' giây.')}
+function render(){
+const z=state.zoom||13,dur=state.duration||180,w=Math.max(650,Math.ceil(dur*z)+30);
+$('mv10Track').style.width=w+'px';$('mv10Track').style.setProperty('--unit',(z*5)+'px');$('mv10Ruler').innerHTML='';
+for(let t=0;t<=dur;t+=5){const s=document.createElement('span');s.className='mvtick';s.style.left=(t*z+3)+'px';s.textContent=Math.floor(t/60)+':'+String(t%60).padStart(2,'0');$('mv10Ruler').appendChild(s)}
+$('mv10Blocks').innerHTML='';
+sorted().forEach((b,i)=>{const d=document.createElement('div');d.className='mvblock'+(b.id===state.selected?' active':'')+(b.videoId?' done':'');d.style.left=(b.start*z)+'px';d.style.width=Math.max(30,b.len*z-2)+'px';d.dataset.id=b.id;d.innerHTML='<span class="mv11handle left" data-edge="left" title="Kéo để đổi thời điểm bắt đầu"></span><b>🎬 '+(i+1)+' · '+formatSec(b.len)+'</b><small>'+formatSec(b.start)+' → '+formatSec(b.start+b.len)+' · '+(b.model||'wan').toUpperCase()+(b.videoId?' ✓':'')+'</small><span class="mv11handle right" data-edge="right" title="Kéo để đổi thời điểm kết thúc"></span>'; $('mv10Blocks').appendChild(d)});
+$('mv10AudioName').textContent=state.audioName||'Chưa chọn nhạc';$('mv10Length').textContent=state.duration?'Nhạc '+state.duration.toFixed(1)+'s · '+state.blocks.length+' khung':'';$('mv10Zoom').value=z;$('mv10ZoomLabel').textContent=z+' px/giây';
+const b=selected();$('mv10Selected').textContent=b?'Khung '+formatSec(b.start)+' → '+formatSec(b.start+b.len)+' · '+formatSec(b.len):'Chưa chọn khung';$('mv11Live').textContent=b?'▶ '+formatSec(b.start)+' → '+formatSec(b.start+b.len)+' | THỜI LƯỢNG '+formatSec(b.len):'Chọn khung để điều chỉnh thời lượng';
+$('mv10Model').disabled=!b;$('mv10Prompt').disabled=!b;$('mv10Lip').disabled=!b;$('mv10VideoFile').disabled=!b;
+if(b){$('mv10Model').value=b.model||'wan';$('mv10Prompt').value=b.prompt||'';$('mv10Lip').checked=!!b.lip;$('mv10Rate').value=state.rate[b.model]||0}else{$('mv10Prompt').value=''}
+price();$('mv10Summary').textContent=state.blocks.filter(b=>b.videoId).length+'/'+state.blocks.length+' khung đã có MP4 · Dữ liệu khung tự lưu';showPreview();
+}
+function price(){const b=selected();if(!b){$('mv10Cost').textContent='Chọn khung để tính chi phí';return}const cr=(+($('mv10Rate').value)||0)*b.len/15,vnd=cr*(+($('mv10Vnd').value)||0);$('mv10Cost').textContent='Ước tính '+cr.toLocaleString('vi-VN')+' credit ≈ '+Math.round(vnd).toLocaleString('vi-VN')+'đ';}
+async function showPreview(){const b=selected();if(b?.videoId){const blob=await mediaGet(b.videoId);if(selected()?.id!==b.id)return;if(blob){const old=$('mv10Preview').dataset.object;if(old)URL.revokeObjectURL(old);const u=URL.createObjectURL(blob);$('mv10Preview').src=u;$('mv10Preview').dataset.object=u;return}}$('mv10Preview').removeAttribute('src');$('mv10Preview').load()}
+async function restore(){if(state.audioId){const a=await mediaGet(state.audioId);if(a){$('mv10Audio').src=URL.createObjectURL(a);$('mv10Audio').load()}}render()}
+$('mv10File').onchange=async e=>{const f=e.target.files[0];if(!f)return;const u=URL.createObjectURL(f),a=new Audio();a.preload='metadata';a.src=u;try{await new Promise((ok,no)=>{a.onloadedmetadata=ok;a.onerror=()=>no(Error('Không đọc được audio'))});const duration=a.duration;if(!Number.isFinite(duration)||duration<=0)throw Error('Audio không có thời lượng hợp lệ');if(state.audioId)await mediaDel(state.audioId);const k='audio-'+id();await mediaPut(k,f);state.audioId=k;state.audioName=f.name;state.duration=duration;state.blocks=[];state.selected=null;persist();$('mv10Audio').src=u;render();status('Đã nạp nhạc '+f.name+'. Kéo khung 15/30/60s lên timeline.')}catch(err){status(err.message)}};
+
+window.IDECO_MV_IMPORT_AUDIO=async function(file){
+  if(!(file instanceof Blob)||!file.size)throw Error('Chưa có file âm thanh hợp lệ để chuyển sang MV.');
+  if(state.audioId&&(state.blocks.length||state.audioName)&&!confirm('MV đang có dự án nhạc "'+state.audioName+'". Chèn nhạc mới sẽ thay audio và xóa khung timeline hiện tại. Tiếp tục?'))return false;
+  const input=$('mv10File');
+  const dt=new DataTransfer();dt.items.add(file instanceof File?file:new File([file],'IDECO_Music.mp3',{type:file.type||'audio/mpeg'}));
+  input.files=dt.files;
+  await input.onchange({target:input});
+  if(state.audioName!==(file.name||'IDECO_Music.mp3'))throw Error('Không thể lưu bài nhạc vào kho MV.');
+  window.switchTab('mv10');
+  status('✓ Đã chèn bài nhạc từ ÂM NHẠC vào MV TIMELINE · '+state.audioName+' · '+state.duration.toFixed(2)+' giây. Kéo khung 15/30/60s lên timeline để bắt đầu.');
+  return true;
+};
+$('mv10Remove').onclick=async()=>{if(!confirm('Xóa nhạc hiện tại và các khung trên timeline? Video đã lưu sẽ bị xóa cùng dự án.'))return;for(const b of state.blocks){if(b.videoId)await mediaDel(b.videoId);if(b.imageId)await mediaDel(b.imageId)}if(state.audioId)await mediaDel(state.audioId);state.blocks=[];state.selected=null;state.audioId=null;state.audioName='';state.duration=0;persist();$('mv10File').value='';$('mv10Audio').removeAttribute('src');$('mv10Audio').load();render();status('Đã xóa nhạc. Có thể chèn nhạc mới.')};
+document.querySelectorAll('#mv10Tab .mvchip').forEach(chip=>{chip.addEventListener('dragstart',e=>e.dataTransfer.setData('text/mv-length',chip.dataset.len));chip.addEventListener('click',()=>add(+chip.dataset.len,sorted().reduce((v,b)=>Math.max(v,b.start+b.len),0)))});
+$('mv10Track').addEventListener('dragover',e=>e.preventDefault());$('mv10Track').addEventListener('drop',e=>{e.preventDefault();const n=+e.dataTransfer.getData('text/mv-length');if(n)add(n,(e.clientX-$('mv10Track').getBoundingClientRect().left)/(state.zoom||13))});
+let drag=null;
+const blocksEl=$('mv10Blocks');
+blocksEl.addEventListener('pointerdown',e=>{
+ const el=e.target.closest('.mvblock');if(!el||e.button>0)return;
+ const b=state.blocks.find(x=>x.id===el.dataset.id);if(!b)return;
+ state.selected=b.id;
+ const edge=e.target.closest('[data-edge]');const mode=edge?(edge.dataset.edge==='left'?'left':'right'):'move';
+ drag={id:b.id,pointerId:e.pointerId,x:e.clientX,origStart:b.start,origLen:b.len,mode};
+ blocksEl.setPointerCapture(e.pointerId);renderSelectionOnly();e.preventDefault();
+});
+function renderSelectionOnly(){blocksEl.querySelectorAll('.mvblock').forEach(x=>x.classList.toggle('active',x.dataset.id===state.selected));const b=selected();if(b){live(b);$('mv10Model').value=b.model||'wan';$('mv10Prompt').value=b.prompt||'';$('mv10Lip').checked=!!b.lip;$('mv10Rate').value=state.rate[b.model]||0;showPreview()}}
+blocksEl.addEventListener('pointermove',e=>{
+ if(!drag||e.pointerId!==drag.pointerId)return;
+ const b=state.blocks.find(x=>x.id===drag.id);if(!b)return;
+ const z=state.zoom||13,delta=(e.clientX-drag.x)/z,oldEnd=drag.origStart+drag.origLen,minLen=.5;
+ const others=state.blocks.filter(x=>x.id!==b.id);
+ if(drag.mode==='right'){
+   const nextStarts=others.filter(x=>x.start>=drag.origStart+.0001).map(x=>x.start);
+   const maxEnd=Math.min(state.duration,...nextStarts);
+   let end=snapCandidate(oldEnd+delta,[state.duration,...nextStarts]);
+   end=tenth(Math.max(drag.origStart+minLen,Math.min(maxEnd,end)));
+   b.start=drag.origStart;b.len=tenth(end-b.start);
+ }else if(drag.mode==='left'){
+   const prevEnds=others.filter(x=>x.start+x.len<=oldEnd+.0001).map(x=>x.start+x.len);
+   const minStart=Math.max(0,...prevEnds);
+   let begin=snapCandidate(drag.origStart+delta,[0,...prevEnds]);
+   begin=tenth(Math.max(minStart,Math.min(oldEnd-minLen,begin)));
+   b.start=begin;b.len=tenth(oldEnd-begin);
+ }else{
+   const target=snapCandidate(drag.origStart+delta,[0,...others.flatMap(x=>[x.start+x.len,x.start-drag.origLen])]);
+   let candidate=tenth(Math.max(0,Math.min(state.duration-drag.origLen,target)));
+   if(others.some(x=>overlap({start:candidate,len:drag.origLen},x))){
+     const valid=[0,...others.flatMap(x=>[x.start+x.len,x.start-drag.origLen])].filter(t=>t>=0&&t+drag.origLen<=state.duration&&!others.some(x=>overlap({start:t,len:drag.origLen},x)));
+     candidate=valid.length?valid.reduce((best,t)=>Math.abs(t-target)<Math.abs(best-target)?t:best,valid[0]):drag.origStart;
+   }
+   b.start=candidate;b.len=drag.origLen;
+ }
+ const el=blocksEl.querySelector('[data-id="'+b.id+'"]');if(el){el.style.left=(b.start*z)+'px';el.style.width=Math.max(30,b.len*z-2)+'px';el.querySelector('b').textContent='🎬 '+(sorted().findIndex(x=>x.id===b.id)+1)+' · '+formatSec(b.len);el.querySelector('small').textContent=formatSec(b.start)+' → '+formatSec(b.start+b.len)+' · '+(b.model||'wan').toUpperCase()+(b.videoId?' ✓':'');}
+ live(b);
+});
+function endDrag(e){if(!drag||e&&e.pointerId!==drag.pointerId)return;drag=null;persist();render();const b=selected();if(b)status('✓ Khung '+formatSec(b.start)+' → '+formatSec(b.start+b.len)+' · dài '+formatSec(b.len)+'; đã lưu.');}
+blocksEl.addEventListener('pointerup',endDrag);blocksEl.addEventListener('pointercancel',endDrag);
+
+$('mv10Snap').onclick=()=>{let t=0;sorted().forEach(b=>{b.start=Math.round(t*100)/100;t+=b.len});if(t>state.duration+.01)status('Lưu ý: tổng độ dài khung vượt nhạc '+(t-state.duration).toFixed(1)+'s; hãy xóa hoặc giảm khung cuối.');else status('Đã khớp '+state.blocks.length+' khung sát nhau từ 0s, không chồng lấn.');persist();render()};
+$('mv10Fill').onclick=()=>{if(!state.duration)return status('Chưa có nhạc');let t=sorted().reduce((v,b)=>Math.max(v,b.start+b.len),0);while(t<state.duration-1){const remain=state.duration-t,len=remain>=60?60:remain>=30?30:remain>=15?15:remain;const b={id:id(),start:t,len:Math.round(len*100)/100,model:'wan',prompt:'',lip:true};state.blocks.push(b);t+=len;if(state.blocks.length>500)break}state.selected=state.blocks.at(-1)?.id||null;persist();render();status('Đã phủ khung đến hết nhạc; khung cuối có thể ngắn hơn 15s.')};
+$('mv10Zoom').oninput=e=>{state.zoom=+e.target.value;persist();render()};$('mv10Left').onclick=()=>$('mv10Scroll').scrollBy({left:-500,behavior:'smooth'});$('mv10Right').onclick=()=>$('mv10Scroll').scrollBy({left:500,behavior:'smooth'});
+$('mv10Model').onchange=e=>{const b=selected();if(!b)return;b.model=e.target.value;$('mv10Rate').value=state.rate[b.model]||0;persist();render();};$('mv10Prompt').oninput=e=>{const b=selected();if(b){b.prompt=e.target.value;persist()}};$('mv10Lip').onchange=e=>{const b=selected();if(b){b.lip=e.target.checked;persist()}};$('mv10Rate').oninput=()=>{const b=selected();if(b)state.rate[b.model]=+($('mv10Rate').value)||0;persist();price()};$('mv10Vnd').oninput=price;
+$('mv10Delete').onclick=async()=>{const b=selected();if(!b)return;if(b.videoId)await mediaDel(b.videoId);if(b.imageId)await mediaDel(b.imageId);state.blocks=state.blocks.filter(x=>x.id!==b.id);state.selected=state.blocks[0]?.id||null;persist();render();status('Đã xóa khung')};
+$('mv10Image').onchange=async e=>{const b=selected(),f=e.target.files[0];if(!b||!f)return;const k='image-'+b.id;await mediaPut(k,f);b.imageId=k;persist();$('mv10ImageView').src=URL.createObjectURL(f);$('mv10ImageView').style.display='block';status('Đã lưu ảnh tham chiếu cho khung')};
+$('mv10VideoFile').onchange=async e=>{const b=selected(),f=e.target.files[0];if(!b||!f)return;const k='video-'+b.id;await mediaPut(k,f);b.videoId=k;persist();render();status('✓ Đã lưu MP4 cho khung '+b.start.toFixed(1)+'–'+(b.start+b.len).toFixed(1)+'s')};
+$('mv10Send').onclick=async()=>{const b=selected();if(!b)return status('Chọn khung viền đỏ trước');if(!state.audioId)return status('Chưa có nhạc');const audio=await mediaGet(state.audioId);if(!audio)return status('Không tìm thấy nhạc đã lưu');if(b.model==='wan'){if(typeof window.IDECO_WAN30_IMPORT!=='function')return status('Không tìm thấy cầu nối WAN trong bản này');if(b.len!==30&&b.len!==60)return status('WAN workflow hiện nhận khung 30s/60s. Khung 15s cần gửi qua tab Dựng Video hoặc cập nhật API riêng.');try{await window.IDECO_WAN30_IMPORT(audio,{seconds:b.len});window.switchTab('wan30studio');status('Đã chuyển nhạc sang WAN. Chọn đúng ảnh, prompt và kiểm tra đoạn trước khi tạo.')}catch(err){status('Chuyển WAN lỗi: '+err.message)}return}
+window.switchTab('vid');status('Đã mở Dựng Video. Chọn '+(b.model==='grok'?'Grok':'model OmniHuman tương thích')+' và đưa ảnh/prompt từ khung MV vào; cần tích hợp API model để gửi tự động.')};
+async function sendToClip(){if(typeof clipAddAudioFile!=='function'||typeof clipAddVideoFile!=='function')throw Error('Không có chức năng CLIP');const audio=await mediaGet(state.audioId);if(!audio)throw Error('Chưa có nhạc');const f=new File([audio],state.audioName||'MV-audio.wav',{type:audio.type||'audio/wav'});const track=clipAddAudioFile(f,'audio');if(track){track.start=0;track.duration=state.duration}let count=0;for(const b of sorted()){if(!b.videoId)continue;const blob=await mediaGet(b.videoId);if(!blob)continue;const f=new File([blob],'MV-'+Math.round(b.start)+'s.mp4',{type:blob.type||'video/mp4'});clipAddVideoFile(f);const item=clipTracks.visual[clipTracks.visual.length-1];if(item){item.start=b.start;item.duration=b.len;item.volume=0;count++;if(item.video)item.video.addEventListener('loadedmetadata',()=>{item.start=b.start;item.duration=Math.min(b.len,Number(item.video.duration)||b.len);item.volume=0;clipRenderAll()},{once:true})}}window.switchTab('clip');if(typeof clipRenderAll==='function')clipRenderAll();return count}
+$('mv10ToClip').onclick=async()=>{try{const n=await sendToClip();status('Đã chuyển '+n+' video và nhạc nền vào CLIP.')}catch(e){status(e.message)}};
+$('mv10Merge').onclick=async()=>{try{const n=await sendToClip();status('Đã chuyển '+n+' video sang CLIP. Kiểm tra timeline rồi bấm Xuất MP4 tại tab CLIP.')}catch(e){status(e.message)}};
+render();
+})();
+</script>
+
 </body>
 </html>
 <style>
@@ -15292,7 +15492,7 @@ let loadedFromStore=false,partRenderRecord=null;
 let workflowActiveRecord=null;
 const pauseMs=async(t)=>new Promise(ok=>setTimeout(ok,t));
 const plainError=e=>String(e?.message||e||'Lỗi không xác định');
-function wf(r){if(!r.workflow)r.workflow={stage:'Sẵn sàng',events:[],autoRetry:true,smartPrompt:true};return r.workflow}
+function wf(r){if(!r.workflow)r.workflow={stage:'Sẵn sàng',events:[],autoRetry:true,smartPrompt:true,faceLock:true,lipLock:true};return r.workflow}
 function wfLog(r,stage,detail='',kind='info'){
  if(!r)return;
  const f=wf(r);f.stage=stage;f.lastAt=Date.now();f.events.push({at:Date.now(),stage,detail:String(detail||''),kind});
@@ -15370,7 +15570,10 @@ const tab=document.createElement('div');tab.id='tabWan30';tab.style.display='non
 <p id="w30Cost"></p>
 <div class="w30-automation"><div class="w30-auto-head"><b>🤖 HUYỀN WAN · WORKFLOW TỰ ĐỘNG</b><span id="w30AutoState">Sẵn sàng</span></div>
 <p>Chạy tuần tự: kiểm tra audio → tạo cảnh 1 → lấy frame cuối → cảnh 2 → cảnh 3 → cảnh 4 → ghép MP4, không phải bấm tiếp từng đoạn.</p>
-<label><input id="w30SmartPrompt" type="checkbox" checked> Đạo diễn tự động bổ sung 4 prompt nhất quán (không ghi đè prompt đã sửa)</label>
+<label><input id="w30FaceLock" type="checkbox" checked> 🔒 Khóa khuôn mặt: giữ đúng tuổi, đường nét, tóc và kính theo ảnh gốc; không già hóa</label>
+<label><input id="w30LipLock" type="checkbox" checked> 🎤 Khóa khẩu hình: miệng bám âm tiết và khoảng nghỉ của audio, không hát/nói thêm</label>
+<small class="w30-help">Khóa bằng prompt giúp tăng độ nhất quán nhưng không thể bảo đảm 100% nhận diện hay lip-sync của model. Tác vụ đã gửi Kie không đổi prompt được.</small>
+<label><input id="w30SmartPrompt" type="checkbox" checked> Đạo diễn tự động bổ sung prompt nhất quán (không ghi đè prompt đã sửa)</label>
 <label><input id="w30AutoRetry" type="checkbox" checked> Tự thử lại lỗi mạng khi tải media / kiểm tra trạng thái Kie (không gửi trùng tác vụ tạo)</label>
 <label><input id="w30AutoMerge" type="checkbox" checked> Tự động ghép MP4 30s / 60s khi đủ video</label>
 <div class="w30-row"><button id="w30AutoRun" type="button" class="w30-auto-button">🤖 TẠO 60 GIÂY TỰ ĐỘNG · 1 CHẠM</button></div>
@@ -15430,7 +15633,7 @@ async function persist(){
  by('w30SaveState').textContent='Đã lưu '+new Date().toLocaleTimeString('vi-VN');
 }
 function saveSoon(){persist().catch(e=>{by('w30SaveState').textContent='Chưa lưu: '+e.message})}
-function make(s=30){const n=s===60?4:2;return {workflow:{stage:'Sẵn sàng',events:[],autoRetry:true,smartPrompt:true},id:uid(),seconds:s,name:'Audio mới',prompt:'',p1:'',p2:'',p3:'',p4:'',res:'480P',aspect:'16:9',parts:Array.from({length:n},()=>({})),audioParts:Array(n).fill(null),selected:true}}
+function make(s=30){const n=s===60?4:2;return {workflow:{stage:'Sẵn sàng',events:[],autoRetry:true,smartPrompt:true,faceLock:true,lipLock:true},id:uid(),seconds:s,name:'Audio mới',prompt:'',p1:'',p2:'',p3:'',p4:'',res:'480P',aspect:'16:9',parts:Array.from({length:n},()=>({})),audioParts:Array(n).fill(null),selected:true}}
 function cost(r){if(!r)return 0;return r.parts.reduce((n,p)=>n+(!p.id&&!p.blob&&!p.unknown?15*(r.res==='720P'?16:8):0),0)}
 function hasAudioParts(r){return !!(r&&r.audioParts&&r.audioParts.length>=slots(r)&&r.audioParts.slice(0,slots(r)).every(Boolean))}
 function stateOf(p){if(p.blob)return ['✓ Video đã tải','done'];if(p.url)return ['✓ Kie đã tạo video','done'];if(p.unknown)return ['? Chưa rõ kết quả gửi','fail'];if(p.status&&/thất bại|từ chối|lỗi/i.test(p.status))return ['✕ Lỗi tạo','fail'];if(p.id)return [p.state==='generating'?'● Đang tạo video':p.state==='queuing'||p.state==='waiting'?'◷ Trong hàng chờ':'● Đã gửi Kie','running'];return ['○ Chưa tạo','idle']}
@@ -15502,6 +15705,7 @@ function render(){
  renderLibrary();
  if(r){
   const f=wf(r),running=busy&&workflowActiveRecord===r,partsDone=r.parts.filter(p=>p.blob).length;
+  by('w30FaceLock').checked=f.faceLock!==false;by('w30LipLock').checked=f.lipLock!==false;
   by('w30SmartPrompt').checked=f.smartPrompt!==false;
   by('w30AutoRetry').checked=f.autoRetry!==false;
   by('w30AutoState').textContent=r.merged?'✓ Hoàn thành':running?'● Đang điều phối':f.stage||'Sẵn sàng';
@@ -15517,7 +15721,7 @@ function render(){
  }else{by('w30AutoRun').disabled=true}
  for(const id of ['w30New','w30Audio','w30Image','w30FromCut','w30ClearAudio','w30CheckAudio','w30Prompt','w30Resolution','w30Aspect','w30Continue','w30Recover','w30BuildPrompts'])by(id).disabled=busy;
  tab.querySelectorAll('input[name="w30mode"], [data-w30-prompt], #w30RecoverPart').forEach(el=>el.disabled=busy);
- by('w30SmartPrompt').disabled=busy;by('w30AutoRetry').disabled=busy;by('w30AutoMerge').disabled=busy;by('w30Run').disabled=busy||!r||!hasAudioParts(r);by('w30Merge').disabled=busy||!r||!r.parts.every(p=>p.blob);
+ by('w30FaceLock').disabled=busy;by('w30LipLock').disabled=busy;by('w30SmartPrompt').disabled=busy;by('w30AutoRetry').disabled=busy;by('w30AutoMerge').disabled=busy;by('w30Run').disabled=busy||!r||!hasAudioParts(r);by('w30Merge').disabled=busy||!r||!r.parts.every(p=>p.blob);
  by('w30Download').disabled=!r||!r.merged;by('w30JoinPreview').disabled=!r||!r.merged;
 }
 function openRecord(r){
@@ -15606,7 +15810,7 @@ async function joinParts(parts){
  for(let i=0;i<parts.length;i++)for(let k=0;k<ch;k++)raw.getChannelData(k).set(decoded[i].getChannelData(Math.min(k,decoded[i].numberOfChannels-1)).subarray(0,n),n*i);
  return wav(raw,0,n*parts.length);
 }
-function cloneDraft(r,s){const x=make(s||seconds(r));if(r){x.prompt=r.prompt||'';for(let i=0;i<4;i++)x[promptKey(i)]=r[promptKey(i)]||'';x.res=r.res||'480P';x.aspect=r.aspect||'16:9';x.image=r.image;x.continue=!!r.continue;x.workflow={stage:'Sẵn sàng',events:[],smartPrompt:wf(r).smartPrompt!==false,autoRetry:wf(r).autoRetry!==false};}records.push(x);return x}
+function cloneDraft(r,s){const x=make(s||seconds(r));if(r){x.prompt=r.prompt||'';for(let i=0;i<4;i++)x[promptKey(i)]=r[promptKey(i)]||'';x.res=r.res||'480P';x.aspect=r.aspect||'16:9';x.image=r.image;x.continue=!!r.continue;x.workflow={stage:'Sẵn sàng',events:[],smartPrompt:wf(r).smartPrompt!==false,autoRetry:wf(r).autoRetry!==false,faceLock:wf(r).faceLock!==false,lipLock:wf(r).lipLock!==false};}records.push(x);return x}
 async function clearAudio(which=null){
  by('w30AudioCheck').textContent='Đã thay/xóa audio: cần kiểm tra lại các đoạn trước khi gửi Kie.';
  if(busy)throw Error('Đang chạy tác vụ, chỉ sửa sau khi hoàn tất hoặc dừng chờ.');
@@ -15649,6 +15853,7 @@ function setMode(v){
 }
 window.IDECO_WAN_MODE=setMode;
 tab.querySelectorAll('input[name="w30mode"]').forEach(input=>input.addEventListener('change',()=>{if(input.checked)try{setMode(Number(input.value))}catch(e){message('✕ '+e.message);render()}}));
+for(const id of ['w30FaceLock','w30LipLock'])by(id).addEventListener('change',()=>{if(!current)return;if(hasStarted(current)){openRecord(current);return message('Khóa prompt chỉ áp dụng cho tác vụ mới. Hãy tạo Lượt mới để đổi khóa.')}wf(current)[id==='w30FaceLock'?'faceLock':'lipLock']=by(id).checked;saveSoon()});
 for(const id of ['w30SmartPrompt','w30AutoRetry'])by(id).addEventListener('change',()=>{if(current){wf(current)[id==='w30SmartPrompt'?'smartPrompt':'autoRetry']=by(id).checked;saveSoon()}});
 by('w30PromptEditors').addEventListener('change',e=>{const i=Number(e.target.dataset.w30Prompt);if(!Number.isInteger(i)||i<0||i>=4||!current)return;if(hasStarted(current)){openRecord(current);return message('Đã gửi tạo video. Không thể thay prompt của tác vụ đã gửi; dùng Lượt mới.')}current[promptKey(i)]=e.target.value;saveSoon()});
 by('w30BuildPrompts').onclick=()=>{
@@ -15717,7 +15922,13 @@ async function upload(blob,name){const d=await fetch(UPLOAD_URL,{method:'POST',h
 async function download(u){return new Promise((ok,no)=>{let done=false;const timer=setTimeout(()=>{done=true;no(Error('Không tải được video. Bấm tiếp tục để tải lại, không tạo lại.'))},60000);fetchBlobSmart(u,b=>{if(done)return;clearTimeout(timer);b&&b.size?ok(b):no(Error('Video tải về rỗng'))},e=>{if(done)return;done=true;clearTimeout(timer);no(Error('Không tải được video: '+(e&&e.message||e||'lỗi kết nối')+'. Bấm tiếp tục để tải lại.'))})})}
 async function video(blob){const v=document.createElement('video');v.preload='auto';v.muted=true;v.playsInline=true;v.src=url(blob);await new Promise((ok,no)=>{const timer=setTimeout(()=>no(Error('Không đọc được video')),20000);v.onloadedmetadata=()=>{clearTimeout(timer);ok()};v.onerror=()=>{clearTimeout(timer);no(Error('Video không đọc được'))}});if(!Number.isFinite(v.duration)||v.duration<=0)throw Error('Thời lượng video không hợp lệ');return v}
 async function lastFrame(blob){const v=await video(blob);try{await new Promise((ok,no)=>{const timer=setTimeout(()=>no(Error('Không trích được khung hình cuối')),15000);v.onseeked=()=>{clearTimeout(timer);ok()};v.currentTime=Math.max(0,v.duration-.08)});const c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);return await new Promise((ok,no)=>c.toBlob(b=>b?ok(b):no(Error('Ảnh cuối rỗng')),'image/jpeg',.95))}finally{v.removeAttribute('src');v.load()}}
-function payload(r,i,img,audio){return {model:'wan/3-0-video',input:{duration:15,resolution:r.res,aspect_ratio:r.aspect,audio:true,reference_image_urls:[img],reference_audio_urls:[audio],prompt:[r.prompt,r[promptKey(i)]||partHint(i),'Image1 is the visual reference. Audio1 contains the exact dialogue or singing for this 15-second segment. Preserve the voice, words and timing. Synchronize mouth movements to Audio1. Keep the same character identity, clothing, scene, lighting and camera direction. No extra speech or music.',i===0?'Begin the performance naturally; end with a stable pose and no fade.':'Continue directly from the pose in Image1, the final frame of segment '+i+'. Keep the same identity, costume, set, movement and camera trajectory. Never reset or repeat previous movement. No new intro, jump cut, scene reset, fade or hard transition.'].filter(Boolean).join('\n').slice(0,20000)}}}
+function payload(r,i,img,audio){
+ const f=wf(r);
+ const face=f.faceLock===false?'':`IDENTITY AND AGE LOCK — HIGH PRIORITY: Image1 is the exact identity reference. Preserve the subject’s apparent age EXACTLY as pictured, never make them older. Keep the same facial bone structure, jawline, cheeks, eye shape, eyelids, nose, lips, skin texture, hairline, hairstyle, glasses (if present), facial proportions and recognizable features. Do not add wrinkles, forehead lines, eye bags, sagging skin, gray hair, beard, or age-related changes not present in the reference. No beauty-filter face replacement or identity drift. Photorealistic and natural, same person in every frame. For continuation frames, keep identity consistent with the ORIGINAL reference image, not only the previous generated frame.`;
+ const lips=f.lipLock===false?'':`AUDIO-LOCKED LIP SYNC — HIGH PRIORITY: Audio1 is the ONLY source of spoken or sung content. Precisely align mouth opening, closing, jaw and lip shapes to the audible phonemes and syllable timing of Audio1. At pauses, breaths and silence the mouth rests naturally closed or relaxed. No invented words, extra singing, delayed mouth motion, random lip movements, dubbed speech or off-timing expressions. Maintain stable head orientation and a clear unobstructed view of the lips whenever practical. Do not alter the supplied audio or invent background vocals.`;
+ const continuity=i===0?'Begin naturally from the reference image, with a stable pose and no fade.':'Continue from Image1 (the last frame of the previous segment) with consistent camera movement, clothing, lighting and scene. Preserve the ORIGINAL character identity and apparent age from the first reference image; do not amplify age artifacts from previous generations. No new intro, jump cut, reset or fade.';
+ return {model:'wan/3-0-video',input:{duration:15,resolution:r.res,aspect_ratio:r.aspect,audio:true,reference_image_urls:[img],reference_audio_urls:[audio],prompt:[face,lips,r.prompt,r[promptKey(i)]||partHint(i),'Image1 provides the visual reference; Audio1 provides the exact voice and timing for this segment. Maintain the same person, costume, lighting and camera direction.',continuity].filter(Boolean).join('\n\n').slice(0,20000)}}
+}
 window.IDECO_WAN30_CORE.payload=payload;
 async function ensurePart(r,i,image){
  const p=r.parts[i];if(p.blob)return;
