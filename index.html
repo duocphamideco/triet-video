@@ -15067,7 +15067,7 @@ root.innerHTML=`
 <div class="mvpanel">
  <div class="mvrow"><label>🎵 Nhạc nền <input id="mv10File" type="file" accept="audio/*"></label><button id="mv10Remove" class="mvdanger">✕ Xóa nhạc / thay nhạc</button><span id="mv10AudioName">Chưa chọn nhạc</span></div>
  <audio id="mv10Audio" controls style="width:100%"></audio>
- <div class="mvrow"><b>Kéo khung lên timeline:</b><span class="mvchip" draggable="true" data-len="15">15 giây</span><span class="mvchip" draggable="true" data-len="30">30 giây</span><span class="mvchip" draggable="true" data-len="60">60 giây</span><button id="mv10Snap" class="mvprimary">🧲 KHỚP TẤT CẢ KHUNG</button><button id="mv10Fill">＋ Phủ kín bài nhạc</button></div>
+ <div class="mvrow"><b>Kéo khung lên timeline:</b><span class="mvchip" draggable="true" data-len="14" data-model="wan" style="background:#d8f4e5;border-color:#45a67b;color:#185941">🎤 WAN · 14 giây (mặc định)</span><span class="mvchip" draggable="true" data-len="15">15 giây</span><span class="mvchip" draggable="true" data-len="30">30 giây</span><span class="mvchip" draggable="true" data-len="60">60 giây</span><button id="mv10Snap" class="mvprimary">🧲 KHỚP TẤT CẢ KHUNG</button><button id="mv10Fill">＋ Phủ kín bài nhạc</button></div>
  <div class="mvrow"><label>Độ phóng timeline <input id="mv10Zoom" type="range" min="6" max="32" value="13"></label><span id="mv10ZoomLabel">13 px/giây</span><button id="mv10Left">◀</button><button id="mv10Right">▶</button><span id="mv10Length"></span></div>
  <div class="mvrow"><strong id="mv11Live" aria-live="polite">Chọn khung để điều chỉnh thời lượng</strong><span class="mvnote">↔ Block chưa tạo được chỉnh. 🔒 Block đã bấm Generate sẽ khóa vị trí & thời lượng để giữ khớp tiếng; muốn chỉnh phải xóa và tạo block mới.</span></div><div class="mvscroll" id="mv10Scroll"><div class="mvtrack" id="mv10Track"><div class="mvruler" id="mv10Ruler"></div><div class="mvwave"></div><div id="mv10Blocks"></div><div id="mv14VideoLane" style="position:absolute;left:0;top:172px;width:100%;height:53px;pointer-events:none"></div></div></div>
  <p class="mvnote">Thả khung lên nhạc; <b>rê hai mép xanh của khung để co giãn từng 0,1 giây</b> (15s → 25s → 30s), kéo giữa để di chuyển. Mép tự hít sát khung kề bên trong khoảng 0,6 giây. Bấm “Khớp tất cả khung” để nối các đoạn sát nhau. Khung đang chọn có <b style="color:#d32f2f">viền đỏ</b>. Timeline có thanh cuộn ngang cho bài nhạc dài.</p>
@@ -15132,7 +15132,7 @@ function boundEnd(b){let limit=state.duration;for(const x of state.blocks)if(x.i
 function boundStart(b){let limit=0;for(const x of state.blocks)if(x.id!==b.id&&x.start+x.len<=b.start+b.len+.0001)limit=Math.max(limit,x.start+x.len);return limit;}
 function live(b){const s='▶ '+formatSec(b.start)+' → '+formatSec(b.start+b.len)+'  |  THỜI LƯỢNG '+formatSec(b.len);$('mv11Live').textContent=s;$('mv10Selected').textContent=s;price();}
 function mv30LockedNote(b){return '🔒 ĐÃ KHÓA mốc '+formatSec(b.lockedStart??b.generatedStart??b.start)+' → '+formatSec((b.lockedStart??b.generatedStart??b.start)+(b.lockedLen??b.generatedLen??b.len))+'. Video/Audio đã gắn với khung này; muốn đổi vị trí hoặc thời lượng, hãy xóa block rồi tạo block mới.';}
-function add(len,start){if(!state.duration)return status('Hãy tải nhạc trước.');len=Math.min(len,state.duration);start=Math.max(0,Math.min(state.duration-len,Math.round(start*10)/10));const b={id:id(),start,len,model:'grok',prompt:'',lip:false};state.blocks.push(b);state.selected=b.id;persist();render();status('Đã thêm khung '+len+' giây.')}
+function add(len,start){if(!state.duration)return status('Hãy tải nhạc trước.');len=Math.min(len,state.duration);start=Math.max(0,Math.min(state.duration-len,Math.round(start*10)/10));const defaultWan=Math.abs(len-14)<.001;const b={id:id(),start,len,model:defaultWan?'wan':'grok',prompt:'',lip:defaultWan};state.blocks.push(b);state.selected=b.id;persist();render();status('Đã thêm khung '+len+' giây.')}
 function render(){
 const z=state.zoom||13,dur=state.duration||180,w=Math.max(650,Math.ceil(dur*z)+30);
 $('mv10Track').style.width=w+'px';$('mv10Track').style.setProperty('--unit',(z*5)+'px');$('mv10Ruler').innerHTML='';
@@ -15238,7 +15238,15 @@ blocksEl.addEventListener('pointerup',endDrag);blocksEl.addEventListener('pointe
 $('mv10Snap').onclick=()=>{if(state.blocks.some(mv30Locked)){return status('🔒 Đang có block đã tạo video/đã gửi tác vụ. Không thể KHỚP TẤT CẢ vì sẽ làm lệch tiếng. Muốn bố trí lại, xóa block đã khóa rồi tạo lại.');}let t=0;sorted().forEach(b=>{b.start=Math.round(t*100)/100;t+=b.len});if(t>state.duration+.01)status('Lưu ý: tổng độ dài khung vượt nhạc '+(t-state.duration).toFixed(1)+'s; hãy xóa hoặc giảm khung cuối.');else status('Đã khớp '+state.blocks.length+' khung sát nhau từ 0s, không chồng lấn.');persist();render()};
 $('mv10Fill').onclick=()=>{if(!state.duration)return status('Chưa có nhạc');let t=sorted().reduce((v,b)=>Math.max(v,b.start+b.len),0);while(t<state.duration-1){const remain=state.duration-t,len=remain>=60?60:remain>=30?30:remain>=15?15:remain;const b={id:id(),start:t,len:Math.round(len*100)/100,model:'grok',prompt:'',lip:false};state.blocks.push(b);t+=len;if(state.blocks.length>500)break}state.selected=state.blocks.at(-1)?.id||null;persist();render();status('Đã phủ khung đến hết nhạc; khung cuối có thể ngắn hơn 15s.')};
 $('mv10Zoom').oninput=e=>{state.zoom=+e.target.value;persist();render()};$('mv10Left').onclick=()=>$('mv10Scroll').scrollBy({left:-500,behavior:'smooth'});$('mv10Right').onclick=()=>$('mv10Scroll').scrollBy({left:500,behavior:'smooth'});
-$('mv10Model').onchange=e=>{const b=selected();if(!b)return;if(mv30Locked(b)){e.target.value=b.model;return status('🔒 Không thể đổi model sau khi đã tạo video; xóa block và tạo block mới.');}b.model=e.target.value;if(b.model==='omni'){b.lip=true;$('mv18AudioMode').value='lip';$('mv10Lip').checked=true;if(b.mv20Source==='text')b.mv20Source='upload';}$('mv10Rate').value=b.model==='grok'?($('mv14Res').value==='720p'?4.5:2.4):(b.model==='omni'?14:(b.resolution==='720p'?16:8));persist();render();};$('mv10Prompt').oninput=e=>{const b=selected();if(b){b.prompt=e.target.value;persist()}};$('mv10Lip').onchange=e=>{const b=selected();if(b){if(mv30Locked(b)){e.target.checked=!!b.lip;return status(mv30LockedNote(b));}b.lip=e.target.checked;$('mv18AudioMode').value=b.lip?'lip':'silent';persist()}};
+$('mv10Model').onchange=e=>{const b=selected();if(!b)return;if(mv30Locked(b)){e.target.value=b.model;return status('🔒 Không thể đổi model sau khi đã tạo video; xóa block và tạo block mới.');}b.model=e.target.value;
+ if(b.model==='wan'){
+  // 14s is the default for NEW / unsent WAN blocks; never move already generated blocks.
+  const target=14, maxLen=Math.max(0,Math.min(state.duration-b.start,...state.blocks.filter(x=>x.id!==b.id&&x.start>=b.start).map(x=>x.start-b.start)));
+  if(maxLen>=target-.001){b.len=target;status('🎤 WAN mặc định 14 giây. Block được giữ nguyên mốc bắt đầu.');}
+  else{status('Không đủ 14 giây trống tại vị trí này; giữ '+b.len+' giây. Xóa/đổi vị trí block chưa tạo nếu cần.');}
+  b.lip=true;$('mv18AudioMode').value='lip';$('mv10Lip').checked=true;
+ }
+ if(b.model==='omni'){b.lip=true;$('mv18AudioMode').value='lip';$('mv10Lip').checked=true;if(b.mv20Source==='text')b.mv20Source='upload';}$('mv10Rate').value=b.model==='grok'?($('mv14Res').value==='720p'?4.5:2.4):(b.model==='omni'?14:(b.resolution==='720p'?16:8));persist();render();};$('mv10Prompt').oninput=e=>{const b=selected();if(b){b.prompt=e.target.value;persist()}};$('mv10Lip').onchange=e=>{const b=selected();if(b){if(mv30Locked(b)){e.target.checked=!!b.lip;return status(mv30LockedNote(b));}b.lip=e.target.checked;$('mv18AudioMode').value=b.lip?'lip':'silent';persist()}};
 $('mv18AudioMode').onchange=e=>{const b=selected();if(!b)return;if(mv30Locked(b)){e.target.value=b.lip?'lip':'silent';return status(mv30LockedNote(b));} if(b.model==='omni'&&e.target.value==='silent'){e.target.value='lip';status('OmniHuman chuyên tạo nhân vật theo audio. Muốn video hoạt cảnh không lồng tiếng, chọn Grok hoặc WAN.');return;}b.lip=e.target.value==='lip';$('mv10Lip').checked=b.lip;persist();mv18Explain();};
 $('mv18Aspect').onchange=e=>{const b=selected();if(!b)return;if(mv30Locked(b)){e.target.value=b.aspect||'16:9';return status(mv30LockedNote(b));}b.aspect=e.target.value;persist();mv18Explain();};
 function mv18Explain(){const b=selected();if(!b)return;const a=b.aspect||'16:9';let note='Tỷ lệ '+a+' được lưu riêng cho khung này.';if(a==='9:19')note+=' API hiện không nhận 9:19; sẽ yêu cầu 9:16 và cần crop khi xuất.';if(b.model==='wan'&&a==='2:3')note+=' WAN không nhận 2:3; sẽ yêu cầu 3:4 và cần crop khi xuất.';if(b.model==='omni')note+=' OmniHuman chuyên nhép miệng; chọn chế độ hát để tạo.';$('mv18AspectInfo').textContent=note;}
@@ -15383,7 +15391,10 @@ function mv15WavSlice(buffer,start,seconds,wan){
  // V21: WAN requires <=15s; OmniHuman supports 4-300s and requires audio <=15 MB.
  // Do not speed up or truncate OmniHuman audio. If lengthy, downmix to 22.05 kHz mono
  // so even a 300s PCM WAV is under 15 MB while preserving the exact source duration.
- const audioSeconds=wan?Math.min(seconds,14.75):seconds;
+ // V36: NEVER speed up a 15s vocal sample to 14.75s. That breaks syllable timing
+ // against the original audio playing on the MV timeline. Trim only at the end
+ // if the provider rejects exact 15.000s; keep all earlier samples unchanged.
+ const audioSeconds=wan?Math.min(seconds,14.98):seconds;
  const longOmni=!wan && (srcCount*2*Math.min(2,buffer.numberOfChannels)+44>14*1024*1024);
  const outRate=longOmni?22050:sr,channels=longOmni?1:Math.min(2,buffer.numberOfChannels);
  const outCount=Math.min(Math.round(audioSeconds*outRate),Math.floor(srcCount*outRate/sr));
@@ -15391,7 +15402,7 @@ function mv15WavSlice(buffer,start,seconds,wan){
  function write(t,at){for(let i=0;i<t.length;i++)v.setUint8(at+i,t.charCodeAt(i))}
  write('RIFF',0);v.setUint32(4,ab.byteLength-8,true);write('WAVEfmt ',8);v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,channels,true);
  v.setUint32(24,outRate,true);v.setUint32(28,outRate*channels*2,true);v.setUint16(32,channels*2,true);v.setUint16(34,16,true);write('data',36);v.setUint32(40,outCount*channels*2,true);
- const gain=wan?srcCount/outCount:sr/outRate;let offset=44;
+ const gain=sr/outRate;let offset=44; // no time compression, no pitch/speed change
  for(let i=0;i<outCount;i++)for(let ch=0;ch<channels;ch++){
   const idx=begin+i*gain,lo=Math.floor(idx),hi=Math.min(buffer.length-1,lo+1),frac=idx-lo;
   let x=0;const sourceChannels=longOmni?buffer.numberOfChannels:1;
@@ -15423,8 +15434,27 @@ async function mv15CreateTask(b,seg,i){
  if(!isWan && (seg.length<4||seg.length>300))throw Error('OmniHuman chỉ nhận audio 4–300 giây mỗi tác vụ.');
  if(wav.size>15*1024*1024)throw Error('Audio OmniHuman vượt 15 MB; cần nén audio trước khi gửi.');
  mv14State('Đoạn '+(i+1)+'/'+b.segments.length+' · '+(isWan?'WAN':'OmniHuman')+' audio '+wav.size.toLocaleString('vi-VN')+' bytes · '+seg.length.toFixed(2)+' giây; đang upload');
- if(!seg.audioRemoteUrl){seg.audioRemoteUrl=await mv15Upload(wav,'mv_'+b.id+'_'+i+'.wav',isWan);persist()}}
- const image=mv20UsesImage(b)?await mv14ImageURL(b):null;
+ if(!seg.audioRemoteUrl){seg.audioRemoteUrl=await mv15Upload(wav,'mv_'+b.id+'_'+i+'.wav',isWan);seg.sourceAudioOffset=offset;seg.sourceAudioLength=seg.length;seg.referenceAudioDuration=isWan?Math.min(seg.length,14.98):seg.length;seg.sourceAudioId=state.audioId;persist()}
+ else if(seg.sourceAudioId&&seg.sourceAudioId!==state.audioId)throw Error('Audio timeline đã đổi so với bản đã upload, không gửi task với nhạc cũ.');
+ }
+ // V36: lip-sync WAN must use exactly ONE protagonist image, not an automatically
+ // collaged set of multiple faces/keyframes. Fetch the primary file directly.
+ let image=null;
+ if(mv20UsesImage(b)){
+   if(isWan && b.lip){
+     await mv19EnsureReferenceImage(b);
+     const primary=await mediaGet(b.imageId);
+     if(!primary?.size)throw Error('Ảnh chính của block chưa được lưu. Hãy chọn frame/ảnh chính và kiểm tra lại.');
+     const key=(b.mv36WanPrimaryURLFor===b.imageId&&b.mv36WanPrimaryURL)||null;
+     if(key)image=key;
+     else{
+       mv14State('WAN nhép miệng · đang tải duy nhất ảnh CHÍNH của nhân vật, không gộp ảnh phụ...');
+       const url=await mv15Upload(primary,'mv36_main_face_'+b.id+'.'+(primary.type?.includes('png')?'png':'jpg'),true);
+       b.mv36WanPrimaryURLFor=b.imageId;b.mv36WanPrimaryURL=url;persist();
+       image=url;
+     }
+   }else image=await mv14ImageURL(b);
+ }
  const basePrompt=(b.prompt||'').trim();
  // Kie OmniHuman 2.0: optional prompt <=300 characters. No timeline notes,
  // continuity text or English boilerplate may be appended to OmniHuman's prompt.
@@ -15445,7 +15475,7 @@ async function mv15CreateTask(b,seg,i){
    {image_urls:[image],audio_url:seg.audioRemoteUrl,...(prompt?{prompt}:{}),enable_watermark:false};
  // V26: record what was genuinely sent. 'audio:true' alone is NOT lip sync;
  // reference_audio_urls supplies the 15s Audio1 reference in the WAN reference workflow.
- if(isWan){seg.sentLip=!!b.lip;seg.sentAudioURL=b.lip?seg.audioRemoteUrl:null;seg.sentImageURL=image||null;seg.referenceVerified=!!(!b.lip||(seg.sentAudioURL&&seg.sentImageURL));seg.sentPayloadMode=b.lip?'reference-to-video':'normal';persist();}
+ if(isWan){seg.sentLip=!!b.lip;seg.sentAudioURL=b.lip?seg.audioRemoteUrl:null;seg.sentImageURL=image||null;seg.referenceVerified=!!(!b.lip||(seg.sentAudioURL&&seg.sentImageURL));seg.sentPayloadMode=b.lip?'reference-to-video':'normal';seg.sentAudioVersion='v36-no-speedup';persist();}
  const h=isWan?wanHeaders():headers();
  const r=await fetch(API_BASE+'/api/v1/jobs/createTask',{method:'POST',headers:h,body:JSON.stringify({model,input})});
  const d=await r.json();if(!r.ok||Number(d.code)!==200||!d.data?.taskId)throw Error(d.msg||'Gửi yêu cầu '+model+' thất bại');
@@ -15768,7 +15798,7 @@ async function mv32SyncGrokSegment(b,i,recover){
  await mediaPut(key,blob);
  seg.lipSyncVideoId=key;seg.videoId=key;persist();
  if(selected()?.id===b.id){render();await mv14StageRender();}
- mv32Info('✓ Đã khớp môi theo audio '+offset.toFixed(2)+'–'+(offset+seg.length).toFixed(2)+'s; tự đưa MP4 kết quả vào preview của block.');
+ mv32Info('✓ Đã nhận MP4 sau hậu kỳ Lip-sync theo audio '+offset.toFixed(2)+'–'+(offset+seg.length).toFixed(2)+'s và đưa vào preview. Anh cần xem lại độ khớp môi thực tế.');
 }
 async function mv32Run(recover,auto=false){
  const b=selected();
@@ -15867,10 +15897,68 @@ $('mv22Restore').onclick=async()=>{
 // MV state stays in localStorage; the actual MP4 blobs stay in IndexedDB.
 $('mv22Segment').addEventListener('focus',mv22Render);
 setTimeout(mv22Render,300);
-async function sendToClip(){if(typeof clipAddAudioFile!=='function'||typeof clipAddVideoFile!=='function')throw Error('Không có chức năng CLIP');const audio=await mediaGet(state.audioId);if(!audio)throw Error('Chưa có nhạc');const f=new File([audio],state.audioName||'MV-audio.wav',{type:audio.type||'audio/wav'});const track=clipAddAudioFile(f,'audio');if(track){track.start=0;track.duration=state.duration}let count=0;for(const b of sorted()){let at=b.start;const clips=b.segments?.filter(x=>x.videoId)||[];if(!clips.length&&b.videoId)clips.push({videoId:b.videoId,length:b.len});for(const [i,seg] of clips.entries()){const blob=await mediaGet(seg.videoId);if(!blob)continue;const f=new File([blob],'MV-'+Math.round(at*10)/10+'s-'+i+'.mp4',{type:blob.type||'video/mp4'});clipAddVideoFile(f);const item=clipTracks.visual[clipTracks.visual.length-1];if(item){const targetAt=at,targetLen=Math.min(seg.length,b.start+b.len-at);item.start=targetAt;item.duration=targetLen;item.volume=0;count++;if(item.video)item.video.addEventListener('loadedmetadata',()=>{item.start=targetAt;item.duration=Math.min(targetLen,Number(item.video.duration)||targetLen);item.volume=0;clipRenderAll()},{once:true})}at+=seg.length}}window.switchTab('clip');if(typeof clipRenderAll==='function')clipRenderAll();return count}
-
-$('mv10ToClip').onclick=async()=>{try{const n=await sendToClip();status('Đã chuyển '+n+' video và nhạc nền vào CLIP.')}catch(e){status(e.message)}};
-$('mv10Merge').onclick=async()=>{try{const n=await sendToClip();status('Đã chuyển '+n+' video sang CLIP. Kiểm tra timeline rồi bấm Xuất MP4 tại tab CLIP.')}catch(e){status(e.message)}};
+/* V38 — Only take soundtrack intervals which have an actual saved video.
+   The export timeline is COMPACT: no audio-only intervals, no blank gaps.
+   We never pass full-song audio to CLIP, and do not mutate source MV blocks. */
+async function sendToClip(){
+ if(typeof clipAddAudioFile!=='function'||typeof clipAddVideoFile!=='function'||typeof clipRenderAll!=='function')throw Error('Không tìm thấy bộ dựng CLIP');
+ const segments=[];
+ for(const b of sorted()){
+  let sourceAt=Number(b.start)||0;
+  const end=(Number(b.start)||0)+(Number(b.len)||0);
+  if(Array.isArray(b.segments)&&b.segments.length){
+   for(let i=0;i<b.segments.length;i++){
+    const seg=b.segments[i];
+    const length=Math.max(0,Math.min(Number(seg.length)||0,end-sourceAt));
+    if(seg.videoId&&length>.05)segments.push({sourceAt,length,videoId:seg.videoId,blockId:b.id,part:i+1});
+    sourceAt+=Math.max(0,Number(seg.length)||0);
+   }
+  }else if(b.videoId && Number(b.len)>.05){
+   segments.push({sourceAt,length:Number(b.len),videoId:b.videoId,blockId:b.id,part:1});
+  }
+ }
+ if(!segments.length)throw Error('Chưa có video hoàn thành trên MV TIMELINE để chuyển sang CLIP.');
+ // Preflight all files before clearing/replacing CLIP, so failure cannot erase an editing project.
+ const decoded=await mv15DecodedAudio();
+ const entries=[];
+ for(const seg of segments){
+  const video=await mediaGet(seg.videoId);
+  if(!video?.size)throw Error('Video ở mốc '+seg.sourceAt.toFixed(2)+'s đã mất khỏi bộ nhớ. Không thay đổi CLIP.');
+  if(seg.sourceAt+seg.length>decoded.duration+.04)throw Error('Âm thanh mốc '+seg.sourceAt.toFixed(2)+'s vượt độ dài bài nhạc.');
+  const audio=mv15WavSlice(decoded,seg.sourceAt,seg.length,false); // unaltered speed and original clock offset
+  entries.push({...seg,video,audio});
+ }
+ const existing=Object.values(clipTracks).reduce((n,x)=>n+(Array.isArray(x)?x.length:0),0);
+ if(existing && !confirm('CLIP đang có '+existing+' thành phần. Thay timeline CLIP bằng '+entries.length+' đoạn video và ĐÚNG các đoạn nhạc tương ứng? Dự án MV nguồn vẫn giữ nguyên.'))return 0;
+ // Both tracks are reset together to prevent full-song or old audio leaking into export.
+ for(const lane of Object.keys(clipTracks)) if(Array.isArray(clipTracks[lane]))clipTracks[lane].length=0;
+ let cursor=0;
+ for(let i=0;i<entries.length;i++){
+  const e=entries[i],position=cursor,duration=e.length;
+  const suffix=e.sourceAt.toFixed(2)+'-'+(e.sourceAt+duration).toFixed(2)+'s';
+  const vf=new File([e.video],'MV-VIDEO-'+suffix+'-'+(i+1)+'.mp4',{type:e.video.type||'video/mp4'});
+  clipAddVideoFile(vf);
+  const vi=clipTracks.visual[clipTracks.visual.length-1];
+  if(!vi)throw Error('Không thêm được video '+(i+1)+' vào CLIP');
+  vi.start=position;vi.duration=duration;vi.volume=0;vi.trimStart=0;
+  // clipAddVideoFile asynchronously fills duration from metadata. Keep source interval authoritative.
+  const fixVideo=()=>{vi.start=position;vi.duration=Math.min(duration,Math.max(.1,Number(vi.sourceDuration)||duration));vi.volume=0;clipRenderAll()};
+  if(vi.video){vi.video.addEventListener('loadedmetadata',fixVideo);vi.video.addEventListener('durationchange',fixVideo);}
+  const af=new File([e.audio],'MV-NHAC-'+suffix+'-'+(i+1)+'.wav',{type:'audio/wav'});
+  const ai=clipAddAudioFile(af,'audio');
+  if(!ai)throw Error('Không thêm được đoạn nhạc '+(i+1)+' vào CLIP');
+  ai.start=position;ai.duration=duration;ai.volume=100;ai.trimStart=0;
+  const fixAudio=()=>{ai.start=position;ai.duration=Math.min(duration,Math.max(.1,Number(ai.sourceDuration)||duration));ai.volume=100;clipRenderAll()};
+  if(ai.audio){ai.audio.addEventListener('loadedmetadata',fixAudio);ai.audio.addEventListener('durationchange',fixAudio);}
+  cursor+=duration;
+ }
+ window.switchTab('clip');clipRenderAll();
+ if(typeof clipSetCurrentTime==='function')clipSetCurrentTime(0);
+ if(typeof clipFitTimeline==='function')clipFitTimeline(true);
+ return entries.length;
+}
+$('mv10ToClip').onclick=async()=>{try{const n=await sendToClip();if(n)status('✓ Đã chuyển '+n+' video + '+n+' ĐOẠN NHẠC TƯƠNG ỨNG sang CLIP, không lấy nguyên bài.')}catch(e){status('✕ '+(e.message||e))}};
+$('mv10Merge').onclick=async()=>{try{const n=await sendToClip();if(n)status('✓ Đã chuẩn bị '+n+' cặp video/nhạc nối tiếp. Vào CLIP kiểm tra rồi Xuất MP4.')}catch(e){status('✕ '+(e.message||e))}};
 
 /* ============ V16 · LIVE MV PREVIEW: audio clock + all completed clips ============ */
 (function setupLiveMV(){
@@ -16098,6 +16186,48 @@ $('mv18FullPreview').onclick=()=>{blockOnlyId=null;v.muted=true;playAt(0,true)};
  const prevRender=render;render=function(){const out=prevRender.apply(this,arguments);drawRefs().catch(()=>{});return out;};
  window.addEventListener('beforeunload',()=>{previewUrl.forEach(u=>URL.revokeObjectURL(u));if(captureUrl)URL.revokeObjectURL(captureUrl);});
  drawRefs().catch(()=>{});
+})();
+
+
+// V36 WAN lip-sync inspection: one main image, audio preserving original timing,
+// explicit specialist postprocess opt-in (no background paid request).
+(function mv36WanDiagnostics(){
+ const host=$('mv20VideoImagePanel')||$('mv10Status')?.parentNode;
+ if(!host||$('mv36WanDiag'))return;
+ const div=document.createElement('div');div.id='mv36WanDiag';div.style.cssText='margin:12px 0;padding:13px;border:1px solid #90a8cf;border-radius:12px;background:#f0f6ff;color:#284669';
+ div.innerHTML='<b>🎙 WAN · KIỂM TRA ĐỒNG BỘ TRƯỚC KHI TẠO</b>'+
+  '<p style="font-size:12px;line-height:1.55;margin:8px 0">Chế độ nhép miệng dùng <b>một ảnh chính</b> và audio của block <b>đúng nhịp gốc</b>. Ảnh phụ chỉ dùng để tham khảo khi dựng hoạt cảnh khác. Việc WAN nhận audio tham chiếu không bảo đảm miệng hát khớp từng âm tiết; muốn chỉnh khẩu hình chính xác, hãy dùng nút hậu kỳ Lip-sync sau khi có MP4.</p>'+
+  '<div class="mvrow"><button id="mv36Check" type="button">▶ Kiểm tra ảnh + nghe đúng audio block</button><button id="mv36Stop" type="button">■ Dừng nghe</button></div>'+
+  '<audio id="mv36Audio" controls style="display:none;width:100%"></audio><p id="mv36Msg" class="mvnote" style="margin:8px 0 0">Chọn block WAN → chế độ Ca sĩ nhép miệng.</p>';
+ host.appendChild(div);
+ let currentURL='';
+ const label=msg=>$('mv36Msg').textContent=msg;
+ function update(){const b=selected();div.style.display=b?.model==='wan'?'block':'none';if(b?.model==='wan'){
+  const refs=b.mv35Refs?.length||Number(!!b.imageId);
+  const info=(b.lip?'Nhép miệng':'Hoạt cảnh không lồng tiếng')+' · '+b.start.toFixed(2)+'–'+(b.start+b.len).toFixed(2)+'s · '+refs+' ảnh · '+(b.imageId?'đã có ảnh chính':'thiếu ảnh chính');
+  if(!currentURL)label(info);
+ }}
+ $('mv36Check').onclick=async()=>{
+  const b=selected();if(!b||b.model!=='wan'||!b.lip)return label('Hãy chọn block WAN và chế độ Ca sĩ nhép miệng.');
+  if(!b.imageId)return label('Thiếu ảnh chính; chọn ảnh nhân vật hoặc frame trước.');
+  if(!state.audioId)return label('Thiếu nhạc timeline.');
+  try{
+   const img=await mediaGet(b.imageId);if(!img?.size)throw Error('Ảnh chính chưa tồn tại trong IndexedDB');
+   const d=await mv15DecodedAudio();if(b.start+b.len>d.duration+.03)throw Error('Block vượt thời lượng nhạc nguồn.');
+   const wav=mv15WavSlice(d,b.start,b.len,true);
+   const bytes=new DataView(await wav.slice(0,44).arrayBuffer());
+   const rate=bytes.getUint32(24,true),channels=bytes.getUint16(22,true),data=bytes.getUint32(40,true);
+   const seconds=data/(rate*channels*2);
+   if(currentURL)URL.revokeObjectURL(currentURL);
+   currentURL=URL.createObjectURL(wav);
+   const a=$('mv36Audio');a.src=currentURL;a.style.display='block';a.currentTime=0;await a.play().catch(()=>{});
+   label('✓ Ảnh chính '+Math.round(img.size/1024)+' KB · Audio gốc '+b.start.toFixed(2)+'–'+(b.start+b.len).toFixed(2)+'s. WAV gửi WAN dài '+seconds.toFixed(3)+'s (không tăng tốc). Phần còn lại ~'+Math.max(0,b.len-seconds).toFixed(3)+'s chỉ được cắt ở cuối để tránh vượt giới hạn 15s.');
+  }catch(e){label('✕ '+(e.message||e));}
+ };
+ $('mv36Stop').onclick=()=>{$('mv36Audio').pause();};
+ const oldRender=render; render=function(){const ret=oldRender.apply(this,arguments);update();return ret;};
+ const origSel=renderSelectionOnly;renderSelectionOnly=function(){const ret=origSel.apply(this,arguments);if(currentURL){URL.revokeObjectURL(currentURL);currentURL='';$('mv36Audio').pause();$('mv36Audio').removeAttribute('src');$('mv36Audio').style.display='none';}update();return ret;};
+ update();
 })();
 
 render();
