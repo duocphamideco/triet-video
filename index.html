@@ -17232,7 +17232,205 @@ try{
  get.onerror=()=>{loadedFromStore=true;storageResolve();message('⚠ Không đọc được dự án cũ. Có thể tạo lượt mới.')};
  };
  req.onerror=()=>{loadedFromStore=true;storageResolve();message('⚠ Không mở được kho lưu. File tạo mới chỉ tồn tại trong phiên này.')};
-}catch(e){loadedFromStore=true;storageResolve();message('⚠ Không dùng được bộ nhớ trình duyệt: '+e.message)}render();
+}catch(e){loadedFromStore=true;storageResolve();message('⚠ Không dùng được bộ nhớ trình duyệt: '+e.message)}
+/* V34 · MV TIMELINE frame-to-reference + 1–3 reference images */
+(function(){
+  const imgInput=document.getElementById('mv10Image');
+  const panel=document.getElementById('mv20VideoImagePanel');
+  if(!imgInput||!panel)return;
+  imgInput.multiple=true;
+  const wrap=document.createElement('div');
+  wrap.id='mv34RefWrap';
+  wrap.style.cssText='margin-top:12px;padding:12px;border:1px solid #d4e1f3;border-radius:12px;background:#f8fbff';
+  wrap.innerHTML=''
+    +'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">'
+    +'<b>🖼 Ảnh tham chiếu mở rộng cho block</b>'
+    +'<span id="mv34Count" style="font-size:12px;color:#5d728f">0 / 3 ảnh</span>'
+    +'</div>'
+    +'<div style="font-size:12px;color:#62758f;line-height:1.55;margin:6px 0 10px">Ảnh đầu là ảnh chính. Anh có thể thêm tối đa 3 ảnh tham chiếu cho mỗi block. Từ video preview ở trên, tua đến đúng khoảnh khắc muốn nối cảnh rồi bấm chụp frame để đưa xuống làm ảnh tham chiếu tiếp theo.</div>'
+    +'<div class="mvrow">'
+    +'<button type="button" id="mv34AddFiles">➕ Thêm 1–3 ảnh tham chiếu</button>'
+    +'<button type="button" id="mv34CaptureFrame">📸 Chụp frame đang xem đưa vào block</button>'
+    +'<button type="button" id="mv34UseCurrentAsMain">⭐ Đặt frame cuối cùng làm ảnh chính</button>'
+    +'<button type="button" id="mv34ClearRefs" class="mvdanger">🗑 Xóa toàn bộ ảnh tham chiếu block</button>'
+    +'</div>'
+    +'<div id="mv34Refs" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:10px"></div>';
+  panel.appendChild(wrap);
+  const fileProxy=document.createElement('input');
+  fileProxy.type='file'; fileProxy.accept='image/*'; fileProxy.multiple=true; fileProxy.hidden=true; document.body.appendChild(fileProxy);
+
+  function mv34Normalize(b){
+    if(!b)return;
+    if(!Array.isArray(b.refImageIds)) b.refImageIds=[];
+    if(b.imageId && !b.refImageIds.includes(b.imageId)) b.refImageIds.unshift(b.imageId);
+    b.refImageIds=b.refImageIds.filter(Boolean).slice(0,3);
+    if(b.refImageIds.length){b.imageId=b.refImageIds[0];}
+    else if(b.imageId){b.refImageIds=[b.imageId];}
+  }
+  function mv34InvalidateRemote(b){ if(!b)return; b.remoteImageUrl=null; b.remoteRefCompositeUrl=null; }
+  async function mv34StoreBlob(blob,b,label){
+    mv34Normalize(b);
+    if(b.refImageIds.length>=3) throw Error('Mỗi block chỉ tối đa 3 ảnh tham chiếu. Hãy xóa bớt trước khi thêm.');
+    const ext=(blob.type||'').includes('png')?'png':'jpg';
+    const key='mv34-ref-'+b.id+'-'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+    const file=blob instanceof File?blob:new File([blob], (label||('ref_'+(b.refImageIds.length+1)))+'.'+ext,{type:blob.type||'image/jpeg'});
+    await mediaPut(key,file);
+    b.refImageIds.push(key);
+    if(!b.imageId) b.imageId=key;
+    mv34InvalidateRemote(b);
+    persist();
+    return key;
+  }
+  async function mv34RemoveRef(b,key){
+    mv34Normalize(b);
+    b.refImageIds=(b.refImageIds||[]).filter(x=>x!==key);
+    if(b.imageId===key) b.imageId=b.refImageIds[0]||null;
+    mv34InvalidateRemote(b); persist();
+    try{ await mediaDel(key); }catch(_){ }
+  }
+  async function mv34SetMain(b,key){
+    mv34Normalize(b);
+    const arr=(b.refImageIds||[]).filter(x=>x!==key); arr.unshift(key); b.refImageIds=arr.slice(0,3); b.imageId=b.refImageIds[0]||null; mv34InvalidateRemote(b); persist();
+  }
+  async function mv34CapturePreviewFrame(){
+    const v=document.getElementById('mv16Video');
+    if(!v||!v.src||v.readyState<2) throw Error('Preview MV chưa có video sẵn sàng để chụp frame.');
+    const c=document.createElement('canvas'); c.width=v.videoWidth||0; c.height=v.videoHeight||0;
+    if(!c.width||!c.height) throw Error('Không đọc được kích thước video preview.');
+    c.getContext('2d').drawImage(v,0,0,c.width,c.height);
+    const blob=await new Promise(res=>c.toBlob(res,'image/jpeg',0.94));
+    if(!blob||blob.size<1024) throw Error('Frame chụp bị rỗng.');
+    return blob;
+  }
+  async function mv34Render(){
+    const b=selected();
+    const refs=document.getElementById('mv34Refs');
+    const count=document.getElementById('mv34Count');
+    if(!refs||!count)return;
+    refs.innerHTML='';
+    if(!b){ count.textContent='0 / 3 ảnh'; return; }
+    mv34Normalize(b); persist();
+    const ids=(b.refImageIds||[]).slice(0,3);
+    count.textContent=ids.length+' / 3 ảnh';
+    if(!ids.length){ refs.innerHTML='<div style="grid-column:1/-1;color:#70839d;font-size:12px;padding:8px 0">Chưa có ảnh tham chiếu mở rộng. Có thể dùng ảnh upload trực tiếp hoặc chụp frame từ video preview đang xem.</div>'; return; }
+    for(let i=0;i<ids.length;i++){
+      const key=ids[i], blob=await mediaGet(key); if(!blob) continue;
+      const u=URL.createObjectURL(blob);
+      objectURLs.push(u);
+      const card=document.createElement('div');
+      card.style.cssText='border:1px solid #cdddF0;border-radius:12px;background:#fff;padding:8px';
+      card.innerHTML=''
+       +'<img src="'+u+'" style="width:100%;height:96px;object-fit:cover;border-radius:8px;background:#eef3fb">'
+       +'<div style="font-size:11px;color:#334e73;margin-top:6px;font-weight:700">'+(i===0?'Ảnh chính':'Ảnh phụ '+(i+1))+'</div>'
+       +'<div class="mvrow" style="margin:6px 0 0;gap:6px">'
+       +'<button type="button" data-k="'+key+'" data-act="main" style="font-size:11px;padding:6px 8px">Đặt chính</button>'
+       +'<button type="button" data-k="'+key+'" data-act="del" class="mvdanger" style="font-size:11px;padding:6px 8px">Xóa</button>'
+       +'</div>';
+      refs.appendChild(card);
+    }
+  }
+
+  const oldRender=render;
+  render=function(){ const r=oldRender.apply(this,arguments); mv34Render().catch(()=>{}); return r; };
+  const oldRenderSel=typeof renderSelectionOnly==='function'?renderSelectionOnly:null;
+  if(oldRenderSel){ renderSelectionOnly=function(){ const r=oldRenderSel.apply(this,arguments); mv34Render().catch(()=>{}); return r; }; }
+
+  const oldShow=mv14ShowImage;
+  mv14ShowImage=async function(b){ mv34Normalize(b); return oldShow.call(this,b); };
+
+  const oldImageURL=mv14ImageURL;
+  mv14ImageURL=async function(b){
+    mv34Normalize(b);
+    const ids=(b.refImageIds||[]).slice(0,3);
+    if(ids.length<=1) return await oldImageURL.call(this,b);
+    if(b.remoteRefCompositeUrl) return b.remoteRefCompositeUrl;
+    const refs=[];
+    for(const key of ids){ const blob=await mediaGet(key); if(!blob) continue; refs.push({dataUrl:await mv14FileData(blob)}); }
+    if(!refs.length) return await oldImageURL.call(this,b);
+    const url=await new Promise((resolve,reject)=>{
+      try{
+        buildRefComposite(refs,function(dataUrl,readyUrl){
+          (readyUrl?Promise.resolve(readyUrl):uploadOneRef(dataUrl)).then(resolve).catch(reject);
+        });
+      }catch(e){ reject(e); }
+    });
+    if(!/^https?:\/\//i.test(url||'')) throw Error('Ảnh tham chiếu tổng hợp chưa có URL hợp lệ');
+    b.remoteRefCompositeUrl=url; b.remoteImageUrl=url; persist();
+    return url;
+  };
+
+  fileProxy.onchange=async(ev)=>{
+    const b=selected(); if(!b) return status('Chọn block trước khi thêm ảnh tham chiếu');
+    const files=Array.from(ev.target.files||[]).slice(0,3);
+    if(!files.length) return;
+    try{
+      mv34Normalize(b);
+      for(const f of files){ if((b.refImageIds||[]).length>=3) break; await mv34StoreBlob(f,b,f.name); }
+      b.mv20Source=b.mv20Source==='text'?'upload':(b.mv20Source||'upload');
+      status('✓ Đã thêm '+files.length+' ảnh tham chiếu cho block. Ảnh đầu là ảnh chính.');
+      render();
+    }catch(e){ status('✕ '+(e.message||e)); }
+    finally{ ev.target.value=''; }
+  };
+  document.getElementById('mv34AddFiles').onclick=()=>fileProxy.click();
+  document.getElementById('mv34CaptureFrame').onclick=async()=>{
+    const b=selected(); if(!b) return status('Chọn block trước.');
+    try{
+      const blob=await mv34CapturePreviewFrame();
+      await mv34StoreBlob(blob,b,'frame_preview');
+      b.mv20Source=b.mv20Source==='text'?'upload':(b.mv20Source||'upload');
+      status('✓ Đã chụp frame hiện tại và chèn vào ảnh tham chiếu của block.');
+      render();
+    }catch(e){ status('✕ '+(e.message||e)); }
+  };
+  document.getElementById('mv34UseCurrentAsMain').onclick=async()=>{
+    const b=selected(); if(!b) return status('Chọn block trước.');
+    try{
+      const blob=await mv34CapturePreviewFrame();
+      const key=await mv34StoreBlob(blob,b,'frame_main');
+      await mv34SetMain(b,key);
+      b.mv20Source='upload';
+      status('✓ Đã chụp frame và đặt làm ảnh chính của block.');
+      render();
+    }catch(e){ status('✕ '+(e.message||e)); }
+  };
+  document.getElementById('mv34ClearRefs').onclick=async()=>{
+    const b=selected(); if(!b) return status('Chọn block trước.');
+    if(!confirm('Xóa toàn bộ ảnh tham chiếu của block đang chọn?')) return;
+    try{
+      mv34Normalize(b);
+      for(const key of b.refImageIds||[]){ try{ await mediaDel(key); }catch(_){} }
+      b.refImageIds=[]; b.imageId=null; mv34InvalidateRemote(b); persist(); render(); status('Đã xóa toàn bộ ảnh tham chiếu của block.');
+    }catch(e){ status('✕ '+(e.message||e)); }
+  };
+  document.getElementById('mv34Refs').onclick=async(e)=>{
+    const btn=e.target.closest('button[data-act]'); if(!btn) return;
+    const b=selected(); if(!b) return;
+    const key=btn.getAttribute('data-k');
+    try{
+      if(btn.dataset.act==='del') await mv34RemoveRef(b,key);
+      if(btn.dataset.act==='main') await mv34SetMain(b,key);
+      render();
+    }catch(err){ status('✕ '+(err.message||err)); }
+  };
+
+  // Replace original single-file handler with add-to-list behavior for MV Timeline.
+  imgInput.onchange=async e=>{
+    const b=selected(); if(!b) return status('Chọn block trước khi thêm ảnh');
+    const files=Array.from(e.target.files||[]).slice(0,3);
+    if(!files.length) return;
+    try{
+      mv34Normalize(b);
+      for(const f of files){ if((b.refImageIds||[]).length>=3) break; await mv34StoreBlob(f,b,f.name); }
+      b.mv20Source=(window.__mv20ImageFromGenerated?'generated':'upload');
+      const chk=document.getElementById('mv24ImageCheck'); if(chk) chk.textContent='✓ Đã có '+b.refImageIds.length+' ảnh tham chiếu cho block; ảnh đầu là ảnh chính.';
+      render();
+    }catch(err){ status('✕ '+(err.message||err)); }
+    finally{ e.target.value=''; }
+  };
+})();
+
+render();
 })();
 
 </script>
