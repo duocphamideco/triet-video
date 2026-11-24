@@ -15095,7 +15095,7 @@ root.innerHTML=`
 <div class="mvrow"><button id="mv10Send" class="mvprimary">🎬 GENERATE VIDEO NGAY TẠI MV</button> <button id="mv14Recover">↻ Khôi phục / kiểm tra tác vụ</button><button id="mv10Delete" class="mvdanger">Xóa khung</button></div><div id="mv10Status" class="mvstatus">Sẵn sàng</div>
 </div>
 <div class="mvpanel"><h3>📼 Video kết quả & thư viện</h3><p class="mvnote">Gắn MP4 đã tạo vào khung tương ứng; lưu cục bộ trong IndexedDB để khôi phục khi mở lại trang. Không lưu file video lớn trong localStorage.</p>
-<label>Chèn video MP4 cho khung <input id="mv10VideoFile" type="file" accept="video/mp4,video/webm"></label><video id="mv10Preview" controls muted></video><div class="mvrow"><button id="mv18BlockPreview" type="button" class="mvprimary">▶ XEM RIÊNG BLOCK + NHẠC</button><button id="mv18FullPreview" type="button">▶ Xem MV liên tục</button><span id="mv18BlockStatus" class="mvnote">Video luôn tắt tiếng gốc; chỉ nghe đoạn nhạc đúng vị trí block.</span></div>
+<label>Chèn video MP4 cho khung <input id="mv10VideoFile" type="file" accept="video/mp4,video/webm"></label><video id="mv10Preview" controls muted></video><div class="mvrow"><button id="mv18BlockPreview" type="button" class="mvprimary">▶ XEM RIÊNG BLOCK + NHẠC</button><button id="mv18FullPreview" type="button">▶ Xem MV liên tục</button><button type="button" id="mvBlockDl" style="background:#1f8a5b;color:#fff;border-color:#1f8a5b">⬇ TẢI VIDEO BLOCK (có nhạc)</button><span id="mv18BlockStatus" class="mvnote">Video luôn tắt tiếng gốc; chỉ nghe đoạn nhạc đúng vị trí block.</span></div>
 <div class="mv22-upscale" id="mv22Upscale" style="padding:12px;border-radius:12px;background:#eef5ff;border:1px solid #bed2f4;margin:12px 0">
 <b>⬆ GROK · NÂNG VIDEO ĐÃ TẠO TỪ 480p LÊN 720p</b>
 <p style="font-size:12px;line-height:1.5;margin:6px 0">Dùng mã tác vụ Grok gốc để upscale, giữ nguyên cảnh. Sau khi hoàn tất, bản 720p tự thay trong Preview MV và track video; bản 480p vẫn được lưu để khôi phục. Phí upscale do Kie tính riêng.</p>
@@ -15731,6 +15731,30 @@ $('mvFullClips').onclick=async()=>{
  }catch(e){mvFullInfo('✕ '+(e.message||e))}
 };
 (async()=>{try{const old=await mediaGet('mv-full-final');if(old?.size){mvFullBlob=old;mvFullURL=URL.createObjectURL(old);$('mvFullVideo').src=mvFullURL;$('mvFullVideo').style.display='block';$('mvFullDownload').disabled=false;mvFullInfo('Có bản MV gộp lần trước ('+(old.size/1048576).toFixed(1)+' MB). Gộp lại nếu vừa tạo thêm video.')}}catch(_){}})();
+
+// V41: tải video đã tạo của block đang chọn — luôn là bản đã lồng nhạc/giọng gốc đúng vị trí block
+$('mvBlockDl').onclick=async()=>{
+ const btn=$('mvBlockDl');const b=selected();if(!b)return mv14State('Chọn một block viền đỏ trên timeline trước.');
+ if(btn.disabled)return;btn.disabled=true;
+ const save=(blob,name)=>{const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000)};
+ const base='IDECO_'+String(b.model||'video').toUpperCase()+'_'+b.start.toFixed(1).replace('.','s')+'-'+(b.start+b.len).toFixed(1).replace('.','s');
+ try{
+  // Grok 30s đã ghép sẵn nhạc
+  for(const id of [b.extendFlow?.finalVideoId,b.merged30Id]){if(!id)continue;const m=await mediaGet(id);if(m?.size){save(m,base+'_30s.mp4');mv14State('✓ Đã tải video 30s có nhạc của block.');return}}
+  const segs=(b.segments||[]).map((x,i)=>({x,i})).filter(o=>o.x.videoId||o.x.lipSyncVideoId);
+  if(!segs.length)throw Error('Block này chưa có video đã tạo.');
+  let n=0;
+  for(const {x,i} of segs){
+   const blob=await mvMusicFor(b,x,i,true);
+   if(!blob)throw Error('Chưa lồng được nhạc cho đoạn '+(i+1)+' (cần bài nhạc trên timeline và mở app qua HTTPS).');
+   save(blob,base+(segs.length>1?'_part'+(i+1):'')+'.mp4');n++;
+   if(segs.length>1)await new Promise(r=>setTimeout(r,700));
+  }
+  mv14State('✓ Đã tải '+n+' video của block, đã lồng đúng nhạc/giọng '+b.start.toFixed(1)+'–'+(b.start+b.len).toFixed(1)+'s.');
+  if(selected()?.id===b.id)await mv14StageRender();
+ }catch(e){mv14State('✕ '+(e.message||e))}
+ finally{btn.disabled=false}
+};
 $('mv10Send').onclick=()=>mv14Generate(false);
 $('mv14Recover').onclick=()=>mv14Generate(true);
 // V25: TRUE server-side Grok extension. Do not generate a second image-to-video clip.
@@ -16080,7 +16104,7 @@ async function sendToClip(){
  if(existing && !confirm('CLIP đang có '+existing+' thành phần. Thay timeline CLIP bằng '+entries.length+' đoạn video và ĐÚNG các đoạn nhạc tương ứng? Dự án MV nguồn vẫn giữ nguyên.'))return 0;
  // Both tracks are reset together to prevent full-song or old audio leaking into export.
  for(const lane of Object.keys(clipTracks)) if(Array.isArray(clipTracks[lane]))clipTracks[lane].length=0;
- let cursor=0;
+ let cursor=0;const placed=[];
  for(let i=0;i<entries.length;i++){
   const e=entries[i],position=cursor,duration=e.length;
   const suffix=e.sourceAt.toFixed(2)+'-'+(e.sourceAt+duration).toFixed(2)+'s';
@@ -16091,16 +16115,19 @@ async function sendToClip(){
   vi.start=position;vi.duration=duration;vi.volume=0;vi.trimStart=0;
   // clipAddVideoFile asynchronously fills duration from metadata. Keep source interval authoritative.
   const fixVideo=()=>{vi.start=position;vi.duration=Math.min(duration,Math.max(.1,Number(vi.sourceDuration)||duration));vi.volume=0;clipRenderAll()};
-  if(vi.video){vi.video.addEventListener('loadedmetadata',fixVideo);vi.video.addEventListener('durationchange',fixVideo);}
+  if(vi.video&&typeof vi.video.addEventListener==='function'){vi.video.addEventListener('loadedmetadata',fixVideo);vi.video.addEventListener('durationchange',fixVideo);}
   const af=new File([e.audio],'MV-NHAC-'+suffix+'-'+(i+1)+'.wav',{type:'audio/wav'});
   const ai=clipAddAudioFile(af,'audio');
   if(!ai)throw Error('Không thêm được đoạn nhạc '+(i+1)+' vào CLIP');
   ai.start=position;ai.duration=duration;ai.volume=100;ai.trimStart=0;
   const fixAudio=()=>{ai.start=position;ai.duration=Math.min(duration,Math.max(.1,Number(ai.sourceDuration)||duration));ai.volume=100;clipRenderAll()};
-  if(ai.audio){ai.audio.addEventListener('loadedmetadata',fixAudio);ai.audio.addEventListener('durationchange',fixAudio);}
+  const am=ai._v60MediaEl||ai.audio;if(am&&typeof am.addEventListener==='function'){am.addEventListener('loadedmetadata',fixAudio);am.addEventListener('durationchange',fixAudio);}
+  placed.push({vi,ai,position,duration});
   cursor+=duration;
  }
- window.switchTab('clip');clipRenderAll();
+ const relock=()=>{for(const p of placed){p.vi.start=p.position;p.vi.duration=p.duration;p.vi.volume=0;p.vi.trimStart=0;p.ai.start=p.position;p.ai.duration=p.duration;p.ai.volume=100;p.ai.trimStart=0;}try{clipRenderAll()}catch(_){}};
+ [60,600,1500,3500,7000].forEach(t=>setTimeout(relock,t));
+ window.switchTab('clip');relock();
  if(typeof clipSetCurrentTime==='function')clipSetCurrentTime(0);
  if(typeof clipFitTimeline==='function')clipFitTimeline(true);
  return entries.length;
