@@ -14965,6 +14965,12 @@ root.innerHTML=`
 </div>
 <div class="mvpanel"><h3>📼 Video kết quả & thư viện</h3><p class="mvnote">Gắn MP4 đã tạo vào khung tương ứng; lưu cục bộ trong IndexedDB để khôi phục khi mở lại trang. Không lưu file video lớn trong localStorage.</p>
 <label>Chèn video MP4 cho khung <input id="mv10VideoFile" type="file" accept="video/mp4,video/webm"></label><video id="mv10Preview" controls muted></video><div class="mvrow"><button id="mv18BlockPreview" type="button" class="mvprimary">▶ XEM RIÊNG BLOCK + NHẠC</button><button id="mv18FullPreview" type="button">▶ Xem MV liên tục</button><span id="mv18BlockStatus" class="mvnote">Video luôn tắt tiếng gốc; chỉ nghe đoạn nhạc đúng vị trí block.</span></div>
+<div class="mv22-upscale" id="mv22Upscale" style="padding:12px;border-radius:12px;background:#eef5ff;border:1px solid #bed2f4;margin:12px 0">
+<b>⬆ GROK · NÂNG VIDEO ĐÃ TẠO TỪ 480p LÊN 720p</b>
+<p style="font-size:12px;line-height:1.5;margin:6px 0">Dùng mã tác vụ Grok gốc để upscale, giữ nguyên cảnh. Sau khi hoàn tất, bản 720p tự thay trong Preview MV và track video; bản 480p vẫn được lưu để khôi phục. Phí upscale do Kie tính riêng.</p>
+<div class="mvrow"><select id="mv22Segment" aria-label="Chọn đoạn Grok cần nâng cấp"></select><button id="mv22UpscaleStart" type="button" class="mvprimary">⬆ NÂNG 720p · TỰ CHÈN PREVIEW</button><button id="mv22UpscaleResume" type="button">↻ Kiểm tra tác vụ upscale</button><button id="mv22Restore" type="button">↩ Dùng lại 480p</button></div>
+<div id="mv22Progress" role="status" style="font-size:12px;color:#2b5386">Chọn block Grok đã tạo để nâng cấp.</div>
+</div>
 <div class="mvrow"><button id="mv10ToClip">↗ Chuyển các clip vào timeline CLIP</button><button id="mv10Merge" class="mvprimary">🎬 Mở CLIP để ghép MV FULL</button></div>
 <div id="mv10Summary" class="mvstatus">Chưa có video.</div><p class="mvnote">Chức năng xuất MP4 cuối sử dụng bộ ghép ở tab CLIP hiện có; cần kiểm tra các clip và bấm xuất tại đó.</p>
 </div></div>`;
@@ -15002,7 +15008,7 @@ $('mv10AudioName').textContent=state.audioName||'Chưa chọn nhạc';$('mv10Len
 const b=selected();const imagePicker=$('mv10Image');if(imagePicker&&imagePicker.dataset.mvBlockId!==b?.id&&imagePicker.value)imagePicker.value='';$('mv10Selected').textContent=b?'Khung '+formatSec(b.start)+' → '+formatSec(b.start+b.len)+' · '+formatSec(b.len):'Chưa chọn khung';$('mv11Live').textContent=b?'▶ '+formatSec(b.start)+' → '+formatSec(b.start+b.len)+' | THỜI LƯỢNG '+formatSec(b.len):'Chọn khung để điều chỉnh thời lượng';
 $('mv10Model').disabled=!b;$('mv18AudioMode').disabled=!b;$('mv18Aspect').disabled=!b;$('mv10Prompt').disabled=!b;$('mv10Lip').disabled=!b;$('mv10VideoFile').disabled=!b;
 if(b){mv14ShowImage(b);$('mv10Model').value=b.model||'grok';$('mv14Res').value=b.resolution||'480p';$('mv10Prompt').value=b.prompt||'';$('mv18AudioMode').value=b.lip?'lip':'silent';$('mv18Aspect').value=b.aspect||'16:9';$('mv10Lip').checked=!!b.lip;mv18Explain();mv18Explain();$('mv10Rate').value=b.model==='grok'?($('mv14Res').value==='720p'?4.5:2.4):(b.model==='omni'?14:(b.resolution==='720p'?16:8))}else{$('mv10Prompt').value=''}
-price();mv14LaneRender();mv14StageRender();$('mv10Summary').textContent=state.blocks.filter(b=>b.videoId||b.segments?.some(x=>x.videoId)).length+'/'+state.blocks.length+' khung đã có MP4 · Dữ liệu khung tự lưu';showPreview();
+price();mv14LaneRender();mv14StageRender();$('mv10Summary').textContent=state.blocks.filter(b=>b.videoId||b.segments?.some(x=>x.videoId)).length+'/'+state.blocks.length+' khung đã có MP4 · Dữ liệu khung tự lưu';showPreview(); if(typeof mv22Render==='function')mv22Render();
 }
 function mv14Plan(b){
  let left=+b.len,arr=[];
@@ -15235,9 +15241,11 @@ async function mv15CreateTask(b,seg,i){
    throw Error('Prompt OmniHuman dài '+omniCount+' ký tự, giới hạn '+omniLimit+'. Hãy rút ngắn prompt (audio 30 giây vẫn hoàn toàn hợp lệ).');
  }
  const prompt=isWan?[basePrompt||'Nhân vật diễn xuất tự nhiên theo nội dung âm thanh.',
-   (image?'Keep face identity, apparent age, hairstyle and clothing faithful to image. ':'Create the visuals directly from the text prompt; no reference image is required. ')+(b.lip?'Precisely match mouth movements to attached audio. No invented dialogue.':'Silent cinematic performance. Do not speak, sing, or lip sync. No added dialogue.'),
+   (image?'Image1 is the ONLY reference for the original singer identity, age, facial structure, hairstyle, clothing and environment. ':'Use the video prompt for appearance and framing. '),
+   (b.lip?'Audio1 is the supplied vocal/music performance for THIS segment, not background inspiration. Show the on-screen singer performing the exact syllables and pauses in Audio1; match lips, jaw and facial expressions to the singing timing. The character must visibly sing when voice is present and close mouth naturally in pauses. Do not introduce a different voice, lyrics or unrelated soundtrack. Keep the singer face large and clearly visible, frontal or three-quarter view; avoid cuts hiding the mouth.':'Generate a silent cinematic performance; no dialogue or singing required.'),
    'This clip belongs to music timeline '+offset.toFixed(2)+'s – '+(offset+seg.length).toFixed(2)+'s.'].join('\n'):basePrompt;
  const model=isWan?'wan/3-0-video':'omnihuman-2-0';
+ if(isWan && b.lip && (!seg.audioRemoteUrl || !/^https?:\/\//i.test(seg.audioRemoteUrl)))throw Error('WAN chưa có URL Audio1 hợp lệ. Dừng trước khi gửi Kie để tránh mất credit.');
  const input=isWan?{prompt,duration:seg.generate,resolution:(b.resolution||'480p').toUpperCase(),aspect_ratio:mv18AspectForAPI(b),audio:!!b.lip,...(image?{reference_image_urls:[image]}:{}),...(b.lip?{reference_audio_urls:[seg.audioRemoteUrl]}:{})}:
    {image_urls:[image],audio_url:seg.audioRemoteUrl,...(prompt?{prompt}:{}),enable_watermark:false};
  const h=isWan?wanHeaders():headers();
@@ -15251,6 +15259,40 @@ function mv14LaneRender(){const lane=$('mv14VideoLane');if(!lane)return;const un
 async function mv14StageRender(){const b=selected(),v=$('mv14StageVideo');if(mv14StageURL){URL.revokeObjectURL(mv14StageURL);mv14StageURL=null}const clips=(b?.segments||[]).filter(x=>x.videoId);$('mv14StageLabel').textContent=b?('Cảnh '+b.start.toFixed(1)+'–'+(b.start+b.len).toFixed(1)+'s · '+clips.length+' clip đã tạo'):'Chưa chọn cảnh';$('mv14StageSegments').innerHTML=clips.map((x,i)=>'<button type="button" data-mv14-seg="'+i+'">▶ Đoạn '+(i+1)+' · '+x.length+'s</button>').join('');if(clips.length){const blob=await mediaGet(clips[0].videoId);if(b!==selected())return;if(blob){mv14StageURL=URL.createObjectURL(blob);v.src=mv14StageURL;v.load();return}}v.pause();v.removeAttribute('src');v.load()}
 $('mv14StageSegments').addEventListener('click',async e=>{const btn=e.target.closest('[data-mv14-seg]'),b=selected();if(!btn||!b)return;const clips=(b.segments||[]).filter(x=>x.videoId),x=clips[+btn.dataset.mv14Seg];if(!x)return;const blob=await mediaGet(x.videoId);if(!blob)return;const v=$('mv14StageVideo');if(mv14StageURL)URL.revokeObjectURL(mv14StageURL);mv14StageURL=URL.createObjectURL(blob);v.src=mv14StageURL;v.load();v.play().catch(()=>{})});
 $('mv14StagePlay').onclick=async()=>{const b=selected(),v=$('mv14StageVideo'),a=$('mv10Audio');if(!b)return;if(!v.src){await mv14StageRender();if(!v.src)return}v.currentTime=0;v.muted=true;a.currentTime=b.start;await Promise.allSettled([v.play(),a.play()]);};
+// V23: kiểm tra video WAN gốc (kèm track âm thanh AI) tách biệt với preview MV (nhạc nguồn).
+// Không tự gán tiếng WAN vào bản dựng MV, để tránh lặp/đè tiếng của bài nhạc.
+const mv23Panel=document.createElement('div');mv23Panel.id='mv23WanPanel';
+mv23Panel.style.cssText='margin:12px 0;padding:13px;border:1px solid #8bb5dc;border-radius:12px;background:#f0f7ff;color:#234466';
+mv23Panel.innerHTML='<b>🎤 Kiểm tra WAN nhép miệng & âm thanh</b><p style="font-size:12px;line-height:1.5;margin:7px 0">Preview MV dùng nhạc gốc và cố ý tắt tiếng video AI. Để kiểm tra WAN có thực sự xuất giọng hát hay không, chọn đoạn đã tạo rồi bấm Nghe tiếng WAN gốc.</p><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><select id="mv23WanSeg" aria-label="Chọn đoạn WAN đã tạo"></select><button type="button" id="mv23WanListen">▶ Nghe tiếng WAN gốc</button><button type="button" id="mv23WanMute">⏹ Dừng kiểm tra</button></div><p id="mv23WanInfo" style="font-size:12px;margin:8px 0">Chưa có video WAN.</p><video id="mv23WanVideo" controls playsinline style="display:none;max-height:280px;width:100%;background:#000;border-radius:9px"></video>';
+$('mv10Preview').parentNode.appendChild(mv23Panel);
+let mv23ObjectUrl=null;
+function mv23Refresh(){
+ const b=selected(),visible=b?.model==='wan';mv23Panel.style.display=visible?'block':'none';if(!visible)return;
+ const sel=$('mv23WanSeg'),previous=sel.value;sel.replaceChildren();
+ (b.segments||[]).forEach((seg,i)=>{const opt=document.createElement('option');opt.value=String(i);opt.textContent='Đoạn '+(i+1)+' · '+(seg.length||15)+'s'+(seg.videoId?' · có MP4':' · chưa tạo');sel.appendChild(opt)});
+ if([...sel.options].some(x=>x.value===previous))sel.value=previous;
+ const n=Number(sel.value||0),seg=b.segments?.[n];
+ $('mv23WanInfo').textContent= b.lip ? (seg?.audioRemoteUrl?'✓ Đã gửi Audio1 tham chiếu cho đoạn '+(n+1)+'; nghe video gốc để kiểm tra âm thanh và khẩu hình.':'⚠ Đoạn này chưa có xác nhận upload Audio1. Nếu video đã tạo trước đó, cần kiểm tra tác vụ cũ.') : '⚠ Block đang chọn chế độ không lồng tiếng. Hãy chọn “Ca sĩ nhép miệng · theo nhạc” trước khi tạo lượt mới.';
+}
+$('mv23WanSeg').addEventListener('change',mv23Refresh);
+$('mv23WanListen').onclick=async()=>{
+ const b=selected(),seg=b?.segments?.[Number($('mv23WanSeg').value||0)];
+ if(!seg?.videoId){$('mv23WanInfo').textContent='Đoạn WAN chưa có MP4 để kiểm tra.';return;}
+ try{
+  const blob=await mediaGet(seg.videoId);if(!blob)throw Error('MP4 không còn trong kho IndexedDB');
+  if(mv23ObjectUrl)URL.revokeObjectURL(mv23ObjectUrl);
+  mv23ObjectUrl=URL.createObjectURL(blob);
+  const v=$('mv23WanVideo');$('mv10Audio').pause();$('mv16Video')?.pause();$('mv14StageVideo')?.pause();
+  v.src=mv23ObjectUrl;v.muted=false;v.volume=1;v.style.display='block';v.load();
+  $('mv23WanInfo').textContent='Đang nghe track gốc MP4 do Kie xuất. Nếu vẫn không có lời hát hoặc không khớp môi, đó là vấn đề kết quả model, không phải do preview MV tắt tiếng.';
+  await v.play();
+ }catch(e){$('mv23WanInfo').textContent='Không mở được video WAN: '+(e.message||e)}
+};
+$('mv23WanMute').onclick=()=>{$('mv23WanVideo').pause();$('mv23WanVideo').currentTime=0};
+// Tránh ghi đè vào các hàm dựng cũ, chỉ cập nhật panel sau render.
+const mv23OriginalRender=render;
+render=function(){const result=mv23OriginalRender.apply(this,arguments);mv23Refresh();return result};
+mv23Refresh();
 $('mv10Send').onclick=()=>mv14Generate(false);
 $('mv14Recover').onclick=()=>mv14Generate(true);
 async function mv14Generate(recover){const b=selected();if(!b)return mv14State('Chọn khung viền đỏ');if(mv14Busy)return;if(!state.audioId)return mv14State('Chưa có bài nhạc trên timeline');if(!['grok','wan','omni'].includes(b.model))return mv14State('Model không được hỗ trợ');if(b.model!=='omni'&&!b.prompt?.trim())return mv14State('Nhập prompt mô tả cảnh trước khi tạo');if(b.model==='omni'&&Array.from((b.prompt||'').trim()).length>300)return mv14State('✕ Prompt OmniHuman tối đa 300 ký tự. Hãy rút gọn phần mô tả; audio 30s không bị giới hạn này.');if((b.model==='omni' || (b.model==='wan' && mv20UsesImage(b)))){
@@ -15265,6 +15307,82 @@ async function mv14Generate(recover){const b=selected();if(!b)return mv14State('
  if(!b.generatedModel){b.generatedModel=b.model;b.generatedStart=b.start;b.generatedLen=b.len;persist()}for(let i=0;i<b.segments.length;i++){const seg=b.segments[i];if(seg.videoId)continue;if(!seg.taskId){if(recover){mv14State('Đoạn '+(i+1)+' chưa gửi; chỉ khôi phục các đoạn đã có mã tác vụ');continue;}mv14State('Đang gửi '+b.model.toUpperCase()+' '+(i+1)+'/'+b.segments.length+' · '+seg.generate+'s');seg.taskId=b.model==='grok'?await mv14TaskCreate(b,seg,i):await mv15CreateTask(b,seg,i);persist()}mv14State('Đã gửi Kie: '+seg.taskId+' · theo dõi đoạn '+(i+1));const link=seg.remoteUrl||await mv14TaskPoll(seg.taskId,'Đoạn '+(i+1)+'/'+b.segments.length,b.model);seg.remoteUrl=link;persist();try{const blob=await mv14FetchVideo(link);seg.videoId='video-'+b.id+'-part'+i;await mediaPut(seg.videoId,blob);mv14State('✓ Đã lưu video đoạn '+(i+1)+' · '+(blob.size/1048576).toFixed(1)+' MB')}catch(err){mv14State('Kie đã tạo xong nhưng chưa tải MP4: '+err.message+' · link vẫn được lưu.');throw err}persist();if(selected()?.id===targetId){render();await mv14StageRender()}}const finished=b.segments.filter(x=>x.videoId).length;mv14State('✓ Hoàn tất '+finished+'/'+b.segments.length+' clip. Bấm XEM RIÊNG BLOCK + NHẠC để kiểm tra.');if(selected()?.id===targetId)$('mv18BlockStatus').textContent='✓ Video đã tạo, nhạc gốc đồng bộ theo block; tiếng gốc AI tắt.'}
 catch(err){mv14State('✕ '+(err.message||err)+' · Nếu đã có taskId, bấm Khôi phục để kiểm tra, không gửi lại.')}finally{mv14Busy=false;$('mv10Send').disabled=false;persist();render()}}
 
+
+// V22 - upscale via Kie Grok source task_id, preserving original 480p and all timeline data.
+let mv22Busy=false;
+function mv22Label(text){const el=$('mv22Progress');if(el)el.textContent=text;}
+function mv22Items(){const b=selected();return (b&&b.model==='grok'&&Array.isArray(b.segments))?b.segments:[]}
+function mv22Render(){
+ const b=selected(),list=mv22Items(),sel=$('mv22Segment'),previous=sel.value;
+ sel.replaceChildren();
+ for(let i=0;i<list.length;i++){
+  const seg=list[i],opt=document.createElement('option');opt.value=String(i);
+  opt.textContent='Đoạn '+(i+1)+' · '+Number(seg.length||0).toFixed(1)+'s · '+(seg.upscaleVideoId?'✓ 720p':seg.videoId?'480p · đã có MP4':'chưa tạo');sel.appendChild(opt);
+ }
+ if([...sel.options].some(o=>o.value===previous))sel.value=previous;
+ const valid=!!(b&&b.model==='grok'&&list.some(x=>x.taskId&&x.videoId));
+ $('mv22UpscaleStart').disabled=mv22Busy||!valid;
+ $('mv22UpscaleResume').disabled=mv22Busy||!list.some(x=>x.upscaleTaskId);
+ $('mv22Restore').disabled=mv22Busy||!list.some(x=>x.originalVideoId);
+ $('mv22Upscale').style.opacity=b?.model==='grok'?'1':'.65';
+}
+async function mv22GetVideoSize(blob){
+ if(!blob)return null;
+ return await new Promise(resolve=>{
+  const u=URL.createObjectURL(blob),v=document.createElement('video');v.preload='metadata';let finished=false;
+  const done=(val)=>{if(finished)return;finished=true;v.removeAttribute('src');v.load();URL.revokeObjectURL(u);resolve(val)};
+  v.onloadedmetadata=()=>done({width:v.videoWidth,height:v.videoHeight});v.onerror=()=>done(null);
+  v.src=u;setTimeout(()=>done(null),8000);
+ });
+}
+async function mv22Execute(resume){
+ const block=selected(),i=Number($('mv22Segment').value),seg=block?.segments?.[i];
+ if(!block||block.model!=='grok'||!seg)return mv22Label('Chọn một block Grok có video đã tạo.');
+ if(mv22Busy)return;
+ if(!resume&&!seg.taskId)return mv22Label('Không có mã tác vụ Grok gốc. Chỉ video tạo trên Kie bằng Grok mới dùng upscale API được.');
+ if(!resume&&!seg.videoId)return mv22Label('Video 480p chưa tải về. Hãy khôi phục tác vụ tạo trước.');
+ if(!resume&&seg.upscaleTaskId)return mv22Label('Đã có mã tác vụ upscale. Bấm “Kiểm tra tác vụ upscale” để tránh gửi trùng và trừ credit.');
+ if(resume&&!seg.upscaleTaskId)return mv22Label('Chưa có tác vụ upscale để kiểm tra.');
+ if(!resume&&seg.videoId){
+   const dims=await mv22GetVideoSize(await mediaGet(seg.videoId));
+   if(dims&&Math.min(dims.width,dims.height)>=720)return mv22Label('Video này đã đạt 720p hoặc cao hơn; không cần nâng nữa.');
+ }
+ mv22Busy=true;mv22Render();
+ try{
+  if(!seg.upscaleTaskId){
+   mv22Label('Đang gửi yêu cầu nâng 720p cho đoạn '+(i+1)+' (tính credit riêng)...');
+   const data={model:'grok-imagine/upscale',input:{task_id:seg.taskId,resolution:'720p'}};
+   const r=await fetch(API_BASE+'/api/v1/jobs/createTask',{method:'POST',headers:headers(),body:JSON.stringify(data)});
+   const j=await r.json();if(!r.ok||Number(j.code)!==200||!j.data?.taskId)throw Error(j.msg||'Kie từ chối upscale.');
+   seg.upscaleTaskId=j.data.taskId;persist();
+  }
+  mv22Label('Kie đang nâng cấp 720p · mã '+seg.upscaleTaskId+' · tiếp tục kiểm tra mà không gửi lại...');
+  const link=seg.upscaleRemoteUrl||await mv14TaskPoll(seg.upscaleTaskId,'Upscale Grok 720p · đoạn '+(i+1),'grok');
+  seg.upscaleRemoteUrl=link;persist();
+  const file=await mv14FetchVideo(link),dims=await mv22GetVideoSize(file);
+  if(dims&&Math.min(dims.width,dims.height)<700)throw Error('MP4 nhận về mới '+dims.width+'×'+dims.height+'; chưa đạt 720p. Giữ bản 480p, không tự thay.');
+  const key='mv22-720p-'+block.id+'-'+i;
+  await mediaPut(key,file);
+  if(!seg.originalVideoId)seg.originalVideoId=seg.videoId;
+  seg.upscaleVideoId=key;seg.videoId=key;seg.upscaleResolution='720p';persist();
+  mv22Label('✓ Đã nâng cấp và lưu MP4 720p ('+(file.size/1048576).toFixed(1)+' MB). Preview và track MV đã nhận video mới.');
+  render();await mv14StageRender();
+  if(typeof window.IDECO_MV22_REFRESH==='function')window.IDECO_MV22_REFRESH();
+ }catch(err){mv22Label('✕ '+String(err.message||err)+' · Nếu đã có mã upscale, dùng nút Kiểm tra, không tạo lại tác vụ.');}
+ finally{mv22Busy=false;mv22Render();}
+}
+$('mv22UpscaleStart').onclick=()=>mv22Execute(false);
+$('mv22UpscaleResume').onclick=()=>mv22Execute(true);
+$('mv22Segment').onchange=()=>mv22Label('Đã chọn đoạn '+(Number($('mv22Segment').value)+1));
+$('mv22Restore').onclick=async()=>{
+ const b=selected(),s=b?.segments?.[Number($('mv22Segment').value)];
+ if(!s?.originalVideoId)return mv22Label('Đoạn này chưa có bản gốc 480p để phục hồi.');
+ if(!await mediaGet(s.originalVideoId))return mv22Label('Không tìm thấy file gốc trong IndexedDB.');
+ s.videoId=s.originalVideoId;persist();render();await mv14StageRender();mv22Label('✓ Đã đưa video 480p gốc trở lại preview. Video 720p vẫn lưu trong kho.');
+};
+// MV state stays in localStorage; the actual MP4 blobs stay in IndexedDB.
+$('mv22Segment').addEventListener('focus',mv22Render);
+setTimeout(mv22Render,300);
 async function sendToClip(){if(typeof clipAddAudioFile!=='function'||typeof clipAddVideoFile!=='function')throw Error('Không có chức năng CLIP');const audio=await mediaGet(state.audioId);if(!audio)throw Error('Chưa có nhạc');const f=new File([audio],state.audioName||'MV-audio.wav',{type:audio.type||'audio/wav'});const track=clipAddAudioFile(f,'audio');if(track){track.start=0;track.duration=state.duration}let count=0;for(const b of sorted()){let at=b.start;const clips=b.segments?.filter(x=>x.videoId)||[];if(!clips.length&&b.videoId)clips.push({videoId:b.videoId,length:b.len});for(const [i,seg] of clips.entries()){const blob=await mediaGet(seg.videoId);if(!blob)continue;const f=new File([blob],'MV-'+Math.round(at*10)/10+'s-'+i+'.mp4',{type:blob.type||'video/mp4'});clipAddVideoFile(f);const item=clipTracks.visual[clipTracks.visual.length-1];if(item){const targetAt=at,targetLen=Math.min(seg.length,b.start+b.len-at);item.start=targetAt;item.duration=targetLen;item.volume=0;count++;if(item.video)item.video.addEventListener('loadedmetadata',()=>{item.start=targetAt;item.duration=Math.min(targetLen,Number(item.video.duration)||targetLen);item.volume=0;clipRenderAll()},{once:true})}at+=seg.length}}window.switchTab('clip');if(typeof clipRenderAll==='function')clipRenderAll();return count}
 
 $('mv10ToClip').onclick=async()=>{try{const n=await sendToClip();status('Đã chuyển '+n+' video và nhạc nền vào CLIP.')}catch(e){status(e.message)}};
@@ -15332,6 +15450,12 @@ $('mv18FullPreview').onclick=()=>{blockOnlyId=null;v.muted=true;playAt(0,true)};
  $('mv10Blocks').addEventListener('dblclick',e=>{const el=e.target.closest('.mvblock');if(!el)return;const b=state.blocks.find(x=>x.id===el.dataset.id);if(b)playAt(b.start,true)});
  // Updating while the editor renders or new tasks complete.
  const originalRender=render;render=function(){originalRender();updateClipButtons();updateUI(audio.currentTime||0);};
+ window.IDECO_MV22_REFRESH=function(){
+  activeId='';loadToken++;v.pause();v.removeAttribute('src');v.load();
+  updateClipButtons(true);
+  setClip(audio.currentTime||0,!audio.paused);
+  updateUI(audio.currentTime||0);
+ };
  updateClipButtons(true);updateUI(0);
  window.addEventListener('beforeunload',()=>{cancelAnimationFrame(raf);cachedURLs.forEach(u=>URL.revokeObjectURL(u))});
 })();
