@@ -14958,6 +14958,7 @@ root.innerHTML=`
 <div id="mv20VideoImagePanel"><div class="mvrow"><label>Ảnh tham chiếu cho video <input type="file" id="mv10Image" accept="image/*"></label></div><img id="mv10ImageView" style="max-width:180px;max-height:140px;border-radius:10px;display:none" alt="Ảnh tham chiếu"><p class="mvnote" id="mv19ImageNote">Có thể tải ảnh trực tiếp hoặc tạo ảnh ở khu vực riêng phía dưới, rồi bấm “Dùng ảnh này cho video”.</p></div>
 <p class="mvnote" id="mv20SourceNote">Grok và WAN có thể tạo video từ văn bản. OmniHuman cần ảnh nhân vật + đoạn nhạc.</p></div>
 <p><label>Prompt tạo VIDEO (không phải prompt tạo ảnh)</label></p><textarea id="mv10Prompt" placeholder="Mô tả chuyển động, bối cảnh, góc máy, khóa khuôn mặt..."></textarea>
+<p id="mv21OmniHint" class="mvnote" style="padding:9px 11px;background:#f2f8ff;border:1px solid #cde1f8;border-radius:9px">OmniHuman 2.0: audio 4–300 giây, tối đa 15 MB; prompt tùy chọn tối đa 300 ký tự; dùng ảnh nhân vật và audio gốc theo đúng block. Đầu ra 720p.</p>
 <div class="mvrow"><label>Đơn giá tính tự động (credit/giây) <input id="mv10Rate" type="number" min="0" step=".1" value="2.4" style="width:95px" readonly></label><label>VNĐ / credit <input id="mv10Vnd" type="number" min="0" step="1" value="130" style="width:95px"></label></div>
 <div id="mv10Cost" class="mvprice">Chọn khung để tính chi phí</div><p class="mvnote">Giá Grok lấy theo bảng Kie công khai, còn số tiền VNĐ quy đổi theo mức anh nhập. Model có thể giới hạn thời lượng mỗi tác vụ; khung 30/60s cần chia thành các tác vụ ngắn tương ứng.</p>
 <div class="mvrow"><button id="mv10Send" class="mvprimary">🎬 GENERATE VIDEO NGAY TẠI MV</button> <button id="mv14Recover">↻ Khôi phục / kiểm tra tác vụ</button><button id="mv10Delete" class="mvdanger">Xóa khung</button></div><div id="mv10Status" class="mvstatus">Sẵn sàng</div>
@@ -15179,16 +15180,27 @@ async function mv15DecodedAudio(){
 function mv15WavSlice(buffer,start,seconds,wan){
  const sr=buffer.sampleRate, begin=Math.max(0,Math.round(start*sr)),available=Math.max(0,buffer.length-begin);
  const srcCount=Math.min(available,Math.round(seconds*sr));if(srcCount<sr*.5)throw Error('Audio tại khung quá ngắn');
+ // V21: WAN requires <=15s; OmniHuman supports 4-300s and requires audio <=15 MB.
+ // Do not speed up or truncate OmniHuman audio. If lengthy, downmix to 22.05 kHz mono
+ // so even a 300s PCM WAV is under 15 MB while preserving the exact source duration.
  const audioSeconds=wan?Math.min(seconds,14.75):seconds;
- const outCount=Math.min(Math.round(audioSeconds*sr),srcCount),channels=Math.min(2,buffer.numberOfChannels);
+ const longOmni=!wan && (srcCount*2*Math.min(2,buffer.numberOfChannels)+44>14*1024*1024);
+ const outRate=longOmni?22050:sr,channels=longOmni?1:Math.min(2,buffer.numberOfChannels);
+ const outCount=Math.min(Math.round(audioSeconds*outRate),Math.floor(srcCount*outRate/sr));
  const ab=new ArrayBuffer(44+outCount*channels*2),v=new DataView(ab);
  function write(t,at){for(let i=0;i<t.length;i++)v.setUint8(at+i,t.charCodeAt(i))}
  write('RIFF',0);v.setUint32(4,ab.byteLength-8,true);write('WAVEfmt ',8);v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,channels,true);
- v.setUint32(24,sr,true);v.setUint32(28,sr*channels*2,true);v.setUint16(32,channels*2,true);v.setUint16(34,16,true);write('data',36);v.setUint32(40,outCount*channels*2,true);
- const gain=srcCount/outCount;let offset=44;
+ v.setUint32(24,outRate,true);v.setUint32(28,outRate*channels*2,true);v.setUint16(32,channels*2,true);v.setUint16(34,16,true);write('data',36);v.setUint32(40,outCount*channels*2,true);
+ const gain=wan?srcCount/outCount:sr/outRate;let offset=44;
  for(let i=0;i<outCount;i++)for(let ch=0;ch<channels;ch++){
-  const data=buffer.getChannelData(ch),idx=begin+(wan?i*gain:i),lo=Math.floor(idx),hi=Math.min(buffer.length-1,lo+1),frac=idx-lo;
-  const x=Math.max(-1,Math.min(1,(data[lo]||0)*(1-frac)+(data[hi]||0)*frac));v.setInt16(offset,Math.round(x<0?x*32768:x*32767),true);offset+=2;
+  const idx=begin+i*gain,lo=Math.floor(idx),hi=Math.min(buffer.length-1,lo+1),frac=idx-lo;
+  let x=0;const sourceChannels=longOmni?buffer.numberOfChannels:1;
+  for(let sc=0;sc<sourceChannels;sc++){
+    const data=buffer.getChannelData(longOmni?sc:ch);
+    x+=(data[lo]||0)*(1-frac)+(data[hi]||0)*frac;
+  }
+  x=Math.max(-1,Math.min(1,x/sourceChannels));
+  v.setInt16(offset,Math.round(x<0?x*32768:x*32767),true);offset+=2;
  }
  return new Blob([ab],{type:'audio/wav'});
 }
@@ -15207,15 +15219,27 @@ async function mv15CreateTask(b,seg,i){
  if(source&&offset+seg.length>source.duration+.03)throw Error('Thời gian khung vượt quá file nhạc thực tế');
  const isWan=b.model==='wan';
  if(b.lip){const wav=mv15WavSlice(source,offset,seg.length,isWan);
- mv14State('Đoạn '+(i+1)+'/'+b.segments.length+' · đang cắt và upload audio '+(wav.size/1048576).toFixed(1)+' MB');
+ if(!isWan && (seg.length<4||seg.length>300))throw Error('OmniHuman chỉ nhận audio 4–300 giây mỗi tác vụ.');
+ if(wav.size>15*1024*1024)throw Error('Audio OmniHuman vượt 15 MB; cần nén audio trước khi gửi.');
+ mv14State('Đoạn '+(i+1)+'/'+b.segments.length+' · '+(isWan?'WAN':'OmniHuman')+' audio '+wav.size.toLocaleString('vi-VN')+' bytes · '+seg.length.toFixed(2)+' giây; đang upload');
  if(!seg.audioRemoteUrl){seg.audioRemoteUrl=await mv15Upload(wav,'mv_'+b.id+'_'+i+'.wav',isWan);persist()}}
  const image=mv20UsesImage(b)?await mv14ImageURL(b):null;
- const prompt=[b.prompt?.trim()||'Nhân vật diễn xuất tự nhiên theo nội dung âm thanh.',
+ const basePrompt=(b.prompt||'').trim();
+ // Kie OmniHuman 2.0: optional prompt <=300 characters. No timeline notes,
+ // continuity text or English boilerplate may be appended to OmniHuman's prompt.
+ // Preserve user words if short enough; for a long prompt omit the optional field
+ // rather than silently mutilating the scene description.
+ const omniLimit=300;
+ const omniCount=Array.from(basePrompt).length;
+ if(!isWan && omniCount>omniLimit){
+   throw Error('Prompt OmniHuman dài '+omniCount+' ký tự, giới hạn '+omniLimit+'. Hãy rút ngắn prompt (audio 30 giây vẫn hoàn toàn hợp lệ).');
+ }
+ const prompt=isWan?[basePrompt||'Nhân vật diễn xuất tự nhiên theo nội dung âm thanh.',
    (image?'Keep face identity, apparent age, hairstyle and clothing faithful to image. ':'Create the visuals directly from the text prompt; no reference image is required. ')+(b.lip?'Precisely match mouth movements to attached audio. No invented dialogue.':'Silent cinematic performance. Do not speak, sing, or lip sync. No added dialogue.'),
-   'This clip belongs to music timeline '+offset.toFixed(2)+'s – '+(offset+seg.length).toFixed(2)+'s.'].join('\n');
+   'This clip belongs to music timeline '+offset.toFixed(2)+'s – '+(offset+seg.length).toFixed(2)+'s.'].join('\n'):basePrompt;
  const model=isWan?'wan/3-0-video':'omnihuman-2-0';
  const input=isWan?{prompt,duration:seg.generate,resolution:(b.resolution||'480p').toUpperCase(),aspect_ratio:mv18AspectForAPI(b),audio:!!b.lip,...(image?{reference_image_urls:[image]}:{}),...(b.lip?{reference_audio_urls:[seg.audioRemoteUrl]}:{})}:
-   {image_urls:[image],audio_url:seg.audioRemoteUrl,prompt,enable_watermark:false};
+   {image_urls:[image],audio_url:seg.audioRemoteUrl,...(prompt?{prompt}:{}),enable_watermark:false};
  const h=isWan?wanHeaders():headers();
  const r=await fetch(API_BASE+'/api/v1/jobs/createTask',{method:'POST',headers:h,body:JSON.stringify({model,input})});
  const d=await r.json();if(!r.ok||Number(d.code)!==200||!d.data?.taskId)throw Error(d.msg||'Gửi yêu cầu '+model+' thất bại');
@@ -15229,7 +15253,7 @@ $('mv14StageSegments').addEventListener('click',async e=>{const btn=e.target.clo
 $('mv14StagePlay').onclick=async()=>{const b=selected(),v=$('mv14StageVideo'),a=$('mv10Audio');if(!b)return;if(!v.src){await mv14StageRender();if(!v.src)return}v.currentTime=0;v.muted=true;a.currentTime=b.start;await Promise.allSettled([v.play(),a.play()]);};
 $('mv10Send').onclick=()=>mv14Generate(false);
 $('mv14Recover').onclick=()=>mv14Generate(true);
-async function mv14Generate(recover){const b=selected();if(!b)return mv14State('Chọn khung viền đỏ');if(mv14Busy)return;if(!state.audioId)return mv14State('Chưa có bài nhạc trên timeline');if(!['grok','wan','omni'].includes(b.model))return mv14State('Model không được hỗ trợ');if(!b.prompt?.trim())return mv14State('Nhập prompt mô tả cảnh trước khi tạo');if((b.model==='omni' || (b.model==='wan' && mv20UsesImage(b)))){
+async function mv14Generate(recover){const b=selected();if(!b)return mv14State('Chọn khung viền đỏ');if(mv14Busy)return;if(!state.audioId)return mv14State('Chưa có bài nhạc trên timeline');if(!['grok','wan','omni'].includes(b.model))return mv14State('Model không được hỗ trợ');if(b.model!=='omni'&&!b.prompt?.trim())return mv14State('Nhập prompt mô tả cảnh trước khi tạo');if(b.model==='omni'&&Array.from((b.prompt||'').trim()).length>300)return mv14State('✕ Prompt OmniHuman tối đa 300 ký tự. Hãy rút gọn phần mô tả; audio 30s không bị giới hạn này.');if((b.model==='omni' || (b.model==='wan' && mv20UsesImage(b)))){
  try{if(b.model==='omni'&&!mv20UsesImage(b))return mv14State('✕ OmniHuman cần ảnh nhân vật + audio. Chọn Upload ảnh hoặc Dùng ảnh đã tạo.');if(!await mv19EnsureReferenceImage(b))return mv14State('✕ Khung này chưa có ảnh đã lưu. Chọn ảnh nhân vật hoặc bấm “Dùng ảnh này cho khung video” rồi thử lại.');}
  catch(imageErr){return mv14State('✕ Ảnh chưa lưu được: '+(imageErr.message||imageErr)+'. Chọn lại ảnh và thử tiếp.');}
 }if(!recover&&b.segments?.some(x=>x.taskId&&!x.videoId))return mv14State('Đang có tác vụ Kie đã gửi. Bấm Khôi phục / kiểm tra tác vụ để tránh tạo trùng.');mv14Busy=true;$('mv10Send').disabled=true;const targetId=b.id;try{const plan=mv14Plan(b);if(!Array.isArray(b.segments)||!b.segments.length)b.segments=plan.map(x=>({...x,taskId:null,videoId:null}));if(b.segments.length!==plan.length&&b.segments.some(x=>x.taskId||x.videoId))throw Error('Khung đã thay đổi thời lượng sau khi tạo tác vụ. Hãy giữ tác vụ cũ hoặc tạo khung mới, tránh ghép sai.');
