@@ -14953,8 +14953,11 @@ root.innerHTML=`
 <div class="mvgrid">
 <div class="mvpanel"><h3>🎥 Tạo video cho khung đang chọn</h3><div id="mv10Selected">Chưa chọn khung</div>
 <div class="mvrow"><label>Model <select id="mv10Model"><option value="grok">Grok · image/text-to-video</option><option value="wan">WAN 3.0 · audio reference / nhép miệng</option><option value="omni">OmniHuman 2.0 · nhép miệng trực tiếp</option></select></label><label style="display:none"><input type="checkbox" id="mv10Lip"> Nhép miệng / lồng tiếng</label></div>
-<div class="mvrow"><label>Chế độ cảnh <select id="mv18AudioMode"><option value="silent">🎞 Video hoạt cảnh · không lồng tiếng</option><option value="lip">🎤 Ca sĩ nhép miệng · theo nhạc</option></select></label><label>Tỷ lệ hình <select id="mv18Aspect"><option value="16:9">16:9 ngang</option><option value="9:16">9:16 dọc</option><option value="1:1">1:1 vuông</option><option value="2:3">2:3 chân dung</option><option value="9:19">9:19 dọc dài (cần crop hậu kỳ)</option><option value="3:4">3:4 dọc</option></select></label></div><p class="mvnote" id="mv18AspectInfo">Tỷ lệ 9:19 cần cắt khung sau khi tạo; API không hỗ trợ trực tiếp. Tỷ lệ được lưu riêng cho từng block.</p><div class="mvrow"><label>Độ phân giải <select id="mv14Res"><option value="480p">480p · tiết kiệm</option><option value="720p">720p</option></select></label><span id="mv14GenState">Chưa gửi tác vụ</span></div><p class="mvnote">Grok tạo video theo prompt. WAN 3.0: cắt audio từng đoạn ≤15s để làm tham chiếu. OmniHuman 2.0: dùng ảnh và đúng đoạn nhạc để nhép miệng. MV cuối ưu tiên track nhạc gốc.</p><div class="mvrow"><label>Ảnh nhân vật <input type="file" id="mv10Image" accept="image/*"></label></div><img id="mv10ImageView" style="max-width:180px;max-height:140px;border-radius:10px;display:none" alt="Ảnh tham chiếu">
-<p><label>Prompt cho cảnh này</label></p><textarea id="mv10Prompt" placeholder="Mô tả chuyển động, bối cảnh, góc máy, khóa khuôn mặt..."></textarea>
+<div class="mvrow"><label>Chế độ cảnh <select id="mv18AudioMode"><option value="silent">🎞 Video hoạt cảnh · không lồng tiếng</option><option value="lip">🎤 Ca sĩ nhép miệng · theo nhạc</option></select></label><label>Tỷ lệ hình <select id="mv18Aspect"><option value="16:9">16:9 ngang</option><option value="9:16">9:16 dọc</option><option value="1:1">1:1 vuông</option><option value="2:3">2:3 chân dung</option><option value="9:19">9:19 dọc dài (cần crop hậu kỳ)</option><option value="3:4">3:4 dọc</option></select></label></div><p class="mvnote" id="mv18AspectInfo">Tỷ lệ 9:19 cần cắt khung sau khi tạo; API không hỗ trợ trực tiếp. Tỷ lệ được lưu riêng cho từng block.</p><div class="mvrow"><label>Độ phân giải <select id="mv14Res"><option value="480p">480p · tiết kiệm</option><option value="720p">720p</option></select></label><span id="mv14GenState">Chưa gửi tác vụ</span></div><p class="mvnote">Grok tạo video theo prompt. WAN 3.0: cắt audio từng đoạn ≤15s để làm tham chiếu. OmniHuman 2.0: dùng ảnh và đúng đoạn nhạc để nhép miệng. MV cuối ưu tiên track nhạc gốc.</p><div id="mv20VideoSource" class="mv20-video-source"><h4>🎬 Nguồn tạo video (chọn 1 cách)</h4>
+<div class="mv20-options"><button type="button" data-mv20-source="text">✍️ Từ văn bản (không cần ảnh)</button><button type="button" data-mv20-source="upload">📁 Upload ảnh trực tiếp</button><button type="button" data-mv20-source="generated">🖼 Dùng ảnh đã tạo</button></div>
+<div id="mv20VideoImagePanel"><div class="mvrow"><label>Ảnh tham chiếu cho video <input type="file" id="mv10Image" accept="image/*"></label></div><img id="mv10ImageView" style="max-width:180px;max-height:140px;border-radius:10px;display:none" alt="Ảnh tham chiếu"><p class="mvnote" id="mv19ImageNote">Có thể tải ảnh trực tiếp hoặc tạo ảnh ở khu vực riêng phía dưới, rồi bấm “Dùng ảnh này cho video”.</p></div>
+<p class="mvnote" id="mv20SourceNote">Grok và WAN có thể tạo video từ văn bản. OmniHuman cần ảnh nhân vật + đoạn nhạc.</p></div>
+<p><label>Prompt tạo VIDEO (không phải prompt tạo ảnh)</label></p><textarea id="mv10Prompt" placeholder="Mô tả chuyển động, bối cảnh, góc máy, khóa khuôn mặt..."></textarea>
 <div class="mvrow"><label>Đơn giá tính tự động (credit/giây) <input id="mv10Rate" type="number" min="0" step=".1" value="2.4" style="width:95px" readonly></label><label>VNĐ / credit <input id="mv10Vnd" type="number" min="0" step="1" value="130" style="width:95px"></label></div>
 <div id="mv10Cost" class="mvprice">Chọn khung để tính chi phí</div><p class="mvnote">Giá Grok lấy theo bảng Kie công khai, còn số tiền VNĐ quy đổi theo mức anh nhập. Model có thể giới hạn thời lượng mỗi tác vụ; khung 30/60s cần chia thành các tác vụ ngắn tương ứng.</p>
 <div class="mvrow"><button id="mv10Send" class="mvprimary">🎬 GENERATE VIDEO NGAY TẠI MV</button> <button id="mv14Recover">↻ Khôi phục / kiểm tra tác vụ</button><button id="mv10Delete" class="mvdanger">Xóa khung</button></div><div id="mv10Status" class="mvstatus">Sẵn sàng</div>
@@ -14995,7 +14998,7 @@ for(let t=0;t<=dur;t+=5){const s=document.createElement('span');s.className='mvt
 $('mv10Blocks').innerHTML='';
 sorted().forEach((b,i)=>{const d=document.createElement('div');d.className='mvblock'+(b.id===state.selected?' active':'')+((b.videoId||b.segments?.some(x=>x.videoId))?' done':'');d.style.left=(b.start*z)+'px';d.style.width=Math.max(30,b.len*z-2)+'px';d.dataset.id=b.id;d.innerHTML='<span class="mv11handle left" data-edge="left" title="Kéo để đổi thời điểm bắt đầu"></span><b>🎬 '+(i+1)+' · '+formatSec(b.len)+'</b><small>'+formatSec(b.start)+' → '+formatSec(b.start+b.len)+' · '+(b.model||'grok').toUpperCase()+((b.videoId||b.segments?.some(x=>x.videoId))?' ✓':'')+'</small><span class="mv11handle right" data-edge="right" title="Kéo để đổi thời điểm kết thúc"></span>'; $('mv10Blocks').appendChild(d)});
 $('mv10AudioName').textContent=state.audioName||'Chưa chọn nhạc';$('mv10Length').textContent=state.duration?'Nhạc '+state.duration.toFixed(1)+'s · '+state.blocks.length+' khung':'';$('mv10Zoom').value=z;$('mv10ZoomLabel').textContent=z+' px/giây';
-const b=selected();$('mv10Selected').textContent=b?'Khung '+formatSec(b.start)+' → '+formatSec(b.start+b.len)+' · '+formatSec(b.len):'Chưa chọn khung';$('mv11Live').textContent=b?'▶ '+formatSec(b.start)+' → '+formatSec(b.start+b.len)+' | THỜI LƯỢNG '+formatSec(b.len):'Chọn khung để điều chỉnh thời lượng';
+const b=selected();const imagePicker=$('mv10Image');if(imagePicker&&imagePicker.dataset.mvBlockId!==b?.id&&imagePicker.value)imagePicker.value='';$('mv10Selected').textContent=b?'Khung '+formatSec(b.start)+' → '+formatSec(b.start+b.len)+' · '+formatSec(b.len):'Chưa chọn khung';$('mv11Live').textContent=b?'▶ '+formatSec(b.start)+' → '+formatSec(b.start+b.len)+' | THỜI LƯỢNG '+formatSec(b.len):'Chọn khung để điều chỉnh thời lượng';
 $('mv10Model').disabled=!b;$('mv18AudioMode').disabled=!b;$('mv18Aspect').disabled=!b;$('mv10Prompt').disabled=!b;$('mv10Lip').disabled=!b;$('mv10VideoFile').disabled=!b;
 if(b){mv14ShowImage(b);$('mv10Model').value=b.model||'grok';$('mv14Res').value=b.resolution||'480p';$('mv10Prompt').value=b.prompt||'';$('mv18AudioMode').value=b.lip?'lip':'silent';$('mv18Aspect').value=b.aspect||'16:9';$('mv10Lip').checked=!!b.lip;mv18Explain();mv18Explain();$('mv10Rate').value=b.model==='grok'?($('mv14Res').value==='720p'?4.5:2.4):(b.model==='omni'?14:(b.resolution==='720p'?16:8))}else{$('mv10Prompt').value=''}
 price();mv14LaneRender();mv14StageRender();$('mv10Summary').textContent=state.blocks.filter(b=>b.videoId||b.segments?.some(x=>x.videoId)).length+'/'+state.blocks.length+' khung đã có MP4 · Dữ liệu khung tự lưu';showPreview();
@@ -15053,7 +15056,7 @@ blocksEl.addEventListener('pointerdown',e=>{
  drag={id:b.id,pointerId:e.pointerId,x:e.clientX,origStart:b.start,origLen:b.len,mode};
  blocksEl.setPointerCapture(e.pointerId);renderSelectionOnly();e.preventDefault();
 });
-function renderSelectionOnly(){blocksEl.querySelectorAll('.mvblock').forEach(x=>x.classList.toggle('active',x.dataset.id===state.selected));const b=selected();if(b){live(b);$('mv10Model').value=b.model||'grok';$('mv14Res').value=b.resolution||'480p';$('mv10Prompt').value=b.prompt||'';$('mv18AudioMode').value=b.lip?'lip':'silent';$('mv18Aspect').value=b.aspect||'16:9';$('mv10Lip').checked=!!b.lip;$('mv10Rate').value=b.model==='grok'?($('mv14Res').value==='720p'?4.5:2.4):(b.model==='omni'?14:(b.resolution==='720p'?16:8));showPreview()}}
+function renderSelectionOnly(){blocksEl.querySelectorAll('.mvblock').forEach(x=>x.classList.toggle('active',x.dataset.id===state.selected));const b=selected();const refInput=$('mv10Image');if(refInput && refInput.dataset.mvBlockId!==b?.id){refInput.value='';}if(b){mv14ShowImage(b);live(b);$('mv10Model').value=b.model||'grok';$('mv14Res').value=b.resolution||'480p';$('mv10Prompt').value=b.prompt||'';$('mv18AudioMode').value=b.lip?'lip':'silent';$('mv18Aspect').value=b.aspect||'16:9';$('mv10Lip').checked=!!b.lip;$('mv10Rate').value=b.model==='grok'?($('mv14Res').value==='720p'?4.5:2.4):(b.model==='omni'?14:(b.resolution==='720p'?16:8));showPreview()}}
 blocksEl.addEventListener('pointermove',e=>{
  if(!drag||e.pointerId!==drag.pointerId)return;
  const b=state.blocks.find(x=>x.id===drag.id);if(!b)return;
@@ -15089,19 +15092,69 @@ blocksEl.addEventListener('pointerup',endDrag);blocksEl.addEventListener('pointe
 $('mv10Snap').onclick=()=>{let t=0;sorted().forEach(b=>{b.start=Math.round(t*100)/100;t+=b.len});if(t>state.duration+.01)status('Lưu ý: tổng độ dài khung vượt nhạc '+(t-state.duration).toFixed(1)+'s; hãy xóa hoặc giảm khung cuối.');else status('Đã khớp '+state.blocks.length+' khung sát nhau từ 0s, không chồng lấn.');persist();render()};
 $('mv10Fill').onclick=()=>{if(!state.duration)return status('Chưa có nhạc');let t=sorted().reduce((v,b)=>Math.max(v,b.start+b.len),0);while(t<state.duration-1){const remain=state.duration-t,len=remain>=60?60:remain>=30?30:remain>=15?15:remain;const b={id:id(),start:t,len:Math.round(len*100)/100,model:'grok',prompt:'',lip:false};state.blocks.push(b);t+=len;if(state.blocks.length>500)break}state.selected=state.blocks.at(-1)?.id||null;persist();render();status('Đã phủ khung đến hết nhạc; khung cuối có thể ngắn hơn 15s.')};
 $('mv10Zoom').oninput=e=>{state.zoom=+e.target.value;persist();render()};$('mv10Left').onclick=()=>$('mv10Scroll').scrollBy({left:-500,behavior:'smooth'});$('mv10Right').onclick=()=>$('mv10Scroll').scrollBy({left:500,behavior:'smooth'});
-$('mv10Model').onchange=e=>{const b=selected();if(!b)return;b.model=e.target.value;if(b.model==='omni'){b.lip=true;$('mv18AudioMode').value='lip';$('mv10Lip').checked=true;}$('mv10Rate').value=b.model==='grok'?($('mv14Res').value==='720p'?4.5:2.4):(b.model==='omni'?14:(b.resolution==='720p'?16:8));persist();render();};$('mv10Prompt').oninput=e=>{const b=selected();if(b){b.prompt=e.target.value;persist()}};$('mv10Lip').onchange=e=>{const b=selected();if(b){b.lip=e.target.checked;$('mv18AudioMode').value=b.lip?'lip':'silent';persist()}};
+$('mv10Model').onchange=e=>{const b=selected();if(!b)return;b.model=e.target.value;if(b.model==='omni'){b.lip=true;$('mv18AudioMode').value='lip';$('mv10Lip').checked=true;if(b.mv20Source==='text')b.mv20Source='upload';}$('mv10Rate').value=b.model==='grok'?($('mv14Res').value==='720p'?4.5:2.4):(b.model==='omni'?14:(b.resolution==='720p'?16:8));persist();render();};$('mv10Prompt').oninput=e=>{const b=selected();if(b){b.prompt=e.target.value;persist()}};$('mv10Lip').onchange=e=>{const b=selected();if(b){b.lip=e.target.checked;$('mv18AudioMode').value=b.lip?'lip':'silent';persist()}};
 $('mv18AudioMode').onchange=e=>{const b=selected();if(!b)return;if(b.model==='omni'&&e.target.value==='silent'){e.target.value='lip';status('OmniHuman chuyên tạo nhân vật theo audio. Muốn video hoạt cảnh không lồng tiếng, chọn Grok hoặc WAN.');return;}b.lip=e.target.value==='lip';$('mv10Lip').checked=b.lip;persist();mv18Explain();};
 $('mv18Aspect').onchange=e=>{const b=selected();if(!b)return;b.aspect=e.target.value;persist();mv18Explain();};
 function mv18Explain(){const b=selected();if(!b)return;const a=b.aspect||'16:9';let note='Tỷ lệ '+a+' được lưu riêng cho khung này.';if(a==='9:19')note+=' API hiện không nhận 9:19; sẽ yêu cầu 9:16 và cần crop khi xuất.';if(b.model==='wan'&&a==='2:3')note+=' WAN không nhận 2:3; sẽ yêu cầu 3:4 và cần crop khi xuất.';if(b.model==='omni')note+=' OmniHuman chuyên nhép miệng; chọn chế độ hát để tạo.';$('mv18AspectInfo').textContent=note;}
 $('mv10Rate').oninput=price;$('mv10Vnd').oninput=price;$('mv14Res').onchange=()=>{const b=selected();if(b){b.resolution=$('mv14Res').value;persist();}price()};
 $('mv10Delete').onclick=async()=>{const b=selected();if(!b)return;if(b.videoId)await mediaDel(b.videoId);for(const seg of b.segments||[])if(seg.videoId)await mediaDel(seg.videoId);if(b.imageId)await mediaDel(b.imageId);state.blocks=state.blocks.filter(x=>x.id!==b.id);state.selected=state.blocks[0]?.id||null;persist();render();status('Đã xóa khung')};
-$('mv10Image').onchange=async e=>{const b=selected(),f=e.target.files[0];if(!b||!f)return;const k='image-'+b.id;await mediaPut(k,f);b.imageId=k;b.remoteImageUrl=null;persist();$('mv10ImageView').src=URL.createObjectURL(f);$('mv10ImageView').style.display='block';status('Đã lưu ảnh tham chiếu cho khung')};
+// V19: Đánh dấu block nhận ảnh NGAY khi người dùng chọn. Lưu IndexedDB là bất đồng bộ.
+$('mv10Image').onchange=async e=>{
+ const b=selected(),input=e.target,f=input.files&&input.files[0];if(!b||!f)return;
+ if(!f.type.startsWith('image/') && !/\.(png|jpe?g|webp)$/i.test(f.name))return status('✕ Chỉ nhận ảnh JPG, PNG hoặc WebP.');
+ const blockId=b.id,k='image-'+blockId;
+ input.dataset.mvBlockId=blockId;
+ b.imageId=k;b.mv20Source=(window.__mv20ImageFromGenerated?'generated':'upload');b.remoteImageUrl=null;persist();
+ const view=$('mv10ImageView');view.src=URL.createObjectURL(f);view.style.display='block';
+ status('⏳ Đang lưu ảnh '+f.name+' cho khung '+b.start.toFixed(1)+'s...');
+ b._imageWritePromise=mediaPut(k,f);
+ try{
+   await b._imageWritePromise;
+   if(selected()?.id===blockId)status('✓ Đã lưu ảnh nhân vật cho khung đang chọn. Có thể bấm Generate WAN / OmniHuman.');
+ }catch(err){
+   if(b.imageId===k)b.imageId=null;
+   persist();status('✕ Lưu ảnh thất bại: '+(err.message||err)+'. Hãy chọn lại ảnh.');
+ }finally{b._imageWritePromise=null;}
+};
+// Chắc chắn file ảnh thuộc đúng block đang chọn, không dùng nhầm file của block trước.
+async function mv19EnsureReferenceImage(b){
+ if(!b)return false;
+ if(b._imageWritePromise){
+   mv14State('Đang hoàn tất lưu ảnh tham chiếu...');
+   await b._imageWritePromise;
+ }
+ let stored=b.imageId?await mediaGet(b.imageId):null;
+ if(!stored){
+   const input=$('mv10Image');
+   const f=input?.files?.[0];
+   if(f && (input.dataset.mvBlockId===b.id || !input.dataset.mvBlockId)){
+     const k='image-'+b.id;
+     mv14State('Đang đồng bộ ảnh đã chọn vào khung MV...');
+     await mediaPut(k,f);
+     b.imageId=k;b.remoteImageUrl=null;input.dataset.mvBlockId=b.id;persist();
+     stored=await mediaGet(k);
+   }
+ }
+ if(!stored||!stored.size)return false;
+ if(!b.imageId){b.imageId='image-'+b.id;persist()}
+ return true;
+}
+
+// V20: Nguồn video độc lập với vùng tạo ảnh. Với Grok/WAN, văn bản không cần ảnh.
+function mv20UsesImage(b){return !!(b?.imageId && b.mv20Source!=='text')}
+function mv20NeedsImage(b){return b?.model==='omni'}
+window.IDECO_MV20_SOURCE={get:()=>{const b=selected();return b?{id:b.id,model:b.model,imageId:b.imageId||null,mode:b.mv20Source||(b.imageId?'upload':'text')}:null},set:(mode)=>{const b=selected();if(!b)return false;b.mv20Source=mode;persist();return true}};
 $('mv10VideoFile').onchange=async e=>{const b=selected(),f=e.target.files[0];if(!b||!f)return;const k='video-'+b.id;await mediaPut(k,f);b.videoId=k;persist();render();status('✓ Đã lưu MP4 cho khung '+b.start.toFixed(1)+'–'+(b.start+b.len).toFixed(1)+'s')};
 // V14: Tạo trực tiếp từ timeline, ghi taskId trước khi chờ kết quả.
 const mv14Sleep=t=>new Promise(ok=>setTimeout(ok,t));
 let mv14Busy=false,mv14StageURL=null;
 function mv14State(t){$('mv14GenState').textContent=t;status(t)}
-async function mv14ShowImage(b){const img=$('mv10ImageView');if(!b?.imageId){img.style.display='none';return}const blob=await mediaGet(b.imageId);if(selected()?.id!==b.id)return;if(blob){img.src=URL.createObjectURL(blob);img.style.display='block'}}
+async function mv14ShowImage(b){
+ const img=$('mv10ImageView');img.style.display='none';
+ if(!b?.imageId)return;
+ const blob=await mediaGet(b.imageId);if(selected()?.id!==b.id)return;
+ if(blob){img.src=URL.createObjectURL(blob);img.style.display='block'}
+}
 function mv14FileData(f){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>reject(Error('Không đọc được ảnh tham chiếu'));r.readAsDataURL(f)})}
 async function mv14ImageURL(b){if(!b.imageId)return null;if(b.remoteImageUrl)return b.remoteImageUrl;const f=await mediaGet(b.imageId);if(!f)throw Error('Ảnh tham chiếu đã mất khỏi kho cục bộ');const base64=await mv14FileData(f);mv14State('Đang tải ảnh lên Kie...');const response=await fetch(UPLOAD_URL,{method:'POST',headers:headers(),body:JSON.stringify({base64Data:base64,uploadPath:'ideco/mv',fileName:'mv_'+b.id+'.'+(f.type?.includes('png')?'png':'jpg')})});const j=await response.json();if(!response.ok||Number(j.code)!==200)throw Error(j.msg||'Upload ảnh thất bại');const u=j.data&&(j.data.downloadUrl||j.data.fileUrl||j.data.url);if(!u)throw Error('Kie chưa cấp URL ảnh');b.remoteImageUrl=u;persist();return u}
 function mv18AspectForAPI(b){
@@ -15111,7 +15164,7 @@ function mv18AspectForAPI(b){
  if(b.model==='grok')return aspect==='3:4'?'2:3':aspect;
  return aspect;
 }
-async function mv14TaskCreate(b,seg,idx){const withImage=!!b.imageId;const input={prompt:(b.prompt||'Một cảnh phim điện ảnh chuyển động tự nhiên, giữ nguyên nhân vật và bối cảnh.').trim().slice(0,4800)+'\nMaintain continuity with adjacent MV scenes. This is scene '+(idx+1)+', source timeline '+b.start.toFixed(1)+'-'+(b.start+b.len).toFixed(1)+' seconds.',duration:String(seg.generate),resolution:b.resolution||'480p',aspect_ratio:mv18AspectForAPI(b),mode:'normal'};if(withImage)input.image_urls=[await mv14ImageURL(b)];const model=withImage?'grok-imagine/image-to-video':'grok-imagine/text-to-video';const response=await fetch(API_BASE+'/api/v1/jobs/createTask',{method:'POST',headers:headers(),body:JSON.stringify({model,input})});const data=await response.json();if(!response.ok||Number(data.code)!==200||!data.data?.taskId)throw Error(data.msg||'Tạo tác vụ Grok thất bại');return data.data.taskId}
+async function mv14TaskCreate(b,seg,idx){const withImage=mv20UsesImage(b);const input={prompt:(b.prompt||'Một cảnh phim điện ảnh chuyển động tự nhiên, giữ nguyên nhân vật và bối cảnh.').trim().slice(0,4800)+'\nMaintain continuity with adjacent MV scenes. This is scene '+(idx+1)+', source timeline '+b.start.toFixed(1)+'-'+(b.start+b.len).toFixed(1)+' seconds.',duration:String(seg.generate),resolution:b.resolution||'480p',aspect_ratio:mv18AspectForAPI(b),mode:'normal'};if(withImage)input.image_urls=[await mv14ImageURL(b)];const model=withImage?'grok-imagine/image-to-video':'grok-imagine/text-to-video';const response=await fetch(API_BASE+'/api/v1/jobs/createTask',{method:'POST',headers:headers(),body:JSON.stringify({model,input})});const data=await response.json();if(!response.ok||Number(data.code)!==200||!data.data?.taskId)throw Error(data.msg||'Tạo tác vụ Grok thất bại');return data.data.taskId}
 // V15 - Kie WAN 3.0 / OmniHuman 2.0 adapter. Không gửi tác vụ thử lên API.
 let mv15Decoded=null;
 async function mv15DecodedAudio(){
@@ -15147,7 +15200,7 @@ async function mv15Upload(blob,name,wan){
  const u=d.data&&(d.data.downloadUrl||d.data.fileUrl||d.data.url);if(!u)throw Error('Upload không trả về URL');return u;
 }
 async function mv15CreateTask(b,seg,i){
- if(!b.imageId)throw Error((b.model==='omni'?'OmniHuman':'WAN')+' cần ảnh nhân vật. Hãy upload ảnh trước khi bấm Generate.');
+ if(b.model==='omni'&&!mv20UsesImage(b))throw Error('OmniHuman cần ảnh nhân vật và audio. Chọn nguồn Upload ảnh hoặc Dùng ảnh đã tạo. Với video thuần văn bản, chọn Grok/WAN.');
  if(b.model==='omni'&&!b.lip)throw Error('OmniHuman 2.0 chỉ hỗ trợ video theo âm thanh / nhép miệng. Muốn hoạt cảnh không tiếng, chọn Grok hoặc WAN.');
  const source=b.lip?await mv15DecodedAudio():null;
  const offset=b.start+b.segments.slice(0,i).reduce((sum,x)=>sum+x.length,0);
@@ -15156,12 +15209,12 @@ async function mv15CreateTask(b,seg,i){
  if(b.lip){const wav=mv15WavSlice(source,offset,seg.length,isWan);
  mv14State('Đoạn '+(i+1)+'/'+b.segments.length+' · đang cắt và upload audio '+(wav.size/1048576).toFixed(1)+' MB');
  if(!seg.audioRemoteUrl){seg.audioRemoteUrl=await mv15Upload(wav,'mv_'+b.id+'_'+i+'.wav',isWan);persist()}}
- const image=await mv14ImageURL(b);
+ const image=mv20UsesImage(b)?await mv14ImageURL(b):null;
  const prompt=[b.prompt?.trim()||'Nhân vật diễn xuất tự nhiên theo nội dung âm thanh.',
-   'Keep face identity, apparent age, hairstyle and clothing faithful to image. '+(b.lip?'Precisely match mouth movements to attached audio. No invented dialogue.':'Silent cinematic performance. Do not speak, sing, or lip sync. No added dialogue.'),
+   (image?'Keep face identity, apparent age, hairstyle and clothing faithful to image. ':'Create the visuals directly from the text prompt; no reference image is required. ')+(b.lip?'Precisely match mouth movements to attached audio. No invented dialogue.':'Silent cinematic performance. Do not speak, sing, or lip sync. No added dialogue.'),
    'This clip belongs to music timeline '+offset.toFixed(2)+'s – '+(offset+seg.length).toFixed(2)+'s.'].join('\n');
  const model=isWan?'wan/3-0-video':'omnihuman-2-0';
- const input=isWan?{prompt,duration:seg.generate,resolution:(b.resolution||'480p').toUpperCase(),aspect_ratio:mv18AspectForAPI(b),audio:!!b.lip,reference_image_urls:[image],...(b.lip?{reference_audio_urls:[seg.audioRemoteUrl]}:{})}:
+ const input=isWan?{prompt,duration:seg.generate,resolution:(b.resolution||'480p').toUpperCase(),aspect_ratio:mv18AspectForAPI(b),audio:!!b.lip,...(image?{reference_image_urls:[image]}:{}),...(b.lip?{reference_audio_urls:[seg.audioRemoteUrl]}:{})}:
    {image_urls:[image],audio_url:seg.audioRemoteUrl,prompt,enable_watermark:false};
  const h=isWan?wanHeaders():headers();
  const r=await fetch(API_BASE+'/api/v1/jobs/createTask',{method:'POST',headers:h,body:JSON.stringify({model,input})});
@@ -15176,7 +15229,10 @@ $('mv14StageSegments').addEventListener('click',async e=>{const btn=e.target.clo
 $('mv14StagePlay').onclick=async()=>{const b=selected(),v=$('mv14StageVideo'),a=$('mv10Audio');if(!b)return;if(!v.src){await mv14StageRender();if(!v.src)return}v.currentTime=0;v.muted=true;a.currentTime=b.start;await Promise.allSettled([v.play(),a.play()]);};
 $('mv10Send').onclick=()=>mv14Generate(false);
 $('mv14Recover').onclick=()=>mv14Generate(true);
-async function mv14Generate(recover){const b=selected();if(!b)return mv14State('Chọn khung viền đỏ');if(mv14Busy)return;if(!state.audioId)return mv14State('Chưa có bài nhạc trên timeline');if(!['grok','wan','omni'].includes(b.model))return mv14State('Model không được hỗ trợ');if(!b.prompt?.trim())return mv14State('Nhập prompt mô tả cảnh trước khi tạo');if(b.model!=='grok'&&!b.imageId)return mv14State('WAN/OmniHuman cần upload ảnh nhân vật trước khi gửi API');if(!recover&&b.segments?.some(x=>x.taskId&&!x.videoId))return mv14State('Đang có tác vụ Kie đã gửi. Bấm Khôi phục / kiểm tra tác vụ để tránh tạo trùng.');mv14Busy=true;$('mv10Send').disabled=true;const targetId=b.id;try{const plan=mv14Plan(b);if(!Array.isArray(b.segments)||!b.segments.length)b.segments=plan.map(x=>({...x,taskId:null,videoId:null}));if(b.segments.length!==plan.length&&b.segments.some(x=>x.taskId||x.videoId))throw Error('Khung đã thay đổi thời lượng sau khi tạo tác vụ. Hãy giữ tác vụ cũ hoặc tạo khung mới, tránh ghép sai.');
+async function mv14Generate(recover){const b=selected();if(!b)return mv14State('Chọn khung viền đỏ');if(mv14Busy)return;if(!state.audioId)return mv14State('Chưa có bài nhạc trên timeline');if(!['grok','wan','omni'].includes(b.model))return mv14State('Model không được hỗ trợ');if(!b.prompt?.trim())return mv14State('Nhập prompt mô tả cảnh trước khi tạo');if((b.model==='omni' || (b.model==='wan' && mv20UsesImage(b)))){
+ try{if(b.model==='omni'&&!mv20UsesImage(b))return mv14State('✕ OmniHuman cần ảnh nhân vật + audio. Chọn Upload ảnh hoặc Dùng ảnh đã tạo.');if(!await mv19EnsureReferenceImage(b))return mv14State('✕ Khung này chưa có ảnh đã lưu. Chọn ảnh nhân vật hoặc bấm “Dùng ảnh này cho khung video” rồi thử lại.');}
+ catch(imageErr){return mv14State('✕ Ảnh chưa lưu được: '+(imageErr.message||imageErr)+'. Chọn lại ảnh và thử tiếp.');}
+}if(!recover&&b.segments?.some(x=>x.taskId&&!x.videoId))return mv14State('Đang có tác vụ Kie đã gửi. Bấm Khôi phục / kiểm tra tác vụ để tránh tạo trùng.');mv14Busy=true;$('mv10Send').disabled=true;const targetId=b.id;try{const plan=mv14Plan(b);if(!Array.isArray(b.segments)||!b.segments.length)b.segments=plan.map(x=>({...x,taskId:null,videoId:null}));if(b.segments.length!==plan.length&&b.segments.some(x=>x.taskId||x.videoId))throw Error('Khung đã thay đổi thời lượng sau khi tạo tác vụ. Hãy giữ tác vụ cũ hoặc tạo khung mới, tránh ghép sai.');
  if(b.segments.some(x=>x.taskId||x.videoId)){
    if(b.generatedModel&&b.generatedModel!==b.model)throw Error('Khung đã có tác vụ '+b.generatedModel+'. Không thể chuyển sang '+b.model+' và khôi phục nhầm. Hãy tạo khung mới.');
    if(b.generatedStart!=null&&Math.abs(b.generatedStart-b.start)>.02)throw Error('Đã di chuyển khung sau khi gửi Kie. Khôi phục khung về mốc '+b.generatedStart+'s hoặc tạo khung mới.');
@@ -15333,7 +15389,7 @@ render();
       const dt=new DataTransfer();
       dt.items.add(file);
       imageInput.files=dt.files;
-      imageInput.dispatchEvent(new Event('change',{bubbles:true}));
+      window.__mv20ImageFromGenerated=true;imageInput.dispatchEvent(new Event('change',{bubbles:true}));window.__mv20ImageFromGenerated=false;
       if(imageView){ imageView.src=URL.createObjectURL(blob); imageView.style.display='block'; }
       setStatus('✓ Đã chèn ảnh vừa tạo vào khung video hiện tại.');
     }
@@ -15416,6 +15472,59 @@ render();
 })();
 </script>
 
+
+<style id="mv20-style">
+#mv10Tab .mv20-video-source{padding:13px;margin:12px 0;background:#f3f7ff;border:1px solid #cdddf6;border-radius:13px}
+#mv10Tab .mv20-video-source h4{font-size:15px;margin:0 0 10px;color:#233f65}
+#mv10Tab .mv20-options{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+#mv10Tab .mv20-options button{background:#fff;border:1px solid #c7d5e9;color:#315076;padding:10px 13px;border-radius:10px}
+#mv10Tab .mv20-options button.active{background:#3158ce;border-color:#3158ce;color:white}
+#mv10Tab #mv17ImageWrap{margin:16px 0;max-width:none!important}
+#mv10Tab .mv20-image-separate{grid-column:1/-1;background:#fff;border:1px solid #cbd9ec;border-radius:16px;padding:16px}
+#mv10Tab .mv20-image-separate>h3{margin:0 0 8px;color:#253e65}
+#mv10Tab #mv17AutoUse{display:none!important}
+#mv10Tab #mv20VideoImagePanel[hidden]{display:none!important}
+</style>
+<script id="mv20-separate-image-video">
+(function(){
+ function init(){
+  const root=document.getElementById('mv10Tab'),source=document.getElementById('mv20VideoSource'),img=document.getElementById('mv17ImageWrap');
+  if(!root||!source||!img||source.dataset.mv20Ready)return;
+  source.dataset.mv20Ready='1';
+  // Đưa khu vực tạo ảnh thành một panel độc lập, không xen giữa nút upload ảnh và prompt video.
+  const grid=root.querySelector('.mvgrid');
+  if(grid){const separate=document.createElement('section');separate.className='mv20-image-separate';separate.innerHTML='<h3>🖼 TẠO ẢNH RIÊNG (TÙY CHỌN)</h3><p class="mvnote">Tạo ảnh từ văn bản khi cần. Sau khi tạo, bấm “Dùng ảnh này cho khung video”. Không bắt buộc tạo ảnh để tạo video Grok hoặc WAN.</p>';separate.appendChild(img);grid.appendChild(separate)}
+  const note=document.getElementById('mv20SourceNote');
+  function getBlock(){return window.IDECO_MV20_SOURCE?.get?.()||null}
+  function setMode(mode){
+    if(!['text','upload','generated'].includes(mode))mode='text';
+    const b=getBlock();if(!b){note.textContent='Chọn một block viền đỏ trên timeline trước.';return}
+    if(b.model==='omni'&&mode==='text'){
+      note.textContent='OmniHuman 2.0 cần ảnh nhân vật và audio. Hãy chọn Upload ảnh hoặc Dùng ảnh đã tạo.';return;
+    }
+    window.IDECO_MV20_SOURCE.set(mode);
+    paint(mode,b);
+  }
+  function paint(mode,b){
+    source.querySelectorAll('[data-mv20-source]').forEach(x=>x.classList.toggle('active',x.dataset.mv20Source===mode));
+    const panel=document.getElementById('mv20VideoImagePanel');panel.hidden=mode==='text';
+    note.textContent=mode==='text'?'✍️ Tạo video trực tiếp từ prompt: không gửi ảnh tham chiếu. Hỗ trợ Grok/WAN.':mode==='upload'?'📁 Chọn file ảnh ngay phía dưới rồi Generate video.':'🖼 Tạo ảnh ở khu vực riêng, bấm “Dùng ảnh này cho khung video”, rồi Generate.';
+  }
+  source.addEventListener('click',e=>{const btn=e.target.closest('[data-mv20-source]');if(btn)setMode(btn.dataset.mv20Source)});
+  const model=document.getElementById('mv10Model');model?.addEventListener('change',()=>setTimeout(refresh,0));
+  root.addEventListener('click',e=>{if(e.target.closest('.mvblock,.mv11handle'))setTimeout(refresh,30)});
+  function refresh(){const b=getBlock();if(!b)return;paint(b.mv20Source||(b.imageId?'upload':'text'),b)}
+  // Điều hướng ảnh vừa tạo: giữ chức năng nút chèn cũ nhưng đánh dấu nguồn là ảnh tạo AI.
+  const use=document.getElementById('mv17UseImage');
+  use?.addEventListener('click',()=>setTimeout(refresh,500));
+  const picker=document.getElementById('mv10Image');picker?.addEventListener('change',()=>{if(!window.__mv20ImageFromGenerated)setMode('upload')});
+  setInterval(()=>{if(root.style.display!=='none')refresh()},1800);
+  refresh();
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+ setTimeout(init,1200);
+})();
+</script>
 </body>
 </html>
 <style>
