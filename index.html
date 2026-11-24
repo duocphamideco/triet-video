@@ -15692,9 +15692,25 @@ $('mvFullClips').onclick=async()=>{
   const audio=state.audioId?mvFullAudio(await mv15DecodedAudio(),items):null;
   const save=(blob,name)=>{const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000)};
   const pad=n=>String(n).padStart(2,'0');
-  for(let k=0;k<items.length;k++){const it=items[k];const blob=await mediaGet(it.id);if(!blob)continue;mvFullInfo('Đang tải clip '+(k+1)+'/'+items.length+'...');save(blob,'MV_'+pad(k+1)+'_'+it.start.toFixed(1).replace('.','s')+'_'+it.len.toFixed(1)+'s.mp4');await new Promise(r=>setTimeout(r,700))}
+  const decoded=await mv15DecodedAudio();let failed=0;
+  for(let k=0;k<items.length;k++){const it=items[k];const raw=await mediaGet(it.id);if(!raw)continue;
+   // Mỗi clip tải về phải CHỨA nhạc/giọng gốc đúng đoạn của khung, thay tiếng AI
+   const key='mvdl-'+it.id+'-'+it.start.toFixed(2)+'-'+it.len.toFixed(2);
+   let blob=await mediaGet(key);
+   if(!blob){
+    try{
+     mvFullInfo('Clip '+(k+1)+'/'+items.length+' · đang lồng nhạc gốc '+it.start.toFixed(1)+'–'+(it.start+it.len).toFixed(1)+'s...');
+     const wav=mv15WavSlice(decoded,it.start,it.len,false);
+     const r=await window.IDECO_WAN_BG_MERGE([raw],wav,+it.len.toFixed(3),'record',(st,pct)=>mvFullInfo('Clip '+(k+1)+'/'+items.length+' · lồng nhạc · '+st+' · '+pct+'%'));
+     blob=r?.blob instanceof Blob?r.blob:r;if(!(blob instanceof Blob)||blob.size<1024)throw Error('MP4 lỗi');
+     await mediaPut(key,blob);
+    }catch(err){failed++;blob=null;mvFullInfo('✕ Clip '+(k+1)+' chưa lồng được nhạc: '+(err.message||err));}
+   }
+   if(!blob)continue;
+   save(blob,'MV_'+pad(k+1)+'_'+it.start.toFixed(1).replace('.','s')+'_'+it.len.toFixed(1)+'s.mp4');await new Promise(r=>setTimeout(r,700))}
+  if(failed)throw Error(failed+' clip chưa lồng được nhạc nên KHÔNG tải bản tiếng AI. Bấm lại để thử tiếp (các clip đã xong được giữ sẵn).');
   if(audio)save(audio,'MV_00_NHAC_GOP_'+items.reduce((a,x)=>a+x.len,0).toFixed(1)+'s.wav');
-  mvFullInfo('✓ Đã tải '+items.length+' clip (đánh số theo thứ tự) + 1 file nhạc đã gộp đúng các đoạn. Trong CapCut: kéo các clip MV_01, MV_02… nối liền nhau, đặt MV_00_NHAC_GOP ở track nhạc từ giây 0 và tắt tiếng clip. Nếu trình duyệt hỏi, chọn “Cho phép tải nhiều tệp”.');
+  mvFullInfo('✓ Đã tải '+items.length+' clip ĐÃ LỒNG NHẠC/GIỌNG GỐC (đánh số theo thứ tự) + 1 file nhạc gộp dự phòng. Trong CapCut: kéo MV_01, MV_02… nối liền nhau là có tiếng đúng; không cần thêm file nhạc. Nếu trình duyệt hỏi, chọn “Cho phép tải nhiều tệp”.');
  }catch(e){mvFullInfo('✕ '+(e.message||e))}
 };
 (async()=>{try{const old=await mediaGet('mv-full-final');if(old?.size){mvFullBlob=old;mvFullURL=URL.createObjectURL(old);$('mvFullVideo').src=mvFullURL;$('mvFullVideo').style.display='block';$('mvFullDownload').disabled=false;mvFullInfo('Có bản MV gộp lần trước ('+(old.size/1048576).toFixed(1)+' MB). Gộp lại nếu vừa tạo thêm video.')}}catch(_){}})();
