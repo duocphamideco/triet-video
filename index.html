@@ -15311,8 +15311,11 @@ async function mv15CreateTask(b,seg,i){
    'This clip belongs to music timeline '+offset.toFixed(2)+'s – '+(offset+seg.length).toFixed(2)+'s.'].join('\n'):basePrompt;
  const model=isWan?'wan/3-0-video':'omnihuman-2-0';
  if(isWan && b.lip && (!seg.audioRemoteUrl || !/^https?:\/\//i.test(seg.audioRemoteUrl)))throw Error('WAN chưa có URL Audio1 hợp lệ. Dừng trước khi gửi Kie để tránh mất credit.');
- const input=isWan?{prompt,duration:seg.generate,resolution:(b.resolution||'480p').toUpperCase(),aspect_ratio:mv18AspectForAPI(b),audio:!!b.lip,...(image?{reference_image_urls:[image]}:{}),...(b.lip?{reference_audio_urls:[seg.audioRemoteUrl]}:{})}:
+ const input=isWan?{prompt,duration:seg.generate,resolution:(b.resolution||'480p').toUpperCase(),aspect_ratio:mv18AspectForAPI(b),audio:true,...(image?{reference_image_urls:[image]}:{}),...(b.lip?{reference_audio_urls:[seg.audioRemoteUrl]}:{})}:
    {image_urls:[image],audio_url:seg.audioRemoteUrl,...(prompt?{prompt}:{}),enable_watermark:false};
+ // V26: record what was genuinely sent. 'audio:true' alone is NOT lip sync;
+ // reference_audio_urls supplies the 15s Audio1 reference in the WAN reference workflow.
+ if(isWan){seg.sentLip=!!b.lip;seg.sentAudioURL=b.lip?seg.audioRemoteUrl:null;seg.sentImageURL=image||null;seg.referenceVerified=!!(!b.lip||seg.sentAudioURL);persist();}
  const h=isWan?wanHeaders():headers();
  const r=await fetch(API_BASE+'/api/v1/jobs/createTask',{method:'POST',headers:h,body:JSON.stringify({model,input})});
  const d=await r.json();if(!r.ok||Number(d.code)!==200||!d.data?.taskId)throw Error(d.msg||'Gửi yêu cầu '+model+' thất bại');
@@ -15369,7 +15372,7 @@ function mv23Refresh(){
  (b.segments||[]).forEach((seg,i)=>{const opt=document.createElement('option');opt.value=String(i);opt.textContent='Đoạn '+(i+1)+' · '+(seg.length||15)+'s'+(seg.videoId?' · có MP4':' · chưa tạo');sel.appendChild(opt)});
  if([...sel.options].some(x=>x.value===previous))sel.value=previous;
  const n=Number(sel.value||0),seg=b.segments?.[n];
- $('mv23WanInfo').textContent= b.lip ? (seg?.audioRemoteUrl?'✓ Đã gửi Audio1 tham chiếu cho đoạn '+(n+1)+'; nghe video gốc để kiểm tra âm thanh và khẩu hình.':'⚠ Đoạn này chưa có xác nhận upload Audio1. Nếu video đã tạo trước đó, cần kiểm tra tác vụ cũ.') : '⚠ Block đang chọn chế độ không lồng tiếng. Hãy chọn “Ca sĩ nhép miệng · theo nhạc” trước khi tạo lượt mới.';
+ $('mv23WanInfo').textContent= b.lip ? (seg?.sentLip && seg.sentAudioURL?'✓ Tác vụ WAN này có gửi Audio1; '+(seg.mvAudioId?'đã ghép nhạc gốc vào MP4 để nghe và tải.':'chưa có bản MP4 ghép nhạc.')+' Dùng nút kiểm tra tiếng WAN gốc để đánh giá khẩu hình.':seg?.audioRemoteUrl?'⚠ Có URL audio tham chiếu nhưng chưa xác minh tác vụ cũ đã gửi với chế độ nhép miệng.':'⚠ Chưa có xác nhận WAN đã nhận Audio1; cần tạo tác vụ mới nếu muốn hát theo nhạc.') : '⚠ Block đang chọn không bật nhép miệng. Các tác vụ cũ không tự đổi theo lựa chọn mới.';
 }
 $('mv23WanSeg').addEventListener('change',mv23Refresh);
 $('mv23WanListen').onclick=async()=>{
@@ -15386,6 +15389,41 @@ $('mv23WanListen').onclick=async()=>{
  }catch(e){$('mv23WanInfo').textContent='Không mở được video WAN: '+(e.message||e)}
 };
 $('mv23WanMute').onclick=()=>{$('mv23WanVideo').pause();$('mv23WanVideo').currentTime=0};
+
+// V26: render a verified, locally-muxed MV copy so the exact original song is
+// audible IN the MP4; retain WAN raw MP4 separately to audit model-native sound/lips.
+const mv26Tools=document.createElement('div');mv26Tools.className='mvrow';
+mv26Tools.style.cssText='display:flex;flex-wrap:wrap;gap:8px;margin-top:10px';
+mv26Tools.innerHTML='<button type="button" id="mv26MuxAudio">🎵 Ghép nhạc gốc vào MP4 WAN</button><button type="button" id="mv26PlayAudio">▶ Xem MP4 đã ghép tiếng</button><button type="button" id="mv26DownloadAudio">⬇ Tải MP4 có nhạc</button>';
+mv23Panel.appendChild(mv26Tools);
+const mv26Help=document.createElement('p');mv26Help.id='mv26Help';mv26Help.style.cssText='font-size:12px;line-height:1.6;color:#315574;margin:9px 0 0';
+mv26Help.textContent='WAN 3.0 nhận Audio1 để tham chiếu, nhưng không đảm bảo sao chép lời hát và khẩu hình khớp từng âm tiết. Bản MP4 ghép nhạc đảm bảo nghe đúng đoạn nhạc gốc; hãy xem video WAN gốc riêng để đánh giá khẩu hình.';
+mv23Panel.appendChild(mv26Help);
+const mv26Video=document.createElement('video');mv26Video.id='mv26AudioVideo';mv26Video.controls=true;mv26Video.playsInline=true;mv26Video.style.cssText='display:none;width:100%;max-height:310px;background:#070d16;border-radius:10px;margin-top:9px';
+mv23Panel.appendChild(mv26Video);
+let mv26Working=false,mv26ObjectURL='';
+async function mv26MuxWanAudio(b,seg,i){
+ if(!b||b.model!=='wan'||!b.lip)throw Error('Chọn block WAN có bật Ca sĩ nhép miệng');
+ if(!seg||!seg.videoId)throw Error('Cần có video WAN đã tạo trước khi ghép');
+ if(seg.mvAudioId&&await mediaGet(seg.mvAudioId))return seg.mvAudioId;
+ if(typeof window.IDECO_WAN_BG_MERGE!=='function')throw Error('Bộ ghép MP4 chưa tải được. Mở ứng dụng qua HTTPS và thử lại.');
+ const video=await mediaGet(seg.videoId);if(!video)throw Error('Đã mất video WAN gốc của đoạn này');
+ const decoded=await mv15DecodedAudio();
+ const offset=b.start+(b.segments||[]).slice(0,i).reduce((sum,x)=>sum+Number(x.length||0),0);
+ const audio=mv15WavSlice(decoded,offset,Number(seg.length),false);
+ mv14State('WAN đoạn '+(i+1)+' · ghép đúng nhạc gốc của block vào MP4, giữ video WAN gốc...');
+ const result=await window.IDECO_WAN_BG_MERGE([video],audio,Number(seg.length),'record',(stage,pct)=>mv14State('WAN ghép nhạc · '+stage+' · '+pct+'%'));
+ if(!result?.size)throw Error('Bộ ghép chưa trả về MP4');
+ seg.mvAudioId='mv26-wan-sound-'+b.id+'-'+i;
+ await mediaPut(seg.mvAudioId,result);persist();
+ mv14State('✓ WAN đoạn '+(i+1)+' · đã có MP4 chứa nhạc gốc đúng vị trí. Video WAN gốc vẫn còn để kiểm tra khẩu hình.');
+ return seg.mvAudioId;
+}
+async function mv26Selected(){const b=selected(),i=Number($('mv23WanSeg').value||0);if(!b||b.model!=='wan')throw Error('Chọn block WAN trên timeline');return {b,i,seg:b.segments?.[i]}}
+$('mv26MuxAudio').onclick=async()=>{if(mv26Working)return;mv26Working=true;try{const {b,seg,i}=await mv26Selected();await mv26MuxWanAudio(b,seg,i);mv23Refresh();}catch(e){$('mv23WanInfo').textContent='✕ '+(e.message||e)}finally{mv26Working=false}};
+$('mv26PlayAudio').onclick=async()=>{try{const {b,seg,i}=await mv26Selected();if(!seg?.mvAudioId)await mv26MuxWanAudio(b,seg,i);const blob=await mediaGet(seg.mvAudioId);if(!blob)throw Error('Bản MP4 có nhạc không còn trong kho');if(mv26ObjectURL)URL.revokeObjectURL(mv26ObjectURL);mv26ObjectURL=URL.createObjectURL(blob);$('mv10Audio').pause();$('mv16Video')?.pause();$('mv23WanVideo').pause();mv26Video.src=mv26ObjectURL;mv26Video.muted=false;mv26Video.volume=1;mv26Video.style.display='block';await mv26Video.play();}catch(e){$('mv23WanInfo').textContent='✕ '+(e.message||e)}};
+$('mv26DownloadAudio').onclick=async()=>{try{const {b,seg,i}=await mv26Selected();if(!seg?.mvAudioId)await mv26MuxWanAudio(b,seg,i);const blob=await mediaGet(seg.mvAudioId);if(!blob)throw Error('Chưa có MP4 chứa nhạc');const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='IDECO_WAN_'+Math.round(b.start)+'s_part'+(i+1)+'_music.mp4';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),30000)}catch(e){$('mv23WanInfo').textContent='✕ '+(e.message||e)}};
+
 // Tránh ghi đè vào các hàm dựng cũ, chỉ cập nhật panel sau render.
 const mv23OriginalRender=render;
 render=function(){const result=mv23OriginalRender.apply(this,arguments);mv23Refresh();return result};
@@ -15507,7 +15545,7 @@ async function mv14Generate(recover){const b=selected();if(!b)return mv14State('
    if(b.generatedStart!=null&&Math.abs(b.generatedStart-b.start)>.02)throw Error('Đã di chuyển khung sau khi gửi Kie. Khôi phục khung về mốc '+b.generatedStart+'s hoặc tạo khung mới.');
    if(b.generatedLen!=null&&Math.abs(b.generatedLen-b.len)>.02)throw Error('Đã đổi thời lượng khung sau khi gửi Kie. Hãy khôi phục '+b.generatedLen+'s hoặc tạo khung mới.');
  }
- if(!b.generatedModel){b.generatedModel=b.model;b.generatedStart=b.start;b.generatedLen=b.len;persist()}for(let i=0;i<b.segments.length;i++){const seg=b.segments[i];if(seg.videoId)continue;if(!seg.taskId){if(recover){mv14State('Đoạn '+(i+1)+' chưa gửi; chỉ khôi phục các đoạn đã có mã tác vụ');continue;}mv14State('Đang gửi '+b.model.toUpperCase()+' '+(i+1)+'/'+b.segments.length+' · '+seg.generate+'s');seg.taskId=b.model==='grok'?await mv14TaskCreate(b,seg,i):await mv15CreateTask(b,seg,i);persist()}mv14State('Đã gửi Kie: '+seg.taskId+' · theo dõi đoạn '+(i+1));const link=seg.remoteUrl||await mv14TaskPoll(seg.taskId,'Đoạn '+(i+1)+'/'+b.segments.length,b.model);seg.remoteUrl=link;persist();try{const blob=await mv14FetchVideo(link);seg.videoId='video-'+b.id+'-part'+i;await mediaPut(seg.videoId,blob);mv14State('✓ Đã lưu video đoạn '+(i+1)+' · '+(blob.size/1048576).toFixed(1)+' MB')}catch(err){mv14State('Kie đã tạo xong nhưng chưa tải MP4: '+err.message+' · link vẫn được lưu.');throw err}persist();if(selected()?.id===targetId){render();await mv14StageRender()}}const finished=b.segments.filter(x=>x.videoId).length; if(b.model==='grok'&&b.grokChain30!==false&&Math.abs(b.len-30)<.06&&finished===2){try{await mv24Join(b);}catch(joinErr){mv14State('✓ Đã tạo đủ 2 clip nhưng chưa ghép được MP4: '+joinErr.message+'; có thể xem riêng từng clip và bấm Ghép lại.');}}mv14State('✓ Hoàn tất '+finished+'/'+b.segments.length+' clip'+(b.merged30Id?' · có MP4 30 giây.':' · bấm XEM RIÊNG BLOCK + NHẠC để kiểm tra.'));if(selected()?.id===targetId)$('mv18BlockStatus').textContent='✓ Video đã tạo, nhạc gốc đồng bộ theo block; tiếng gốc AI tắt.'}
+ if(!b.generatedModel){b.generatedModel=b.model;b.generatedStart=b.start;b.generatedLen=b.len;persist()}for(let i=0;i<b.segments.length;i++){const seg=b.segments[i];if(seg.videoId)continue;if(!seg.taskId){if(recover){mv14State('Đoạn '+(i+1)+' chưa gửi; chỉ khôi phục các đoạn đã có mã tác vụ');continue;}mv14State('Đang gửi '+b.model.toUpperCase()+' '+(i+1)+'/'+b.segments.length+' · '+seg.generate+'s');seg.taskId=b.model==='grok'?await mv14TaskCreate(b,seg,i):await mv15CreateTask(b,seg,i);persist()}mv14State('Đã gửi Kie: '+seg.taskId+' · theo dõi đoạn '+(i+1));const link=seg.remoteUrl||await mv14TaskPoll(seg.taskId,'Đoạn '+(i+1)+'/'+b.segments.length,b.model);seg.remoteUrl=link;persist();try{const blob=await mv14FetchVideo(link);seg.videoId='video-'+b.id+'-part'+i;await mediaPut(seg.videoId,blob);mv14State('✓ Đã lưu video đoạn '+(i+1)+' · '+(blob.size/1048576).toFixed(1)+' MB');if(b.model==='wan'&&b.lip){try{await mv26MuxWanAudio(b,seg,i)}catch(muxErr){seg.mvAudioError=String(muxErr.message||muxErr);mv14State('✓ WAN đã có video gốc, nhưng ghép nhạc vào MP4 chưa xong: '+seg.mvAudioError+' · bấm Ghép nhạc gốc vào MP4 WAN để thử lại.')}}}catch(err){mv14State('Kie đã tạo xong nhưng chưa tải MP4: '+err.message+' · link vẫn được lưu.');throw err}persist();if(selected()?.id===targetId){render();await mv14StageRender()}}const finished=b.segments.filter(x=>x.videoId).length; if(b.model==='grok'&&b.grokChain30!==false&&Math.abs(b.len-30)<.06&&finished===2){try{await mv24Join(b);}catch(joinErr){mv14State('✓ Đã tạo đủ 2 clip nhưng chưa ghép được MP4: '+joinErr.message+'; có thể xem riêng từng clip và bấm Ghép lại.');}}mv14State('✓ Hoàn tất '+finished+'/'+b.segments.length+' clip'+(b.merged30Id?' · có MP4 30 giây.':' · bấm XEM RIÊNG BLOCK + NHẠC để kiểm tra.'));if(selected()?.id===targetId)$('mv18BlockStatus').textContent='✓ Video đã tạo, nhạc gốc đồng bộ theo block; tiếng gốc AI tắt.'}
 catch(err){mv14State('✕ '+(err.message||err)+' · Nếu đã có taskId, bấm Khôi phục để kiểm tra, không gửi lại.')}finally{mv14Busy=false;$('mv10Send').disabled=false;persist();render()}}
 
 
