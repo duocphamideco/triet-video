@@ -1760,6 +1760,14 @@ body:not(.clip-mode) #v73MobileExport,body:not(.clip-mode) #v73MobileProgress{di
           </div>
           <video id="omniEditPrev" controls muted playsinline preload="metadata"></video>
         </div>
+        <details id="omniTalkBox" style="margin-top:8px"><summary style="cursor:pointer;font-weight:700">💬 Lời thoại 2 nhân vật (Gemini Omni tự tạo giọng + khớp môi)</summary>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+            <input id="omniSpk1" placeholder="Nhân vật 1 (VD: Dược sĩ nữ, bên trái)">
+            <input id="omniSpk2" placeholder="Nhân vật 2 (VD: Khách hàng nam, bên phải)">
+          </div>
+          <textarea id="omniTalk" rows="4" style="width:100%;margin-top:6px" placeholder="Mỗi dòng 1 câu, bắt đầu bằng 1: hoặc 2:&#10;1: Chào anh, anh cần tư vấn sản phẩm gì ạ?&#10;2: Tôi muốn hỏi về kem chống nắng UVS.&#10;1: Dạ, sản phẩm này phù hợp da dầu ạ."></textarea>
+          <small style="display:block;color:#5b6b80;line-height:1.5">Nên dùng 2 ảnh nhân vật (chế độ Tự động, 2–5 ảnh = ảnh tham chiếu) hoặc 1 ảnh có cả 2 người. Mỗi câu ngắn; 15 giây ≈ 4–6 câu tiếng Việt.</small>
+        </details>
       </div>
     </div>
 
@@ -3751,6 +3759,13 @@ function generateVideo(){
      V84: không gửi aspect_ratio "auto" (tự tính 16:9 / 9:16 theo ảnh), và tự gửi lại khi máy chủ báo internal error. */
   if(engine === 'omni'){
     var OM_MODEL = 'google/gemini-omni-flash-1-2';
+    (function(){
+      var t = ($('omniTalk') && $('omniTalk').value || '').trim(); if(!t) return;
+      var n1 = ($('omniSpk1') && $('omniSpk1').value.trim()) || 'Speaker 1', n2 = ($('omniSpk2') && $('omniSpk2').value.trim()) || 'Speaker 2';
+      var lines = t.split(/\n+/).map(function(l){ l = l.trim(); var m = l.match(/^([12])\s*[:：\-]\s*(.+)$/); if(!m) return null; return (m[1] === '1' ? n1 : n2) + ' says in Vietnamese: "' + m[2].replace(/"/g, "'") + '"'; }).filter(Boolean);
+      if(!lines.length) return;
+      prompt += '\n\nDIALOGUE between two on-screen characters. ' + n1 + ' and ' + n2 + ' are two different people, both clearly visible with distinct voices (natural Vietnamese speech). Speak the lines in this exact order; only the speaking character moves their lips, the other listens with closed mouth and natural reactions. No background music over the speech, no subtitles.\n' + lines.map(function(l, i){ return (i + 1) + '. ' + l; }).join('\n');
+    })();
     var omRes = String(res).toLowerCase() === '360p' ? '360p' : '720p';
     var omDur = Math.max(3, Math.min(15, Math.round(dur || 8)));
     if(audioRef) toast('Gemini Omni không nhận file thoại MP3/WAV — video sẽ tự sinh âm thanh theo mô tả.');
@@ -3780,7 +3795,7 @@ function generateVideo(){
         Object.keys(input).forEach(function(k){ if(k !== 'aspect_ratio') lite[k] = input[k]; });
         cands.push({ model: OM_MODEL, input: lite });
       }
-      vOmniRetry = { cands: cands, left: 1, mode: omModeName, res: omRes };
+      vOmniRetry = { cands: cands, left: 1, mode: omModeName, res: omRes, input: input, alt: 1 };
       return createTaskFallback(cands, 0).catch(function(err){
         throw new Error('Gemini Omni (' + omModeName + ' · ' + omRes + ') — Kie.ai trả lỗi khi nhận yêu cầu: ' + err.message);
       });
@@ -3791,7 +3806,13 @@ function generateVideo(){
         ch = ch.then(function(){
           if(r.uploadedUrl){ out.push(r.uploadedUrl); return; }
           updateVJob('Gemini Omni · đang tải ' + label + ' ' + (idx + 1) + '/' + list.length + '...', 8 + idx * 2);
-          return uploadOneRef(r.dataUrl).then(function(u){ r.uploadedUrl = u; out.push(u); });
+          /* Chuẩn hóa ảnh: JPEG thật, cạnh dài ≤1920px (ảnh PNG/WebP/HEIC hoặc quá lớn hay bị Google từ chối) */
+          return new Promise(function(ok){
+            var im = new Image();
+            im.onload = function(){ try{ var k = Math.min(1, 1920 / Math.max(im.naturalWidth, im.naturalHeight)); var c = document.createElement('canvas'); c.width = Math.round(im.naturalWidth * k); c.height = Math.round(im.naturalHeight * k); var g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0, c.width, c.height); ok(c.toDataURL('image/jpeg', 0.92)); }catch(_){ ok(r.dataUrl); } };
+            im.onerror = function(){ ok(r.dataUrl); };
+            im.src = r.dataUrl;
+          }).then(function(du){ return uploadOneRef(du); }).then(function(u){ r.uploadedUrl = u; out.push(u); });
         });
       });
       return ch.then(function(){ return out; });
@@ -4066,6 +4087,18 @@ function pollVideoTask(taskId, prompt, customHeaders){
             }).catch(function(e2){
               failVJob('Gemini Omni (' + omR.mode + ' · ' + omR.res + ') thất bại: ' + fMsg + ' — gửi lại cũng lỗi: ' + e2.message);
             });
+            return;
+          }
+          /* Ảnh khung đầu bị từ chối (an toàn/định dạng/kích thước): gửi lại 1 lần bằng chế độ ẢNH THAM CHIẾU (image_urls) */
+          if(omR && omR.alt > 0 && omR.input && omR.input.first_frame_url && !omR.input.last_frame_url){
+            omR.alt--;
+            var altIn = {}; Object.keys(omR.input).forEach(function(k){ if(k !== 'first_frame_url') altIn[k] = omR.input[k]; });
+            altIn.image_urls = [omR.input.first_frame_url];
+            altIn.prompt = 'Image1 is the character/scene reference: keep the same face, outfit and setting. ' + altIn.prompt;
+            omR.cands = [{ model: 'google/gemini-omni-flash-1-2', input: altIn }]; omR.mode = 'Ảnh tham chiếu (tự đổi từ khung đầu)';
+            updateVJob('Khung đầu bị từ chối (' + fMsg.slice(0, 70) + ') — tự gửi lại bằng chế độ ảnh tham chiếu...', 15);
+            createTaskFallback(omR.cands, 0).then(function(d2){ pollVideoTask(d2.data.taskId, prompt, customHeaders); })
+              .catch(function(e2){ failVJob('Gemini Omni thất bại: ' + fMsg + ' — gửi lại bằng ảnh tham chiếu cũng lỗi: ' + e2.message); });
             return;
           }
           if(omR){
