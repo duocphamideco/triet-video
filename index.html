@@ -15217,13 +15217,23 @@ $('mv10File').onchange=async e=>{const f=e.target.files[0];if(!f)return;if(state
 window.IDECO_MV_IMPORT_AUDIO=async function(file){
   if(!(file instanceof Blob)||!file.size)throw Error('Chưa có file âm thanh hợp lệ để chuyển sang MV.');
   if(state.audioId&&(state.blocks.length||state.audioName)&&!confirm('MV đang có dự án nhạc "'+state.audioName+'". Chèn nhạc mới sẽ thay audio và xóa khung timeline hiện tại. Tiếp tục?'))return false;
-  const input=$('mv10File');
-  const dt=new DataTransfer();dt.items.add(file instanceof File?file:new File([file],'IDECO_Music.mp3',{type:file.type||'audio/mpeg'}));
-  input.files=dt.files;
-  await input.onchange({target:input});
-  if(state.audioName!==(file.name||'IDECO_Music.mp3'))throw Error('Không thể lưu bài nhạc vào kho MV.');
-  window.switchTab('mv10');
-  status('✓ Đã chèn bài nhạc từ ÂM NHẠC vào MV TIMELINE · '+state.audioName+' · '+state.duration.toFixed(2)+' giây. Kéo khung 15/30/60s lên timeline để bắt đầu.');
+  const name=(file.name||'IDECO_Music.mp3');
+  // Một số kho nhạc trả blob không có MIME audio → gắn lại MIME để trình duyệt đọc được
+  const type=/^audio\//.test(file.type||'')?file.type:(/\.wav$/i.test(name)?'audio/wav':'audio/mpeg');
+  const f=new File([file],name,{type});
+  // Đọc thời lượng: thử thẻ <audio>, lỗi thì giải mã bằng WebAudio
+  let duration=0;const u=URL.createObjectURL(f);
+  try{duration=await new Promise((ok,no)=>{const a=new Audio();a.preload='metadata';const t=setTimeout(()=>no(Error('timeout')),15000);a.onloadedmetadata=()=>{clearTimeout(t);ok(a.duration)};a.onerror=()=>{clearTimeout(t);no(Error('audio'))};a.src=u});}catch(_){}
+  if(!Number.isFinite(duration)||duration<=0){
+   try{const AC=window.AudioContext||window.webkitAudioContext,ac=new AC();const buf=await ac.decodeAudioData(await f.arrayBuffer());duration=buf.duration;ac.close&&ac.close()}catch(e){URL.revokeObjectURL(u);throw Error('Trình duyệt không đọc được file nhạc này ('+(e.message||e)+').')}
+  }
+  if(state.audioId){try{await mediaDel(state.audioId)}catch(_){}}
+  const k='audio-'+id();await mediaPut(k,f);
+  state.audioId=k;state.audioName=name;state.duration=duration;state.blocks=[];state.selected=null;persist();
+  $('mv10Audio').src=u;$('mv10Audio').load();
+  try{window.switchTab('mv10')}catch(_){document.getElementById('mv10Nav')?.click()}
+  render();
+  status('✓ Đã chèn bài nhạc từ ÂM NHẠC vào MV TIMELINE · '+name+' · '+duration.toFixed(2)+' giây. Kéo khung 15/30/60s lên timeline để bắt đầu.');
   return true;
 };
 $('mv10Remove').onclick=async()=>{if(!confirm('Xóa nhạc hiện tại và các khung trên timeline? Video đã lưu sẽ bị xóa cùng dự án.'))return;for(const b of state.blocks){if(b.videoId)await mediaDel(b.videoId);for(const seg of b.segments||[])if(seg.videoId)await mediaDel(seg.videoId);if(b.imageId)await mediaDel(b.imageId)}if(state.audioId)await mediaDel(state.audioId);state.blocks=[];state.selected=null;state.audioId=null;state.audioName='';state.duration=0;persist();$('mv10File').value='';$('mv10Audio').removeAttribute('src');$('mv10Audio').load();render();status('Đã xóa nhạc. Có thể chèn nhạc mới.')};
@@ -15337,6 +15347,7 @@ async function mv19EnsureReferenceImage(b){
 // V20: Nguồn video độc lập với vùng tạo ảnh. Với Grok/WAN, văn bản không cần ảnh.
 function mv20UsesImage(b){return !!(b?.imageId && b.mv20Source!=='text')}
 function mv20NeedsImage(b){return b?.model==='omni'}
+window.IDECO_MV_SELECT=(bid)=>{if(bid&&state.blocks.some(x=>x.id===bid)){state.selected=bid;return true}return false};window.IDECO_MV_SELECTED_ID=()=>selected()?.id||null;
 window.IDECO_MV20_SOURCE={get:()=>{const b=selected();return b?{id:b.id,model:b.model,imageId:b.imageId||null,mode:b.mv20Source||(b.imageId?'upload':'text')}:null},set:(mode)=>{const b=selected();if(!b)return false;b.mv20Source=mode;persist();return true}};
 $('mv10VideoFile').onchange=async e=>{const b=selected(),f=e.target.files[0];if(!b||!f)return;const k='video-'+b.id;await mediaPut(k,f);b.videoId=k;persist();render();status('✓ Đã lưu MP4 cho khung '+b.start.toFixed(1)+'–'+(b.start+b.len).toFixed(1)+'s')};
 // V14: Tạo trực tiếp từ timeline, ghi taskId trước khi chờ kết quả.
@@ -16683,7 +16694,7 @@ render();
   source.addEventListener('click',e=>{const btn=e.target.closest('[data-mv20-source]');if(btn)setMode(btn.dataset.mv20Source)});
   const model=document.getElementById('mv10Model');model?.addEventListener('change',()=>setTimeout(refresh,0));
   root.addEventListener('click',e=>{if(e.target.closest('.mvblock,.mv11handle'))setTimeout(refresh,30)});
-  function refresh(){const b=getBlock();if(!b)return;paint(b.mv20Source||(b.imageId?'upload':'text'),b)}
+  function refresh(){const b=getBlock();if(!b)return;if(document.activeElement&&document.activeElement.id==='mv10Image')return;paint(b.mode||(b.imageId?'upload':'text'),b)}
   // Điều hướng ảnh vừa tạo: giữ chức năng nút chèn cũ nhưng đánh dấu nguồn là ảnh tạo AI.
   const use=document.getElementById('mv17UseImage');
   use?.addEventListener('click',()=>setTimeout(refresh,500));
@@ -16693,6 +16704,110 @@ render();
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
  setTimeout(init,1200);
+})();
+</script>
+
+<script id="mv50-image-face-picker">
+/* V50 · MV TIMELINE: chọn ảnh dễ (bấm / kéo-thả / dán), không mất khi chọn file; nhận diện khuôn mặt; chọn nhanh model lồng tiếng */
+(function(){
+ const $=id=>document.getElementById(id);
+ function init(){
+  const panel=$('mv20VideoImagePanel'),picker=$('mv10Image'),view=$('mv10ImageView');
+  if(!panel||!picker||panel.dataset.mv50)return false;panel.dataset.mv50='1';
+  const css=document.createElement('style');css.textContent=`
+  #mv50Zone{border:2px dashed #3f6fd8;border-radius:14px;background:#f2f6ff;padding:16px;text-align:center;cursor:pointer;color:#244a96;font-weight:700;margin:8px 0;transition:.15s}
+  #mv50Zone.drag{background:#dfe9ff;border-color:#1b4fc4}
+  #mv50Zone small{display:block;font-weight:500;color:#5a6f92;margin-top:4px}
+  #mv50Face{border:1px solid #cbd9ec;border-radius:12px;padding:10px;background:#fff;margin:8px 0}
+  #mv50Face canvas{max-width:100%;max-height:300px;border-radius:8px;background:#0b1422;display:block;margin:6px 0;cursor:crosshair}
+  #mv50Face .ok{color:#17804c;font-weight:700}#mv50Face .warn{color:#b35b00;font-weight:700}#mv50Face .bad{color:#c62828;font-weight:700}
+  #mv50Lip{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0}
+  #mv50Lip button{border:1px solid #c7d5e9;background:#fff;border-radius:10px;padding:8px 12px;font-weight:700;color:#315076;cursor:pointer}
+  #mv50Lip button.on{background:#3158ce;color:#fff;border-color:#3158ce}`;document.head.appendChild(css);
+  const lab=picker.closest('label');if(lab)lab.style.display='none';
+  const box=document.createElement('div');
+  box.innerHTML=`<div id="mv50Lip"><b>🎤 Model lồng tiếng:</b><button type="button" data-m="h3">MiniMax H3</button><button type="button" data-m="omni">OmniHuman 2.0</button><small style="color:#5a6f92">Cả hai dùng ảnh nhân vật + đúng đoạn nhạc của block.</small></div>
+  <div id="mv50Zone" tabindex="0">📷 Bấm để chọn ảnh nhân vật · hoặc kéo-thả · hoặc Ctrl+V dán ảnh<small>JPG/PNG/WebP · ảnh tự thu gọn ≤2048px · ảnh được gắn vào block đang chọn ngay lúc bấm</small></div>
+  <div id="mv50Face" style="display:none"><b>🧑 Nhận diện khuôn mặt</b> <span id="mv50FaceMsg">…</span><canvas id="mv50FaceCv"></canvas><small id="mv50FaceTip" style="color:#5a6f92"></small></div>`;
+  panel.insertBefore(box,panel.firstChild);
+  let pendingId=null,lastBlob=null,faces=[],natural=null;
+  const status=t=>{const n=$('mv20SourceNote');if(n)n.textContent=t};
+  // ===== Model lồng tiếng
+  function paintLip(){const m=$('mv10Model')?.value;box.querySelectorAll('#mv50Lip button').forEach(b=>b.classList.toggle('on',b.dataset.m===m))}
+  box.querySelector('#mv50Lip').addEventListener('click',e=>{const b=e.target.closest('button[data-m]');if(!b)return;const sel=$('mv10Model');if(!sel)return;if(!window.IDECO_MV_SELECTED_ID?.())return status('Chọn một block viền đỏ trên timeline trước.');sel.value=b.dataset.m;sel.dispatchEvent(new Event('change',{bubbles:true}));const lip=$('mv10Lip');if(lip&&!lip.checked){lip.checked=true;lip.dispatchEvent(new Event('change',{bubbles:true}))}paintLip();status('✓ Block dùng '+(b.dataset.m==='h3'?'MiniMax H3':'OmniHuman 2.0')+' để lồng tiếng.')});
+  $('mv10Model')?.addEventListener('change',paintLip);setInterval(paintLip,1500);paintLip();
+  // ===== Thu gọn ảnh
+  async function shrink(file){
+   try{const bmp=await createImageBitmap(file);const k=Math.min(1,2048/Math.max(bmp.width,bmp.height));const c=document.createElement('canvas');c.width=Math.round(bmp.width*k);c.height=Math.round(bmp.height*k);const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.drawImage(bmp,0,0,c.width,c.height);bmp.close&&bmp.close();
+    const blob=await new Promise(ok=>c.toBlob(ok,'image/jpeg',.93));return new File([blob],(file.name||'anh').replace(/\.[^.]+$/,'')+'.jpg',{type:'image/jpeg'});}catch(_){return file}
+  }
+  // ===== Gắn ảnh vào block (dùng đúng luồng cũ qua sự kiện change)
+  async function apply(file,bid){
+   if(!file||!/^image\//.test(file.type||'')&&!/\.(png|jpe?g|webp|heic)$/i.test(file.name||''))return status('✕ Chỉ nhận file ảnh.');
+   bid=bid||window.IDECO_MV_SELECTED_ID?.();
+   if(!bid||!window.IDECO_MV_SELECT?.(bid))return status('✕ Chọn một block viền đỏ trên timeline trước khi chọn ảnh.');
+   status('Đang xử lý ảnh…');
+   const f=await shrink(file);
+   window.IDECO_MV20_SOURCE?.set?.('upload');
+   lastBlob=f;
+   const dt=new DataTransfer();dt.items.add(f);picker.files=dt.files;
+   picker.dispatchEvent(new Event('change',{bubbles:true}));
+   detect(f);
+  }
+  picker.addEventListener('change',()=>{const f=picker.files&&picker.files[0];if(f&&f!==lastBlob&&!picker.__mv50){lastBlob=f;detect(f)}},false);
+  const hidden=document.createElement('input');hidden.type='file';hidden.accept='image/*';hidden.style.display='none';box.appendChild(hidden);
+  hidden.addEventListener('change',()=>{const f=hidden.files&&hidden.files[0];const id=pendingId;pendingId=null;hidden.value='';if(f)apply(f,id)});
+  const zone=$('mv50Zone');
+  zone.addEventListener('click',()=>{pendingId=window.IDECO_MV_SELECTED_ID?.();if(!pendingId)return status('Chọn một block viền đỏ trên timeline trước.');hidden.click()});
+  zone.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();zone.click()}});
+  ['dragenter','dragover'].forEach(t=>zone.addEventListener(t,e=>{e.preventDefault();zone.classList.add('drag')}));
+  ['dragleave','drop'].forEach(t=>zone.addEventListener(t,e=>{e.preventDefault();zone.classList.remove('drag')}));
+  zone.addEventListener('drop',e=>{const f=[...(e.dataTransfer?.files||[])].find(x=>/^image\//.test(x.type));if(f)apply(f)});
+  document.addEventListener('paste',e=>{const tab=$('mv10Tab');if(!tab||tab.style.display==='none'||tab.offsetParent===null)return;if(/INPUT|TEXTAREA/.test(document.activeElement?.tagName||''))return;const it=[...(e.clipboardData?.items||[])].find(x=>/^image\//.test(x.type));if(!it)return;e.preventDefault();const f=it.getAsFile();if(f)apply(new File([f],'anh_dan.png',{type:f.type}))});
+  // ===== Nhận diện khuôn mặt (MediaPipe, fallback FaceDetector của Chrome)
+  let detectorP=null;
+  function loadDetector(){
+   if(detectorP)return detectorP;
+   detectorP=(async()=>{
+    try{const v='0.10.14';const m=await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@'+v+'/vision_bundle.mjs');
+     const fs=await m.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@'+v+'/wasm');
+     const fd=await m.FaceDetector.createFromOptions(fs,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite'},runningMode:'IMAGE',minDetectionConfidence:.45});
+     return async img=>fd.detect(img).detections.map(d=>({x:d.boundingBox.originX,y:d.boundingBox.originY,w:d.boundingBox.width,h:d.boundingBox.height,score:d.categories?.[0]?.score||0}));
+    }catch(e){
+     if('FaceDetector' in window){const fd=new window.FaceDetector({fastMode:false,maxDetectedFaces:6});return async img=>(await fd.detect(img)).map(d=>({x:d.boundingBox.x,y:d.boundingBox.y,w:d.boundingBox.width,h:d.boundingBox.height,score:1}))}
+     throw e;
+    }
+   })();
+   return detectorP;
+  }
+  async function detect(file){
+   const wrap=$('mv50Face'),msg=$('mv50FaceMsg'),tip=$('mv50FaceTip'),cv=$('mv50FaceCv');wrap.style.display='block';msg.className='';msg.textContent='đang kiểm tra…';tip.textContent='';
+   let img;try{img=await createImageBitmap(file)}catch(_){msg.className='bad';msg.textContent='Không đọc được ảnh.';return}
+   natural={w:img.width,h:img.height};cv.width=img.width;cv.height=img.height;const g=cv.getContext('2d');g.drawImage(img,0,0);
+   try{const run=await loadDetector();faces=(await run(img)).sort((a,b)=>b.w*b.h-a.w*a.h)}catch(e){msg.className='warn';msg.textContent='Không tải được bộ nhận diện (cần mạng). Ảnh vẫn dùng được.';return}
+   g.lineWidth=Math.max(3,img.width/200);g.font='bold '+Math.max(18,img.width/30)+'px sans-serif';
+   faces.forEach((f,i)=>{g.strokeStyle=i===0?'#22e07a':'#ffb020';g.strokeRect(f.x,f.y,f.w,f.h);g.fillStyle=g.strokeStyle;g.fillText(String(i+1),f.x+6,f.y-8>20?f.y-8:f.y+28)});
+   const area=faces[0]?faces[0].w*faces[0].h/(img.width*img.height):0;
+   if(!faces.length){msg.className='bad';msg.textContent='✕ Không thấy khuôn mặt — H3/OmniHuman sẽ không nhép miệng được. Hãy chọn ảnh rõ mặt, nhìn thẳng.';}
+   else if(faces.length>1){msg.className='warn';msg.textContent='⚠ Thấy '+faces.length+' khuôn mặt. Bấm vào khuôn mặt ca sĩ trên ảnh để cắt lấy riêng người đó.';tip.textContent='OmniHuman/H3 lồng tiếng tốt nhất khi ảnh chỉ có 1 người hát.';}
+   else if(area<.02){msg.className='warn';msg.textContent='⚠ Khuôn mặt quá nhỏ ('+(area*100).toFixed(1)+'% ảnh). Bấm vào mặt để cắt cận hơn.';}
+   else{msg.className='ok';msg.textContent='✓ 1 khuôn mặt rõ ('+(area*100).toFixed(1)+'% ảnh) · phù hợp lồng tiếng.';tip.textContent='Có thể bấm vào mặt để cắt cận trung cảnh nếu muốn.'}
+  }
+  $('mv50FaceCv').addEventListener('click',async e=>{
+   if(!faces.length||!lastBlob||!natural)return;const cv=e.currentTarget,r=cv.getBoundingClientRect();
+   const x=(e.clientX-r.left)*natural.w/r.width,y=(e.clientY-r.top)*natural.h/r.height;
+   const f=faces.find(f=>x>=f.x&&x<=f.x+f.w&&y>=f.y&&y<=f.y+f.h)||faces.reduce((a,b)=>Math.hypot(a.x+a.w/2-x,a.y+a.h/2-y)<Math.hypot(b.x+b.w/2-x,b.y+b.h/2-y)?a:b);
+   const asp=(document.getElementById('mv18Aspect')?.value||'16:9').split(':').map(Number);const ratio=asp[0]>0&&asp[1]>0?asp[0]/asp[1]:16/9;
+   // khung trung cảnh: cao ≈ 3.2 lần mặt, mặt ở 1/3 trên
+   let h=Math.min(natural.h,f.h*3.2),w=h*ratio;if(w>natural.w){w=natural.w;h=w/ratio}
+   let cx=f.x+f.w/2-w/2,cy=f.y+f.h/2-h*.35;cx=Math.max(0,Math.min(natural.w-w,cx));cy=Math.max(0,Math.min(natural.h-h,cy));
+   const bmp=await createImageBitmap(lastBlob);const c=document.createElement('canvas');const k=Math.min(2,Math.max(1,1280/Math.max(w,h)));c.width=Math.round(w*k);c.height=Math.round(h*k);const g=c.getContext('2d');g.imageSmoothingQuality='high';g.drawImage(bmp,cx,cy,w,h,0,0,c.width,c.height);
+   const blob=await new Promise(ok=>c.toBlob(ok,'image/jpeg',.93));
+   apply(new File([blob],'mat_ca_si.jpg',{type:'image/jpeg'}));
+  });
+  return true;
+ }
+ if(!init()){const t=setInterval(()=>{if(init())clearInterval(t)},800);setTimeout(()=>clearInterval(t),60000)}
 })();
 </script>
 </body>
