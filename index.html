@@ -15214,7 +15214,17 @@ async function showPreview(){$('mv10Preview').muted=true;const b=selected();if(b
 async function restore(){if(state.audioId){const a=await mediaGet(state.audioId);if(a){$('mv10Audio').src=URL.createObjectURL(a);$('mv10Audio').load()}}render()}
 $('mv10File').onchange=async e=>{const f=e.target.files[0];if(!f)return;if(state.blocks.some(mv30Locked)&&!confirm('Dự án có block 🔒 đã tạo video. Thay nhạc sẽ xóa các block hiện tại và mất đồng bộ. Anh xác nhận thay toàn bộ nhạc và khung?')){e.target.value='';status('Đã giữ nguyên nhạc và các block đã khóa.');return;}const u=URL.createObjectURL(f),a=new Audio();a.preload='metadata';a.src=u;try{await new Promise((ok,no)=>{a.onloadedmetadata=ok;a.onerror=()=>no(Error('Không đọc được audio'))});const duration=a.duration;if(!Number.isFinite(duration)||duration<=0)throw Error('Audio không có thời lượng hợp lệ');if(state.audioId)await mediaDel(state.audioId);const k='audio-'+id();await mediaPut(k,f);state.audioId=k;state.audioName=f.name;state.duration=duration;state.blocks=[];state.selected=null;persist();$('mv10Audio').src=u;render();status('Đã nạp nhạc '+f.name+'. Kéo khung 15/30/60s lên timeline.')}catch(err){status(err.message)}};
 
-window.IDECO_MV_IMPORT_AUDIO=async function(file){
+window.IDECO_MV_IMPORT_AUDIO=async function(file,maybeName){
+  // Nhận cả Blob/File gửi từ iframe Studio Nhạc (khác "realm" nên instanceof Blob = false), ArrayBuffer, hoặc URL
+  try{
+   if(typeof file==='string'){const r=await fetch(file);if(!r.ok)throw Error('HTTP '+r.status);const bl=await r.blob();file=new File([bl],maybeName||'IDECO_Music.mp3',{type:bl.type})}
+   else if(file&&!(file instanceof Blob)){
+    const tag=Object.prototype.toString.call(file);
+    if(/Blob|File/.test(tag)&&typeof file.arrayBuffer==='function'){const buf=await file.arrayBuffer();file=new File([buf],file.name||maybeName||'IDECO_Music.mp3',{type:file.type||'audio/mpeg'})}
+    else if(file instanceof ArrayBuffer||ArrayBuffer.isView(file)||/ArrayBuffer/.test(tag)){file=new File([file],maybeName||'IDECO_Music.mp3',{type:'audio/mpeg'})}
+    else if(file&&(file.blob||file.file||file.url)){return window.IDECO_MV_IMPORT_AUDIO(file.blob||file.file||file.url,file.name||file.title||maybeName)}
+   }else if(file instanceof Blob&&!(file instanceof File)&&maybeName){file=new File([file],maybeName,{type:file.type})}
+  }catch(e){throw Error('Không đọc được file nhạc gửi sang MV: '+(e.message||e))}
   if(!(file instanceof Blob)||!file.size)throw Error('Chưa có file âm thanh hợp lệ để chuyển sang MV.');
   if(state.audioId&&(state.blocks.length||state.audioName)&&!confirm('MV đang có dự án nhạc "'+state.audioName+'". Chèn nhạc mới sẽ thay audio và xóa khung timeline hiện tại. Tiếp tục?'))return false;
   const name=(file.name||'IDECO_Music.mp3');
@@ -15231,6 +15241,8 @@ window.IDECO_MV_IMPORT_AUDIO=async function(file){
   const k='audio-'+id();await mediaPut(k,f);
   state.audioId=k;state.audioName=name;state.duration=duration;state.blocks=[];state.selected=null;persist();
   $('mv10Audio').src=u;$('mv10Audio').load();
+  // Studio Nhạc đang phóng toàn màn hình sẽ che MV: thu nhỏ trước khi chuyển tab
+  document.body.classList.remove('v67-music-expanded');
   try{window.switchTab('mv10')}catch(_){document.getElementById('mv10Nav')?.click()}
   render();
   status('✓ Đã chèn bài nhạc từ ÂM NHẠC vào MV TIMELINE · '+name+' · '+duration.toFixed(2)+' giây. Kéo khung 15/30/60s lên timeline để bắt đầu.');
